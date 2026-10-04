@@ -48,7 +48,9 @@ export default function Header() {
           {!loadingUser &&
             (user ? (
               <>
-                <span className="login">My Account</span>
+               <Link className="login" href="/account">
+  My Account
+</Link>
                 <button
                   type="button"
                   className="login"
