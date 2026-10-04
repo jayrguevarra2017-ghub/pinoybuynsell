@@ -48,7 +48,32 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
+async function handleForgotPassword() {
+  setMessage("");
 
+  if (!email) {
+    setMessage("Please enter your email address first.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) throw error;
+
+    setMessage(
+      "Password reset email sent! Please check your inbox and spam folder."
+    );
+  } catch (error) {
+    setMessage(error.message || "Unable to send password reset email.");
+  } finally {
+    setLoading(false);
+  }
+}
   return (
     <>
       <Header />
@@ -101,6 +126,15 @@ export default function LoginPage() {
                 : "Create Account"}
             </button>
           </form>
+{mode === "login" && (
+  <button
+    type="button"
+    onClick={handleForgotPassword}
+    disabled={loading}
+  >
+    Forgot password?
+  </button>
+)}
 
           {message && <p>{message}</p>}
 
