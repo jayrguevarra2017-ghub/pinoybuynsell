@@ -40,7 +40,7 @@ export default function LoginPage() {
 
         if (error) throw error;
 
-        setMessage("Login successful!");
+        window.location.href = "/";
       }
     } catch (error) {
       setMessage(error.message || "Something went wrong.");
