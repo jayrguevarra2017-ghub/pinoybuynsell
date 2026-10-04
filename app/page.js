@@ -5,12 +5,14 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import AuctionCard from "@/components/AuctionCard";
-import { categories, auctions } from "@/lib/data";
+import { categories } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [auctions, setAuctions] = useState([]);
+  const [loadingAuctions, setLoadingAuctions] = useState(true);
 
   useEffect(() => {
     async function loadProducts() {
@@ -31,9 +33,52 @@ export default function HomePage() {
       }
 
       setLoadingProducts(false);
+    }    async function loadAuctions() {
+      const { data, error } = await supabase
+        .from("auctions")
+        .select(`
+          id,
+          product_id,
+          starting_price,
+          current_bid,
+          starts_at,
+          ends_at,
+          status,
+          created_at,
+          products (
+            id,
+            title,
+            category,
+            location
+          )
+        `)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      if (error) {
+        console.error("Auction load error:", error);
+        setAuctions([]);
+      } else {
+        const formattedAuctions = (data || []).map((auction) => ({
+          id: auction.id,
+          productId: auction.product_id,
+          title: auction.products?.title || "Auction item",
+          category: auction.products?.category || "Auction",
+          location: auction.products?.location || "Philippines",
+          currentBid: auction.current_bid ?? auction.starting_price ?? 0,
+          endTime: auction.ends_at,
+          icon: "🏷️"
+        }));
+
+        setAuctions(formattedAuctions);
+      }
+
+      setLoadingAuctions(false);
     }
 
-    loadProducts();
+     loadProducts();
+    loadAuctions();
   }, []);
 
   return (
