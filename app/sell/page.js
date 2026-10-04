@@ -1,2 +1,233 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
-export default function SellPage(){return <><Header/><main className="page"><div className="container narrow"><p className="eyebrow">SELL ON PINOYBUYNSSELL</p><h1>List an item</h1><p className="lead">Create a listing so buyers across the Philippines can discover your item.</p><form className="listing-form"><label>Item title<input placeholder="e.g. iPhone 15 128GB"/></label><label>Price (₱)<input type="number" placeholder="0"/></label><label>Category<select defaultValue=""><option value="">Choose a category</option><option>Electronics</option><option>Phones</option><option>Fashion</option><option>Home & Living</option><option>Vehicles</option><option>Sports</option><option>Others</option></select></label><label>Location<input placeholder="City / Province"/></label><label>Description<textarea rows="6" placeholder="Describe your item..."></textarea></label><button className="sell big" type="button">Create listing</button></form></div></main></>}
+import { supabase } from "@/lib/supabase";
+
+export default function SellPage() {
+  const router = useRouter();
+
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    price: "",
+    category: "",
+    condition: "",
+    location: "",
+  });
+
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setSaving(false);
+      router.push("/login");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("products")
+      .insert({
+        seller_id: user.id,
+        title: form.title.trim(),
+        description: form.description.trim(),
+        price: Number(form.price),
+        category: form.category,
+        condition: form.condition,
+        location: form.location.trim(),
+        status: "active",
+      })
+      .select()
+      .single();
+
+    if (error) {
+      setMessage(`Error: ${error.message}`);
+      setSaving(false);
+      return;
+    }
+
+    setMessage("Item listed successfully!");
+    setSaving(false);
+
+    if (data?.id) {
+      router.push(`/product/${data.id}`);
+    }
+  }
+
+  return (
+    <>
+      <Header />
+
+      <main className="page">
+        <div className="container narrow">
+          <p className="eyebrow">SELL ON PINOYBUYSELL</p>
+          <h1>List an Item</h1>
+          <p className="lead">
+            Create your listing and start selling on PinoyBuyNSell.
+          </p>
+
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              marginTop: "30px",
+              padding: "24px",
+              border: "1px solid #e5e7eb",
+              borderRadius: "12px",
+            }}
+          >
+            <label>
+              <strong>Item Title</strong>
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              placeholder="Example: iPhone 15 Pro Max"
+              required
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginTop: "6px",
+                marginBottom: "16px",
+              }}
+            />
+
+            <label>
+              <strong>Description</strong>
+            </label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Describe your item"
+              required
+              rows="5"
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginTop: "6px",
+                marginBottom: "16px",
+              }}
+            />
+
+            <label>
+              <strong>Price (₱)</strong>
+            </label>
+            <input
+              type="number"
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              required
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginTop: "6px",
+                marginBottom: "16px",
+              }}
+            />
+
+            <label>
+              <strong>Category</strong>
+            </label>
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              required
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginTop: "6px",
+                marginBottom: "16px",
+              }}
+            >
+              <option value="">Select category</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Fashion">Fashion</option>
+              <option value="Home & Living">Home & Living</option>
+              <option value="Sports">Sports</option>
+              <option value="Collectibles">Collectibles</option>
+              <option value="Vehicles">Vehicles</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <label>
+              <strong>Condition</strong>
+            </label>
+            <select
+              name="condition"
+              value={form.condition}
+              onChange={handleChange}
+              required
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginTop: "6px",
+                marginBottom: "16px",
+              }}
+            >
+              <option value="">Select condition</option>
+              <option value="New">New</option>
+              <option value="Like New">Like New</option>
+              <option value="Used">Used</option>
+              <option value="For Parts">For Parts</option>
+            </select>
+
+            <label>
+              <strong>Location</strong>
+            </label>
+            <input
+              type="text"
+              name="location"
+              value={form.location}
+              onChange={handleChange}
+              placeholder="City / Province"
+              required
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginTop: "6px",
+                marginBottom: "20px",
+              }}
+            />
+
+            <button type="submit" disabled={saving}>
+              {saving ? "Publishing..." : "Publish Listing"}
+            </button>
+
+            {message && (
+              <p style={{ marginTop: "15px" }}>
+                <strong>{message}</strong>
+              </p>
+            )}
+          </form>
+        </div>
+      </main>
+    </>
+  );
+}
