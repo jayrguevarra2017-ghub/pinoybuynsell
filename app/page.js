@@ -113,9 +113,11 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="product-grid">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+               {(products || [])
+  .filter((product) => product && product.id)
+  .map((product) => (
+    <ProductCard key={product.id} product={product} />
+  ))}
               </div>
             )}
           </div>
@@ -133,10 +135,13 @@ export default function HomePage() {
             </div>
 
             <div className="product-grid">
-              {auctions.slice(0, 4).map((auction) => (
-                <AuctionCard key={auction.id} item={auction} />
-              ))}
-            </div>
+  {(auctions || [])
+    .filter((auction) => auction && auction.id)
+    .slice(0, 4)
+    .map((auction) => (
+      <AuctionCard key={auction.id} item={auction} />
+    ))}
+</div>
           </div>
         </section>
 
