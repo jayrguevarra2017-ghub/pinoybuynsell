@@ -15,6 +15,58 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [bidAmount, setBidAmount] = useState("");
+  const [submittingBid, setSubmittingBid] = useState(false);
+  const [bidMessage, setBidMessage] = useState("");
+  const [now, setNow] = useState(null);
+
+  useEffect(() => {
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setAuthReady(true);
+    });
+    return () => { clearInterval(timer); data.subscription.unsubscribe(); };
+  }, []);
+
+  async function placeBid(event) {
+    event.preventDefault();
+    if (submittingBid) return;
+    setBidMessage("");
+    const amount = Number(bidAmount);
+    const current = Math.max(Number(auction?.current_bid ?? 0), Number(auction?.starting_price ?? 0));
+    if (!/^\d+(\.\d{1,2})?$/.test(bidAmount) || !Number.isFinite(amount) || amount <= current) {
+      setBidMessage("Enter a bid higher than the current bid, with up to two decimal places.");
+      return;
+    }
+    setSubmittingBid(true);
+    try {
+      const { data, error } = await supabase.rpc("place_marketplace_bid", {
+        p_auction_id: String(auction.id), p_amount: amount,
+      });
+      if (error) {
+        setBidMessage(error.code === "PGRST202"
+          ? "Bidding is not available yet. Please try again later."
+          : error.message);
+        return;
+      }
+      setAuction(data);
+      setBidAmount("");
+      setBidMessage("Your bid was placed successfully.");
+    } catch {
+      setBidMessage("Could not confirm your bid. Refresh to check the current price before trying again.");
+    } finally {
+      setSubmittingBid(false);
+    }
+  }
+
+  const auctionOpen = now !== null && auction?.status === "active"
+    && Date.parse(auction.ends_at) > now
+    && (!auction.starts_at || Date.parse(auction.starts_at) <= now);
+
   useEffect(() => {
     if (!id) return;
 
@@ -178,6 +230,27 @@ export default function ProductPage() {
         ? new Date(auction.ends_at).toLocaleString("en-PH")
         : "Not set"}
     </p>
+    {!authReady ? <p>Checking sign-in...</p> : !user ? (
+      <Link className="view" href="/login">Sign in to place a bid</Link>
+    ) : user.id === product.seller_id ? (
+      <p>You cannot bid on your own listing.</p>
+    ) : !auctionOpen ? (
+      <p>This auction is not open for bidding.</p>
+    ) : (
+      <form className="listing-form" onSubmit={placeBid}>
+        <label htmlFor="bid-amount">Your bid (₱)
+          <input id="bid-amount" type="number" inputMode="decimal" step="0.01"
+            min={(Math.max(Number(auction.current_bid ?? 0), Number(auction.starting_price ?? 0)) + 0.01).toFixed(2)}
+            required value={bidAmount} onChange={(event) => setBidAmount(event.target.value)}
+            disabled={submittingBid} />
+        </label>
+        <p>Enter an amount higher than the current bid. Bids are recorded when submitted.</p>
+        <button className="sell" type="submit" disabled={submittingBid}>
+          {submittingBid ? "Placing bid..." : "Place bid"}
+        </button>
+      </form>
+    )}
+    {bidMessage && <p role="status" aria-live="polite">{bidMessage}</p>}
   </div>
 )}
             <div style={{ marginTop: "30px" }}>
