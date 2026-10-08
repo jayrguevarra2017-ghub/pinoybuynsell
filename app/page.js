@@ -58,6 +58,8 @@ export default function HomePage() {
         `)
         .eq("status", "active")
         .is("products.deleted_at", null)
+        .eq("products.status", "active")
+        .gt("ends_at", new Date().toISOString())
         .order("created_at", { ascending: false })
         .limit(4);
 

@@ -228,3 +228,17 @@ footer { background: #242424; color: #e2e2e8; }
 .facebook-share { display: inline-block; margin: 0 0 16px; padding: 10px 15px; color: #2454d6; border: 1px solid #c5d4f9; border-radius: 999px; font-size: 13px; font-weight: 750; }
 .facebook-share:hover, .messenger-contact:hover { background: #edf2ff; }
 .messenger-contact { display: block; padding: 10px; margin-bottom: 14px; border: 1px solid #c5d4f9; border-radius: 10px; color: #2454d6; font-size: 12px; text-align: center; line-height: 1.5; }
+.visitor-counter {display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 80px;color:#64748b;font-size:12px;}
+.visitor-counter strong {color:var(--blue,#2452e8);font-variant-numeric:tabular-nums;}
+.listing-options {padding:20px;margin:20px 0;border:1px solid #dce3f1;border-radius:16px;background:#f8faff;}
+.listing-options h2,.listing-options h3 {margin-top:0;}
+.variation-row {display:grid;grid-template-columns:minmax(0,2fr) minmax(90px,1fr) auto;gap:12px;align-items:end;margin:14px 0;}
+.variation-row label {min-width:0;}
+.variation-row input {width:100%;min-width:0;}
+.listing-options button.secondary {padding:10px 14px;border:1px solid #b8c9f5;border-radius:10px;background:#fff;color:#2452e8;font:inherit;font-weight:700;cursor:pointer;}
+.listing-options button.secondary:disabled {opacity:.55;cursor:default;}
+.variation-row button {margin-bottom:0;}
+.listing-type-badge {display:inline-block;border-radius:20px;background:#edf2ff;color:#2452e8;padding:4px 9px;font-size:12px;font-weight:700;margin-bottom:8px;}
+.stock-label {font-size:13px;color:#526075;}
+.stock-unavailable {font-weight:700;color:#b42318;}
+@media(max-width:550px){.variation-row{grid-template-columns:minmax(0,1fr) 90px;}.variation-row button{grid-column:1/-1;}.listing-options{padding:14px;}}

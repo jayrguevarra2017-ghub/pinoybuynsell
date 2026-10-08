@@ -236,6 +236,7 @@ export default function AccountPage() {
                 <ListingPhoto product={item} detail />
                 <h3>{item.title}</h3>
                 <p>₱{Number(item.price).toLocaleString("en-PH")} · {item.status}</p>
+                {item.listing_type && <p>{item.listing_type === "auction" ? "Auction / bidding · one item or lot" : `Fixed price · ${item.quantity} available${item.variations?.length ? ` · ${item.variations.length} variations` : ""}`}</p>}
                 <ShippingDetails product={item} />
                 <Link className="view" href={`/product/${item.id}`}>View listing</Link>
                 {item.deleted_at ? <p>Removed by administrator</p> : <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}

@@ -6,6 +6,7 @@ import Link from "next/link";
 import ListingPhoto from "@/components/ListingPhoto";
 import { listingShareUrl } from "@/lib/facebook";
 import ShippingDetails from "@/components/ShippingDetails";
+import ListingAvailability from "@/components/ListingAvailability";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
@@ -72,6 +73,7 @@ export default function ProductPage() {
   }
 
   const auctionOpen = now !== null && auction?.status === "active"
+    && product?.status === "active" && product?.listing_type !== "fixed_price"
     && Date.parse(auction.ends_at) > now
     && (!auction.starts_at || Date.parse(auction.starts_at) <= now);
 
@@ -102,6 +104,8 @@ export default function ProductPage() {
 
         if (data?.deleted_at) { setErrorMessage("This listing has been removed."); return; }
         setProduct(data);
+
+        if (data.listing_type === "fixed_price") return;
 
         const { data: auctionData, error: auctionError } = await supabase
           .from("auctions")
@@ -193,7 +197,7 @@ export default function ProductPage() {
             {errorMessage && <p role="alert">{errorMessage}</p>}
 
             <h2 style={{ marginTop: "15px" }}>
-              ₱{Number(product.price).toLocaleString("en-PH")}
+              {product.listing_type === "auction" && "Item value: "}₱{Number(product.price).toLocaleString("en-PH")}
             </h2>
 
             <div style={{ marginTop: "25px" }}>
@@ -212,7 +216,9 @@ export default function ProductPage() {
               <p>
                 <strong>Status:</strong> {product.status}
               </p>
+              <p><strong>Selling format:</strong> {product.listing_type === "auction" || auction ? "Auction / bidding" : "Fixed price — no bidding"}</p>
             </div>
+            <ListingAvailability key={product.id} product={product} />
             <section aria-label="Shipping details">
               <h3>Shipping</h3>
               <ShippingDetails product={product} />

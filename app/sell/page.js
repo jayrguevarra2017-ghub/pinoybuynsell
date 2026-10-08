@@ -10,6 +10,7 @@ import { createListing, updateListing, validatePhoto } from "@/lib/listing-photo
 import Link from "next/link";
 import { prohibitedItems, listingPolicyVersion } from "@/lib/listing-policy";
 import { shippingCarriers, validateShipping } from "@/lib/shipping";
+import { validateListingOptions, toManilaInput, fromManilaInput, maxVariations } from "@/lib/listing-options.mjs";
 
 export default function SellPage({ listingId = null }) {
   const router = useRouter();
@@ -23,9 +24,15 @@ export default function SellPage({ listingId = null }) {
     location: "",
     shipping_carrier: "",
     shipping_fee: "",
+    listing_type: "fixed_price",
+    quantity: "1",
+    variations: [],
+    auction_starting_price: "",
+    auction_ends_at: "",
   });
 
   const [existingListing, setExistingListing] = useState(null);
+  const [auctionLocked, setAuctionLocked] = useState(false);
   const [loadingListing, setLoadingListing] = useState(Boolean(listingId));
   const [loadError, setLoadError] = useState("");
 
@@ -39,12 +46,20 @@ export default function SellPage({ listingId = null }) {
         const { data, error } = await supabase.from("products").select("*")
           .eq("id", listingId).eq("seller_id", user.id).single();
         if (error || !data || data.deleted_at) throw new Error("This listing is unavailable or does not belong to you.");
+        const auctions = await supabase.from("auctions").select("starting_price,current_bid")
+          .eq("product_id", listingId);
+        if (auctions.error) throw new Error("Could not check bidding settings. Please refresh before editing.");
         if (cancelled) return;
+        setAuctionLocked((auctions.data || []).some(a => Number(a.current_bid) > Number(a.starting_price)));
         setExistingListing(data);
         setForm({ title: data.title ?? "", description: data.description ?? "",
           price: String(data.price ?? ""), category: data.category ?? "",
           condition: data.condition ?? "", location: data.location ?? "",
-          shipping_carrier: data.shipping_carrier ?? "", shipping_fee: String(data.shipping_fee ?? "") });
+          shipping_carrier: data.shipping_carrier ?? "", shipping_fee: String(data.shipping_fee ?? ""),
+          listing_type: data.listing_type ?? "fixed_price", quantity: String(data.quantity ?? 1),
+          variations: (data.variations || []).map(v => ({ name: v.name, quantity: String(v.quantity) })),
+          auction_starting_price: String(data.auction_starting_price ?? ""),
+          auction_ends_at: toManilaInput(data.auction_ends_at) });
       } catch (error) {
         if (!cancelled) setLoadError(error.message);
       } finally {
@@ -86,12 +101,24 @@ export default function SellPage({ listingId = null }) {
     }));
   }
 
+  function changeVariations(variations) {
+    setForm(current => ({ ...current, variations,
+      quantity: variations.length ? String(variations.reduce((sum, v) => sum + Number(v.quantity || 0), 0)) : "1" }));
+  }
+
+  function changeFormat(event) {
+    const listing_type = event.target.value;
+    setForm(current => ({ ...current, listing_type, ...(listing_type === "auction" ? { quantity: "1", variations: [] } : {}) }));
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     if (saving || loadingListing || loadError || (listingId && !existingListing)) return;
     if (!policyAccepted) { setMessage("Read and confirm the prohibited-items policy before saving your listing."); return; }
     const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
     if (shippingError) { setMessage(shippingError); return; }
+    const optionsError = validateListingOptions({ ...form, auction_ends_at: form.auction_ends_at ? `${form.auction_ends_at}+08:00` : "" }, Date.now(), auctionLocked);
+    if (optionsError) { setMessage(optionsError); return; }
     setSaving(true);
     setMessage("");
 
@@ -109,6 +136,11 @@ export default function SellPage({ listingId = null }) {
         location: form.location.trim(), shipping_carrier: form.shipping_carrier,
         shipping_fee: Number(form.shipping_fee),
         listing_policy_version: listingPolicyVersion,
+        listing_type: form.listing_type, quantity: Number(form.quantity),
+        variations: form.variations.map(v => ({ name: v.name.trim(), quantity: Number(v.quantity) })),
+        auction_starting_price: form.listing_type === "auction" ? Number(form.auction_starting_price) : null,
+        auction_ends_at: form.listing_type === "auction"
+          ? (auctionLocked ? existingListing.auction_ends_at : fromManilaInput(form.auction_ends_at)) : null,
       };
       const data = listingId
         ? await updateListing(supabase, user.id, listingId, values, photo)
@@ -138,7 +170,7 @@ export default function SellPage({ listingId = null }) {
           <h1>{listingId ? "Edit Listing" : "List an Item"}</h1>
           <a className="view" href="/verify">Verify your account to sell</a>
           <p className="lead">
-            {listingId ? "Update your item details, shipping, or photo." : "Create your listing and start selling on PinoyBuyNSell."}
+            {listingId ? "Update your item details, selling options, shipping, or photo." : "Choose a fixed price or let buyers bid on your item."}
           </p>
 
           <form
@@ -199,7 +231,7 @@ export default function SellPage({ listingId = null }) {
             />
 
             <label>
-              <strong>Price (₱)</strong>
+              <strong>{form.listing_type === "auction" ? "Item value (₱)" : "Price per item (₱)"}</strong>
             </label>
             <input
               type="number"
@@ -210,6 +242,7 @@ export default function SellPage({ listingId = null }) {
               min="0"
               step="0.01"
               required
+              disabled={auctionLocked}
               style={{
                 width: "100%",
                 padding: "12px",
@@ -217,6 +250,54 @@ export default function SellPage({ listingId = null }) {
                 marginBottom: "16px",
               }}
             />
+
+            <section className="listing-options listing-form" aria-labelledby="selling-options-title">
+              <h2 id="selling-options-title">Selling options</h2>
+              {auctionLocked && <p role="status">Bids have been placed. Selling format, price, quantity, variations and auction closing time are locked.</p>}
+              <label htmlFor="listing-type">Is this item for bidding?
+                <select id="listing-type" name="listing_type" value={form.listing_type}
+                  onChange={changeFormat} disabled={saving || auctionLocked}>
+                  <option value="fixed_price">No — fixed-price listing</option>
+                  <option value="auction">Yes — auction / bidding</option>
+                </select>
+              </label>
+              <label htmlFor="listing-quantity">{form.variations.length ? "Total quantity across variations" : "Quantity available"}
+                <input id="listing-quantity" name="quantity" type="number" min="0" max="1000000" step="1" required
+                  value={form.quantity} onChange={handleChange} readOnly={form.variations.length > 0}
+                  disabled={saving || auctionLocked || form.listing_type === "auction"} />
+              </label>
+              {form.listing_type === "auction" ? <>
+                <p>Bidding is for one item or one lot. Describe everything included in the lot. Selectable variations are cleared when choosing an auction.</p>
+                <label htmlFor="auction-starting-price">Starting bid (₱)
+                  <input id="auction-starting-price" name="auction_starting_price" type="number" min="0.01" max="99999999999999.99"
+                    step="0.01" required value={form.auction_starting_price} onChange={handleChange} disabled={saving || auctionLocked} />
+                </label>
+                <label htmlFor="auction-ends-at">Auction closes (Philippine time, UTC+8)
+                  <input id="auction-ends-at" name="auction_ends_at" type="datetime-local" step="1" required
+                    value={form.auction_ends_at} onChange={handleChange} disabled={saving || auctionLocked} />
+                </label>
+                <p>Bidding starts when you save the listing. The item value is a reference; buyers bid from the starting bid.</p>
+              </> : <>
+                <h3>Variations (optional)</h3>
+                <p>Add choices such as “Black / 128 GB” or “Blue / Medium”. All variations use the same item price. Set each choice’s available quantity.</p>
+                {form.variations.map((variation, index) => <div className="variation-row" key={index}>
+                  <label htmlFor={`variation-name-${index}`}>Variation {index + 1}
+                    <input id={`variation-name-${index}`} type="text" required maxLength="100" value={variation.name}
+                      placeholder="Example: Black / 128 GB" disabled={saving || auctionLocked}
+                      onChange={event => changeVariations(form.variations.map((v, i) => i === index ? { ...v, name: event.target.value } : v))} />
+                  </label>
+                  <label htmlFor={`variation-qty-${index}`}>Quantity
+                    <input id={`variation-qty-${index}`} type="number" min="0" max="1000000" step="1" required
+                      value={variation.quantity} disabled={saving || auctionLocked}
+                      onChange={event => changeVariations(form.variations.map((v, i) => i === index ? { ...v, quantity: event.target.value } : v))} />
+                  </label>
+                  <button type="button" className="secondary" disabled={saving || auctionLocked}
+                    aria-label={`Remove variation ${index + 1}`} onClick={() => changeVariations(form.variations.filter((_, i) => i !== index))}>Remove</button>
+                </div>)}
+                <button type="button" className="secondary" disabled={saving || auctionLocked || form.variations.length >= maxVariations}
+                  onClick={() => changeVariations([...form.variations, { name: "", quantity: "1" }])}>+ Add variation</button>
+              </>}
+            </section>
 
             <label>
               <strong>Category</strong>
