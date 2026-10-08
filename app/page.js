@@ -22,7 +22,7 @@ export default function HomePage() {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "*"
+          "*, auctions(starts_at,ends_at,status,created_at)"
         )
         .eq("status", "active")
         .is("deleted_at", null)
@@ -74,6 +74,8 @@ export default function HomePage() {
           category: auction.products?.category || "Auction",
           location: auction.products?.location || "Philippines",
           currentBid: auction.current_bid ?? auction.starting_price ?? 0,
+          startTime: auction.starts_at,
+          status: auction.status,
           endTime: auction.ends_at,
           icon: "🏷️"
         }));

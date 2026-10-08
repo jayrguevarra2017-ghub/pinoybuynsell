@@ -7,6 +7,7 @@ import ListingPhoto from "@/components/ListingPhoto";
 import { listingShareUrl } from "@/lib/facebook";
 import ShippingDetails from "@/components/ShippingDetails";
 import ListingAvailability from "@/components/ListingAvailability";
+import AuctionCountdown from "@/components/AuctionCountdown";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
@@ -113,7 +114,8 @@ export default function ProductPage() {
             "id, product_id, starting_price, current_bid, starts_at, ends_at, status, created_at"
           )
           .eq("product_id", id)
-          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         if (auctionError) {
@@ -219,6 +221,10 @@ export default function ProductPage() {
               <p><strong>Selling format:</strong> {product.listing_type === "auction" || auction ? "Auction / bidding" : "Fixed price — no bidding"}</p>
             </div>
             <ListingAvailability key={product.id} product={product} />
+            {(auction || product.listing_type === "auction") && <div className="auction-countdown-panel">
+              <AuctionCountdown endTime={auction?.ends_at ?? product.auction_ends_at} startsAt={auction?.starts_at}
+                status={product.status === "active" ? (auction?.status ?? "active") : "ended"} showLabel />
+            </div>}
             <section aria-label="Shipping details">
               <h3>Shipping</h3>
               <ShippingDetails product={product} />
@@ -248,17 +254,17 @@ export default function ProductPage() {
     </p>
 
     <p>
-      <strong>Auction Ends:</strong>{" "}
+      <strong>Auction Ends (Philippine time):</strong>{" "}
       {auction.ends_at
-        ? new Date(auction.ends_at).toLocaleString("en-PH")
+        ? new Date(auction.ends_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })
         : "Not set"}
     </p>
-    {!authReady ? <p>Checking sign-in...</p> : !user ? (
+    {!authReady ? <p>Checking sign-in...</p> : !auctionOpen ? (
+      <p>This auction is not open for bidding.</p>
+    ) : !user ? (
       <Link className="view" href="/login">Sign in to place a bid</Link>
     ) : user.id === product.seller_id ? (
       <p>You cannot bid on your own listing.</p>
-    ) : !auctionOpen ? (
-      <p>This auction is not open for bidding.</p>
     ) : (
       <form className="listing-form" onSubmit={placeBid}>
         <label htmlFor="bid-amount">Your bid (₱)

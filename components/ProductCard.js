@@ -1,10 +1,13 @@
 import ListingPhoto from "@/components/ListingPhoto";
 import ShippingDetails from "@/components/ShippingDetails";
+import AuctionCountdown from "@/components/AuctionCountdown";
 import Link from "next/link";
 import { peso } from "@/lib/data";
 
 export default function ProductCard({ product }) {
   if (!product) return null;
+  const auction = Array.isArray(product.auctions)
+    ? [...product.auctions].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0] : null;
 
   return (
     <article className="product">
@@ -29,6 +32,10 @@ export default function ProductCard({ product }) {
         </strong>
         {product.listing_type === "auction" ? <small>Item value · open listing to bid</small> : product.quantity != null &&
           <p className="stock-label">{product.quantity === 0 ? "Out of stock" : `${product.quantity} available`}{product.variations?.length ? ` · ${product.variations.length} variations` : ""}</p>}
+        {product.listing_type === "auction" && <div className="listing-bid-countdown">
+          <AuctionCountdown endTime={auction?.ends_at ?? product.auction_ends_at} startsAt={auction?.starts_at}
+            status={product.status === "active" ? (auction?.status ?? "active") : "ended"} showLabel />
+        </div>}
 
         <p>
           📍 {product.location || "Philippines"}
