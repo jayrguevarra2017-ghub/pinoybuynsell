@@ -127,6 +127,8 @@ export default function AccountPage() {
           <h1>Welcome to PinoyBuyNSell</h1>
 
           <p>Manage your account and marketplace activity.</p>
+          <Link className="view" href="/verify">ID verification and approval status</Link>
+          <Link className="view" href="/admin/verifications">Administrator verification queue</Link>
 
           <form
             onSubmit={handleSave}

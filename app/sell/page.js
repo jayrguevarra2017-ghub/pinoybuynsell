@@ -94,6 +94,11 @@ export default function SellPage({ listingId = null }) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) { router.push("/login"); return; }
+      const verification = await supabase.rpc("is_marketplace_verified");
+      if (verification.error || !verification.data) {
+        setMessage("Submit your ID and wait for administrator approval before selling or editing listings.");
+        return;
+      }
       const values = {
         title: form.title.trim(), description: form.description.trim(),
         price: Number(form.price), category: form.category, condition: form.condition,
@@ -126,6 +131,7 @@ export default function SellPage({ listingId = null }) {
         <div className="container narrow">
           <p className="eyebrow">SELL ON PINOYBUYSELL</p>
           <h1>{listingId ? "Edit Listing" : "List an Item"}</h1>
+          <a className="view" href="/verify">Verify your account to sell</a>
           <p className="lead">
             {listingId ? "Update your item details, shipping, or photo." : "Create your listing and start selling on PinoyBuyNSell."}
           </p>

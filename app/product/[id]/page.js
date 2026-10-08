@@ -44,6 +44,11 @@ export default function ProductPage() {
       setBidMessage("Enter a bid higher than the current bid, with up to two decimal places.");
       return;
     }
+    const verification = await supabase.rpc("is_marketplace_verified");
+    if (verification.error || !verification.data) {
+      setBidMessage("Submit your ID and wait for administrator approval before bidding.");
+      return;
+    }
     setSubmittingBid(true);
     try {
       const { data, error } = await supabase.rpc("place_marketplace_bid", {
@@ -254,6 +259,7 @@ export default function ProductPage() {
             disabled={submittingBid} />
         </label>
         <p>Enter an amount higher than the current bid. Bids are recorded when submitted.</p>
+        <Link href="/verify">ID verification is required before bidding</Link>
         <button className="sell" type="submit" disabled={submittingBid}>
           {submittingBid ? "Placing bid..." : "Place bid"}
         </button>

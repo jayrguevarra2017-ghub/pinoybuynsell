@@ -29,3 +29,22 @@ Run `migrations/202610080004_seller_listing_edits.sql` once as a new Supabase SQ
 The migration enables product RLS, adds owner-only SELECT and UPDATE policies, and adds a restrictive UPDATE guard that also applies when a legacy permissive policy is broad. Ownership transfers are rejected by a trigger. Existing policies restricting visibility may still require project-specific review. It does not grant anonymous editing. Replaced photos are retained to avoid deleting photos referenced elsewhere; storage cleanup can be handled separately.
 
 The production build and local owner/cross-user/ownership-transfer tests passed, including a broad legacy UPDATE policy. Mock checks covered photo retention, replacement, rejected saves and uncertain network outcomes. Real signed-in hosted edits remain a deployment smoke test: edit your own item, confirm public details update, and ensure a second account cannot edit it.
+
+## Private ID verification and administrator approval
+
+Run `migrations/202610080005_identity_verification.sql` once in a new Supabase SQL Editor query after migrations 001–004. It creates a private identity-documents bucket, owner-readable verification status records, trusted admin membership, and admin-only review functions. Existing and new users must submit a government ID and receive approval before listing, editing or bidding. Public browsing remains available. There is no checkout/order flow in this repository; future purchases must enforce is_marketplace_verified on the server too.
+
+Signup first creates a pending authentication account. After email confirmation, the user signs in and uploads an ID at /verify. This permits authenticated private uploads rather than anonymous ID collection. ID submission accepts one JPEG/PNG/WebP image up to 5 MB, a full name and ID type; status becomes pending. Rejected users can resubmit. Approved/pending submissions cannot be replaced through the user RPC. Approval is a manual document review, not automated identity authentication or a guarantee of safety.
+
+Choose the administrator explicitly. Create their normal account, then in Supabase Authentication → Users copy its User UID. As database administrator run a separate query, replacing the placeholder:
+
+```sql
+insert into public.marketplace_admins(user_id)
+values ('REPLACE_WITH_ADMIN_USER_UUID') on conflict do nothing;
+```
+
+Never store admin authority in user-editable signup metadata. The designated admin signs in and opens /admin/verifications (linked from My Account). Only trusted admin membership permits viewing private IDs with 60-second signed URLs or approving/rejecting users. Admins cannot review their own submissions; another designated admin is needed if they also want to sell/bid. Keep the private bucket private, audit existing Storage policies for broad access, and restrict admin membership. Do not use the public listing-photos bucket for IDs.
+
+Document retention is manual: review and remove obsolete ID uploads through the administrator Storage dashboard according to the site's stated retention policy. Resubmissions and failed submissions can leave orphaned private documents; no scheduled deletion is configured. Do not copy private document values into logs or analytics. The migration does not migrate or publish any live ID data.
+
+Production build and local database checks passed for private ID reads, unapproved listing and bid rejection, admin-only approval, rejection of direct status/admin writes and successful approved actions. Hosted ID upload, signed URL access, email-confirmation flow and admin approval need real staging verification after applying the migration. Existing accounts are not automatically approved. Keep the previous migrations; do not rerun them.

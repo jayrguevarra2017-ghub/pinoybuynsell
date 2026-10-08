@@ -30,7 +30,7 @@ export default function LoginPage() {
         if (error) throw error;
 
         setMessage(
-          "Account created! Please check your email and click the confirmation link."
+          "Pending account created. Confirm your email, sign in, then upload your ID at Account Verification. Administrator approval is required before selling or bidding."
         );
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
         if (error) throw error;
 
-        window.location.href = "/";
+        window.location.href = "/verify";
       }
     } catch (error) {
       setMessage(error.message || "Something went wrong.");
@@ -91,7 +91,7 @@ async function handleForgotPassword() {
           <p>
             {mode === "login"
               ? "Sign in to buy, sell, bid, and manage your listings."
-              : "Create your PinoyBuyNSell account to start buying and selling."}
+              : "Create a pending account, confirm your email, and submit a government ID for administrator approval."}
           </p>
 
           <form onSubmit={handleSubmit}>
