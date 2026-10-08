@@ -32,6 +32,7 @@ export default function AdminAccountLinks() {
     <Link className="view" href="/admin/verifications">Administrator verification queue</Link>
     <Link className="view" href="/admin/support">Administrator support inbox</Link>
     <Link className="view" href="/admin/listings">Administrator listing management</Link>
+    <Link className="view" href="/admin/facebook">Post your listings to Facebook</Link>
     <Link className="view" href="/admin/usa-requests">Administrator USA shopping requests</Link>
   </section>;
 }
