@@ -47,6 +47,7 @@ export default function USAShopping(){
  <label>Item link<input name="item_url" type="url" required maxLength={2000} value={form.item_url} onChange={change} placeholder="https://www.store.com/item"/></label>
  <label>Quantity<input name="quantity" type="number" required min="1" max="100" step="1" value={form.quantity} onChange={change}/></label>
  <label>Item details<textarea name="item_details" required maxLength={3000} rows={5} value={form.item_details} onChange={change} placeholder="Size, color, model, variant, and other requirements"/></label>
+ <p>Please check our <Link href="/prohibited-items">prohibited-items policy</Link> before requesting an item.</p>
  <label><input type="checkbox" required/> I agree that the team may contact me about this request.</label>
  <button className="sell" disabled={busy}>{busy?'Sending request...':'Send my wishlist'}</button>
  </form>}

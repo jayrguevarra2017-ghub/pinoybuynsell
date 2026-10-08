@@ -187,3 +187,13 @@ footer { background: #242424; color: #e2e2e8; }
 .guide-topics button { border: 1px solid #d5ddef; background: #f3f6fc; border-radius: 999px; color: #19355e; padding: 9px 12px; font-size: 12px; }
 .guide-topics button:hover { background: #e4ecfc; }
 .support-guide .view { font-size: 12px; padding: 10px 12px; }
+.prohibited-list { display: grid; gap: 16px; margin: 28px 0; }
+.prohibited-list section { border: 1px solid #e7d3cd; border-radius: 12px; padding: 20px; background: #fff8f5; }
+.prohibited-list h2 { margin: 0 0 10px; font-size: 20px; }
+.prohibited-list p { margin: 0; line-height: 1.7; color: #505366; }
+.listing-restrictions { margin: 24px 0; padding: 20px; border: 1px solid #e6cfb1; border-radius: 12px; background: #fff7e8; }
+.listing-restrictions h2 { font-size: 22px; margin-top: 0; }
+.listing-restrictions ul { padding-left: 20px; line-height: 1.8; }
+.listing-restrictions a { color: #2454d6; font-weight: 750; text-decoration: underline; }
+.policy-confirm { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; line-height: 1.6; }
+.policy-confirm input { flex: 0 0 auto; margin-top: 6px; }

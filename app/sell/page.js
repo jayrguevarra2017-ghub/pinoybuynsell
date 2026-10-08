@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 
 import ListingPhoto from "@/components/ListingPhoto";
 import { createListing, updateListing, validatePhoto } from "@/lib/listing-photo";
+import Link from "next/link";
+import { prohibitedItems, listingPolicyVersion } from "@/lib/listing-policy";
 import { shippingCarriers, validateShipping } from "@/lib/shipping";
 
 export default function SellPage({ listingId = null }) {
@@ -53,6 +55,7 @@ export default function SellPage({ listingId = null }) {
     return () => { cancelled = true; };
   }, [listingId, router]);
 
+  const [policyAccepted, setPolicyAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -86,6 +89,7 @@ export default function SellPage({ listingId = null }) {
   async function handleSubmit(event) {
     event.preventDefault();
     if (saving || loadingListing || loadError || (listingId && !existingListing)) return;
+    if (!policyAccepted) { setMessage("Read and confirm the prohibited-items policy before saving your listing."); return; }
     const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
     if (shippingError) { setMessage(shippingError); return; }
     setSaving(true);
@@ -104,6 +108,7 @@ export default function SellPage({ listingId = null }) {
         price: Number(form.price), category: form.category, condition: form.condition,
         location: form.location.trim(), shipping_carrier: form.shipping_carrier,
         shipping_fee: Number(form.shipping_fee),
+        listing_policy_version: listingPolicyVersion,
       };
       const data = listingId
         ? await updateListing(supabase, user.id, listingId, values, photo)
@@ -293,6 +298,17 @@ export default function SellPage({ listingId = null }) {
               </label>
               <p>Enter the fee buyers will pay for this listing. Enter 0 for free shipping. The fee is displayed separately from the item price or bid.</p>
             </div>
+
+            <section className="listing-restrictions" aria-labelledby="listing-rules-title">
+              <h2 id="listing-rules-title">Before you list</h2>
+              <p>We do not accept these items:</p>
+              <ul>{prohibitedItems.map(item => <li key={item.title}>{item.title}</li>)}</ul>
+              <Link href="/prohibited-items" target="_blank" rel="noopener noreferrer">Read the full prohibited-items policy ↗</Link>
+              <label className="policy-confirm"><input type="checkbox" required checked={policyAccepted}
+                onChange={event => setPolicyAccepted(event.target.checked)} />
+                <span>I have read the policy and confirm this listing does not contain prohibited items. I understand it may be removed if it violates the rules.</span>
+              </label>
+            </section>
 
             <button type="submit" disabled={saving}>
               {saving ? "Saving..." : listingId ? "Save Changes" : "Publish Listing"}

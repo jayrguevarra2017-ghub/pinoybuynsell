@@ -247,7 +247,7 @@ export default function HomePage() {
             <p>Your Philippine online marketplace.</p>
           </div>
 
-          <p>© 2026 PinoyBuyNSell</p>
+          <div><Link href="/prohibited-items">Prohibited items policy</Link><p>© 2026 PinoyBuyNSell</p></div>
         </div>
       </footer>
     </>
