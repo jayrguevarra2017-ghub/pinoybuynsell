@@ -1,3 +1,4 @@
+import ShippingDetails from "@/components/ShippingDetails";
 import Link from "next/link";
 import { peso } from "@/lib/data";
 
@@ -28,6 +29,8 @@ export default function ProductCard({ product }) {
         <p>
           📍 {product.location || "Philippines"}
         </p>
+
+        <ShippingDetails product={product} />
 
         <Link
           className="view"

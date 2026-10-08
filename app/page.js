@@ -19,7 +19,7 @@ export default function HomePage() {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "id, seller_id, title, description, price, category, condition, location, status, created_at"
+          "*"
         )
         .eq("status", "active")
         .order("created_at", { ascending: false })

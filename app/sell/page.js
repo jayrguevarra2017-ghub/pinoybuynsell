@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
+import { shippingCarriers, validateShipping } from "@/lib/shipping";
+
 export default function SellPage() {
   const router = useRouter();
 
@@ -15,6 +17,8 @@ export default function SellPage() {
     category: "",
     condition: "",
     location: "",
+    shipping_carrier: "",
+    shipping_fee: "",
   });
 
   const [saving, setSaving] = useState(false);
@@ -31,6 +35,9 @@ export default function SellPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (saving) return;
+    const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
+    if (shippingError) { setMessage(shippingError); return; }
     setSaving(true);
     setMessage("");
 
@@ -55,6 +62,8 @@ export default function SellPage() {
         category: form.category,
         condition: form.condition,
         location: form.location.trim(),
+        shipping_carrier: form.shipping_carrier,
+        shipping_fee: Number(form.shipping_fee),
         status: "active",
       })
       .select()
@@ -215,6 +224,22 @@ export default function SellPage() {
                 marginBottom: "20px",
               }}
             />
+
+            <div className="listing-form" style={{ marginBottom: "20px" }}>
+              <label htmlFor="shipping-carrier">Shipping carrier
+                <select id="shipping-carrier" name="shipping_carrier" required
+                  value={form.shipping_carrier} onChange={handleChange}>
+                  <option value="">Select shipping carrier</option>
+                  {shippingCarriers.map((carrier) => <option key={carrier} value={carrier}>{carrier}</option>)}
+                </select>
+              </label>
+              <label htmlFor="shipping-fee">Shipping fee (₱)
+                <input id="shipping-fee" name="shipping_fee" type="number" min="0"
+                  max="99999999.99" step="0.01" required value={form.shipping_fee}
+                  onChange={handleChange} placeholder="Enter shipping fee" />
+              </label>
+              <p>Enter the fee buyers will pay for this listing. Enter 0 for free shipping. The fee is displayed separately from the item price or bid.</p>
+            </div>
 
             <button type="submit" disabled={saving}>
               {saving ? "Publishing..." : "Publish Listing"}

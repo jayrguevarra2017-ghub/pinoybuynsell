@@ -1,3 +1,4 @@
+import ShippingDetails from "@/components/ShippingDetails";
 import Link from "next/link";
 import Header from "@/components/Header";
 import { products } from "@/lib/data";
@@ -97,6 +98,8 @@ export default function SearchPage({ searchParams }) {
                 >
                   ₱{Number(product.price).toLocaleString()}
                 </p>
+
+                <ShippingDetails product={product} />
 
                 {product.location && (
                   <p

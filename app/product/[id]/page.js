@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import ShippingDetails from "@/components/ShippingDetails";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
@@ -81,7 +82,7 @@ export default function ProductPage() {
         const { data, error } = await supabase
           .from("products")
           .select(
-            "id, seller_id, title, description, price, category, condition, location, status, created_at"
+            "*"
           )
           .eq("id", id)
           .single();
@@ -201,6 +202,11 @@ export default function ProductPage() {
                 <strong>Status:</strong> {product.status}
               </p>
             </div>
+            <section aria-label="Shipping details">
+              <h3>Shipping</h3>
+              <ShippingDetails product={product} />
+              <p>Shipping is charged separately from the item price or winning bid.</p>
+            </section>
 {auction && (
   <div
     style={{
