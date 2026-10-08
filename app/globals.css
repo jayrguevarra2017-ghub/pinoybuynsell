@@ -180,3 +180,10 @@ footer { background: #242424; color: #e2e2e8; }
 .support-message small { font-size: 10px; color: #586476; }
 .support-support { background: #edf2ff; border-color: #cad8fb; }
 @media(max-width:500px) { .support-widget { bottom: 12px; right: 12px; } .support-launcher { padding: 12px 16px; font-size: 13px; } .support-content { max-height: 60dvh; } }
+.support-mode-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.support-mode-tabs button { flex: 1; border: 1px solid #cad8fb; border-radius: 999px; padding: 10px; background: #fff; color: #2454d6; font-size: 12px; font-weight: 750; }
+.support-mode-tabs button[aria-pressed="true"] { background: #2454d6; color: #fff; }
+.guide-topics { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.guide-topics button { border: 1px solid #d5ddef; background: #f3f6fc; border-radius: 999px; color: #19355e; padding: 9px 12px; font-size: 12px; }
+.guide-topics button:hover { background: #e4ecfc; }
+.support-guide .view { font-size: 12px; padding: 10px 12px; }

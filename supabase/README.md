@@ -72,3 +72,9 @@ Run `migrations/202610080008_support_chat.sql` once as a new Supabase SQL query.
 This is asynchronous human support, not an automated bot or guaranteed live agent. No online presence or response-time guarantee is shown. Sign-in is required to keep threads private. Each user can start five conversations per day and send twenty messages per hour; the database validates body length and determines sender roles, rather than trusting client fields. Private thread reads are restricted to their owner and designated admins. Unverified users can contact support to resolve account issues.
 
 Local database checks passed for unauthenticated rejection, cross-user isolation, admin replies, closure and message limits. Production build passed. Hosted customer-to-admin-to-customer messaging remains a smoke test after applying the migration and deploying. Do not submit passwords, payment card details or identity documents through chat.
+
+## Automated website support guide
+
+The support popup now opens with a guided bot available before sign-in. It provides preset topics and keyword-matched answers for new users, registration, verification, selling/editing, bidding, USA shopping, shipping and buying/payment limitations. Answers and navigation links are maintained in lib/support-guide.js. It does not use an external AI service or access personal account records. Questions stay in component memory and clear when the guide is closed or unmounted. Message the support team switches to the existing authenticated inbox and prefills the last question; users must explicitly send it. Human messages use migration 008; the guide itself needs no additional migration or credentials.
+
+Production build and example-question routing checks passed, including unknown-question fallback, safe local links and word boundary matching. Keep the guide answers updated when marketplace workflows change. It cannot approve IDs, place bids, take payments, or confirm account-specific outcomes.
