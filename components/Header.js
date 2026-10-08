@@ -34,7 +34,7 @@ export default function Header() {
     <header className="topbar">
       <div className="container nav">
         <Link className="logo" href="/">
-          Pinoy<span>BuyNSell</span>
+          Pinoy<span>Buy</span><span className="brand-green">NSell</span>
         </Link>
 
         <nav className="mainnav">

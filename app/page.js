@@ -222,7 +222,7 @@ export default function HomePage() {
         <div className="container footer">
           <div>
             <Link className="logo footer-logo" href="/">
-              Pinoy<span>BuyNSell</span>
+              Pinoy<span>Buy</span><span className="brand-green">NSell</span>
             </Link>
 
             <p>Your Philippine online marketplace.</p>
