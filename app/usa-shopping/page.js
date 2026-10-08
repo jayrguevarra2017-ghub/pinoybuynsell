@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useState,useRef} from "react";
 import Link from "next/link";
+import USAShoppingHero from "@/components/USAShoppingHero";
 import Header from "@/components/Header";
 import {supabase} from "@/lib/supabase";
 import {validateUSARequest} from "@/lib/usa-shopping";
@@ -21,13 +22,23 @@ export default function USAShopping(){
   }catch(error){setMessage(error.code==='PGRST202'?'The request service is not available yet. Please try again later.':error.message || 'Could not confirm your request. Check with the team before submitting again.');}
   finally{lock.current=false;setBusy(false);}
  }
- return <><Header/><main className="page"><div className="container narrow">
- <p className="eyebrow">USA SHOPPING ASSISTANCE</p><h1>Found it in the USA? Let us bring it to you.</h1>
- <p className="lead">Tell us what you want from a US store. We can help purchase it and arrange delivery to the Philippines.</p>
- <div className="usa-steps"><p><strong>1. Share the item</strong><br/>Send its link, quantity, and specifications.</p><p><strong>2. Get a quote</strong><br/>We confirm availability, purchase cost, service fee, shipping, and applicable import charges.</p><p><strong>3. Confirm your order</strong><br/>Agree on the quote and delivery arrangements before a purchase is made.</p></div>
- <p>This is a quote request, not a purchase or payment. Availability, shipping costs, and delivery times are confirmed individually. Marketplace ID approval is required before proceeding with a purchase.</p>
+ return <><Header/><main className="usa-shopping-page">
+ <USAShoppingHero />
+ <section className="container usa-how-section">
+ <p className="eyebrow">FROM WISHLIST TO NEXT STEPS</p><h2>A little link. A world of possibilities.</h2>
+ <div className="usa-process-cards">
+ <article><span>01</span><h3>Show us your find</h3><p>Paste the store link and tell us your preferred size, color, model, and quantity.</p></article>
+ <article><span>02</span><h3>Let’s work out the details</h3><p>We discuss availability, item cost, service fee, shipping, and applicable import charges.</p></article>
+ <article><span>03</span><h3>You decide what’s next</h3><p>Review the quote and agree on the delivery arrangements before any purchase is made.</p></article>
+ </div></section>
+ <section className="container usa-quote-layout" id="usa-quote">
+ <aside className="usa-quote-aside"><p className="eyebrow">LET’S START YOUR WISHLIST</p><h2>What would you love to bring home?</h2><p>Send us the details and our team can help plan the purchase and delivery.</p>
+ <ul><li>A full item link from a US store</li><li>Your exact size, color, or model</li><li>Quantity and delivery city/province</li></ul>
+ <div className="usa-before-order"><strong>You’re requesting a quote.</strong><p>No payment is collected here. Availability and delivery times are confirmed individually. ID approval is required before proceeding with a purchase.</p></div>
+ </aside><div className="usa-quote-panel">
  {!ready?<p>Checking sign-in...</p>:!user?<><p>Sign in to send a request securely.</p><Link className="view" href="/login">Sign in or create an account</Link></>:reference?<section><h2>Request received</h2><p>Reference: <strong>{reference}</strong></p><Link className="view" href="/account">My account</Link></section>:<form className="listing-form" onSubmit={submit}>
- <h2>Request a USA shopping quote</h2>
+ <h2>Your next find starts here</h2>
+ <p>Tell us about the item and the best way to reach you.</p>
  <label>Contact name<input name="contact_name" required maxLength={150} value={form.contact_name} onChange={change} autoComplete="name"/></label>
  <label>Contact email<input name="contact_email" type="email" required maxLength={254} value={form.contact_email} onChange={change} autoComplete="email"/></label>
  <label>Phone number<input name="contact_phone" type="tel" required maxLength={40} value={form.contact_phone} onChange={change} autoComplete="tel"/></label>
@@ -37,8 +48,10 @@ export default function USAShopping(){
  <label>Quantity<input name="quantity" type="number" required min="1" max="100" step="1" value={form.quantity} onChange={change}/></label>
  <label>Item details<textarea name="item_details" required maxLength={3000} rows={5} value={form.item_details} onChange={change} placeholder="Size, color, model, variant, and other requirements"/></label>
  <label><input type="checkbox" required/> I agree that the team may contact me about this request.</label>
- <button className="sell" disabled={busy}>{busy?'Sending request...':'Request a quote'}</button>
+ <button className="sell" disabled={busy}>{busy?'Sending request...':'Send my wishlist'}</button>
  </form>}
  {message && <p role="status" aria-live="polite">{message}</p>}
- </div></main></>;
+ </div></section>
+ <section className="container usa-faq"><h2>A few things to know</h2><details><summary>Does submitting a request place an order?</summary><p>No. We discuss the quote with you first. A request does not authorize a purchase.</p></details><details><summary>What costs will be discussed?</summary><p>The item cost, service fee, shipping, and applicable import charges. These depend on the item and delivery arrangements.</p></details><details><summary>Can I request any item?</summary><p>Share your link and our team will check availability and whether the item can be purchased and shipped. Some items may be unavailable or restricted.</p></details></section>
+ </main></>;
 }

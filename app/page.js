@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import USAShoppingHero from "@/components/USAShoppingHero";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import AuctionCard from "@/components/AuctionCard";
@@ -114,15 +115,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="section usa-service">
-          <div className="container">
-            <p className="eyebrow">USA TO THE PHILIPPINES</p>
-            <h2>Shop US stores. Let us bring it to you.</h2>
-            <p className="lead">Share the item link and details. Our team can help purchase your item in the USA and arrange delivery to the Philippines.</p>
-            <p>Request a quote for the item, service fee, shipping, and applicable import charges before confirming your order.</p>
-            <Link className="sell big" href="/usa-shopping">Request a USA shopping quote</Link>
-          </div>
-        </section>
+        <USAShoppingHero compact />
 
         <section id="categories" className="section">
           <div className="container">

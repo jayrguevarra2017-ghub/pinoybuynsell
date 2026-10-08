@@ -98,3 +98,56 @@ footer { background: #242424; color: #e2e2e8; }
 .usa-steps p:nth-child(2) { background: #fff6d6; }
 .usa-steps p:nth-child(3) { background: #eef5e8; }
 @media (min-width: 801px) and (max-width: 1150px) { .mainnav { gap: 12px; } .nav { gap: 16px; } .mainnav a { white-space: nowrap; } }
+
+/* USA shopping campaign. */
+.usa-showcase { position: relative; overflow: hidden; padding: 76px 0; color: #fff; background: radial-gradient(ellipse at 88% 8%, #176078 0, transparent 46%), radial-gradient(ellipse at 18% 100%, #274995 0, transparent 50%), #101f42; }
+.usa-showcase::before { content: ""; position: absolute; inset: 0; opacity: .12; pointer-events: none; background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 26px 26px; }
+.usa-showcase::after { content: ""; position: absolute; width: 680px; height: 680px; right: -280px; top: -320px; border: 1px solid #ffffff20; border-radius: 50%; box-shadow: 0 0 0 65px #ffffff06, 0 0 0 130px #ffffff04; pointer-events: none; }
+.usa-showcase-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.2fr 1fr; gap: 56px; align-items: center; }
+.usa-kicker { color: #c7e4f1; font-size: 12px; font-weight: 800; letter-spacing: 2px; }
+.usa-showcase h1, .usa-showcase h2 { margin: 20px 0; font-size: clamp(38px, 5vw, 62px); letter-spacing: -2px; line-height: 1.08; }
+.usa-showcase em { color: #ffd671; font-style: normal; }
+.usa-intro { color: #dbe5f5; font-size: 18px; line-height: 1.7; max-width: 570px; }
+.usa-quote-button { display: inline-flex; gap: 24px; align-items: center; border-radius: 999px; padding: 17px 26px; background: #ffd671; color: #202634; font-weight: 800; margin-top: 12px; box-shadow: 0 8px 28px #0002; }
+.usa-quote-button:hover { background: #ffe49b; }
+.usa-small { max-width: 470px; color: #c2d1e8; font-size: 13px; line-height: 1.6; }
+.usa-category-tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 24px; }
+.usa-category-tags span { background: #ffffff0d; border: 1px solid #ffffff24; padding: 9px 12px; border-radius: 999px; font-size: 12px; }
+.usa-route-card { padding: 28px; border-radius: 26px; background: #f5f9ff; color: #192c47; box-shadow: 0 28px 70px #0003; transform: rotate(2deg); }
+.usa-route-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 10px; letter-spacing: 1px; font-weight: 800; color: #526680; }
+.usa-route-label { border: 1px solid #ccd9ed; border-radius: 99px; padding: 5px 8px; }
+.usa-route-stops { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; margin-top: 24px; text-align: center; }
+.usa-route-stops > div:not(.usa-route-flight) { display: grid; gap: 8px; }
+.usa-route-stops span { font-size: 32px; }
+.usa-route-stops small { color: #526680; font-size: 11px; }
+.usa-route-flight { font-size: 32px; color: #2454d6; }
+.usa-parcel-art { display: block; width: 100%; height: auto; }
+.usa-route-note { display: flex; gap: 12px; border-top: 1px solid #dce5f0; padding-top: 18px; font-size: 13px; }
+.usa-route-note > span { font-size: 24px; color: #2454d6; }
+.usa-route-note p { color: #526680; line-height: 1.5; margin: 6px 0 0; }
+.usa-shopping-page { background: #f7f8fc; padding-bottom: 64px; }
+.usa-how-section { padding: 56px 0; }
+.usa-how-section h2, .usa-quote-aside h2, .usa-faq h2 { font-size: clamp(28px, 3vw, 36px); letter-spacing: -1px; margin: 12px 0 24px; }
+.usa-process-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.usa-process-cards article { background: #fff; border: 1px solid #e0e6ef; padding: 26px; border-radius: 18px; }
+.usa-process-cards article > span { display: inline-block; background: #edf2ff; color: #2454d6; padding: 10px 13px; border-radius: 12px; font-weight: 800; }
+.usa-process-cards article:nth-child(2) > span { background: #fff2c6; color: #67501d; }
+.usa-process-cards article:nth-child(3) > span { background: #e8f2e6; color: #386327; }
+.usa-process-cards p, .usa-quote-aside p { line-height: 1.7; color: #576174; }
+.usa-quote-layout { display: grid; grid-template-columns: .85fr 1.15fr; gap: 42px; scroll-margin-top: 100px; align-items: start; }
+.usa-quote-aside { padding: 22px 0; }
+.usa-quote-aside ul { padding-left: 20px; color: #48556b; line-height: 2; }
+.usa-before-order { background: #fff3d6; padding: 22px; border-radius: 16px; margin-top: 26px; }
+.usa-before-order p { font-size: 13px; margin-bottom: 0; }
+.usa-quote-panel { background: #fff; border: 1px solid #dce4f0; border-radius: 22px; padding: 30px; box-shadow: 0 15px 45px #20345708; }
+.usa-quote-panel .listing-form { margin-top: 0; }
+.usa-quote-panel h2 { margin-bottom: 0; }
+.usa-quote-panel .listing-form > p { margin: 0; color: #576174; line-height: 1.6; }
+.usa-quote-panel label:has(input[type="checkbox"]) { display: flex; align-items: flex-start; }
+.usa-quote-panel button { padding: 16px 24px; }
+.usa-faq { max-width: 800px; margin-top: 64px; }
+.usa-faq details { background: #fff; border: 1px solid #dce4f0; border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+.usa-faq summary { cursor: pointer; font-weight: 750; }
+.usa-faq p { color: #576174; line-height: 1.7; }
+@media(max-width: 850px) { .usa-showcase-grid, .usa-quote-layout { grid-template-columns: 1fr; gap: 28px; } .usa-showcase { padding: 48px 0; } .usa-route-card { max-width: 520px; width: 100%; margin: 0 auto; transform: none; } .usa-process-cards { grid-template-columns: 1fr; } .usa-quote-panel { padding: 22px; } }
+@media(max-width: 450px) { .usa-route-card { padding: 20px; } .usa-showcase h1, .usa-showcase h2 { font-size: 38px; } .usa-quote-button { font-size: 14px; padding: 15px 20px; gap: 12px; } .usa-quote-panel { padding: 18px; } }
