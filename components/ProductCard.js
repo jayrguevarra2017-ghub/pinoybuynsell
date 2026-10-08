@@ -1,3 +1,4 @@
+import ListingPhoto from "@/components/ListingPhoto";
 import ShippingDetails from "@/components/ShippingDetails";
 import Link from "next/link";
 import { peso } from "@/lib/data";
@@ -11,7 +12,7 @@ export default function ProductCard({ product }) {
         href={`/product/${product.id}`}
         className="product-image"
       >
-        <span>{product.icon || "🛍️"}</span>
+        <ListingPhoto product={product} />
         <b>{product.condition || "Item"}</b>
       </Link>
 

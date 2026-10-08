@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import ListingPhoto from "@/components/ListingPhoto";
 import ShippingDetails from "@/components/ShippingDetails";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
@@ -176,6 +177,8 @@ export default function ProductPage() {
             }}
           >
             <p className="eyebrow">PINoyBuyNSell LISTING</p>
+
+            <ListingPhoto product={product} detail />
 
             <h1>{product.title}</h1>
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
+import { createListing, validatePhoto } from "@/lib/listing-photo";
 import { shippingCarriers, validateShipping } from "@/lib/shipping";
 
 export default function SellPage() {
@@ -24,6 +25,24 @@ export default function SellPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
+  const [photo, setPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
+
+  useEffect(() => {
+    if (!photo) { setPhotoPreview(""); return; }
+    const url = URL.createObjectURL(photo);
+    setPhotoPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photo]);
+
+  function choosePhoto(event) {
+    const file = event.target.files?.[0] ?? null;
+    const error = validatePhoto(file);
+    setMessage(error);
+    if (error) { event.target.value = ""; setPhoto(null); return; }
+    setPhoto(file);
+  }
+
   function handleChange(event) {
     const { name, value } = event.target;
 
@@ -41,45 +60,21 @@ export default function SellPage() {
     setSaving(true);
     setMessage("");
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) { router.push("/login"); return; }
+      const data = await createListing(supabase, user.id, {
+        title: form.title.trim(), description: form.description.trim(),
+        price: Number(form.price), category: form.category, condition: form.condition,
+        location: form.location.trim(), shipping_carrier: form.shipping_carrier,
+        shipping_fee: Number(form.shipping_fee), status: "active",
+      }, photo);
+      setMessage("Item listed successfully!");
+      if (data?.id) router.push(`/product/${data.id}`);
+    } catch (error) {
+      setMessage(error.message || "Could not confirm your listing. Check your listings before trying again.");
+    } finally {
       setSaving(false);
-      router.push("/login");
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("products")
-      .insert({
-        seller_id: user.id,
-        title: form.title.trim(),
-        description: form.description.trim(),
-        price: Number(form.price),
-        category: form.category,
-        condition: form.condition,
-        location: form.location.trim(),
-        shipping_carrier: form.shipping_carrier,
-        shipping_fee: Number(form.shipping_fee),
-        status: "active",
-      })
-      .select()
-      .single();
-
-    if (error) {
-      setMessage(`Error: ${error.message}`);
-      setSaving(false);
-      return;
-    }
-
-    setMessage("Item listed successfully!");
-    setSaving(false);
-
-    if (data?.id) {
-      router.push(`/product/${data.id}`);
     }
   }
 
@@ -104,6 +99,16 @@ export default function SellPage() {
               borderRadius: "12px",
             }}
           >
+            <div className="listing-form" style={{ marginBottom: "20px" }}>
+              <label htmlFor="item-photo">Item photo (optional)
+                <input id="item-photo" type="file" accept="image/jpeg,image/png,image/webp"
+                  onChange={choosePhoto} disabled={saving} />
+              </label>
+              <p>Attach one JPEG, PNG, or WebP photo, up to 5 MB. Listing photos are public.</p>
+              {photoPreview && <img src={photoPreview} alt="Selected item photo preview"
+                style={{ maxWidth: "100%", maxHeight: "260px", objectFit: "contain" }} />}
+            </div>
+
             <label>
               <strong>Item Title</strong>
             </label>
