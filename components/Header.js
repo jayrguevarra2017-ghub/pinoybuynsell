@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import SiteLogo from "@/components/SiteLogo";
 import { supabase } from "@/lib/supabase";
 
 export default function Header() {
@@ -33,9 +34,7 @@ export default function Header() {
   return (
     <header className="topbar">
       <div className="container nav">
-        <Link className="logo" href="/">
-          Pinoy<span>Buy</span><span className="brand-green">NSell</span>
-        </Link>
+        <SiteLogo />
 
         <nav className="mainnav">
           <Link href="/">Home</Link>

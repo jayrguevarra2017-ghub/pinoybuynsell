@@ -91,6 +91,31 @@ footer { background: #242424; color: #e2e2e8; }
 }
 .footer-logo span { color: #8caeff; }
 .footer-logo .brand-green { color: #a3d681; }
+.brand-logo { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; line-height: 1; }
+.brand-logo-icon { width: 44px; height: 44px; object-fit: contain; flex-shrink: 0; }
+.brand-logo-text { display: inline-flex; align-items: baseline; font-weight: 900; letter-spacing: -1.2px; }
+.logo .brand-red { color: var(--market-red); }
+.logo .brand-blue { color: var(--market-blue); }
+.footer-logo .brand-red { color: #fff; }
+.footer-logo .brand-blue { color: #8caeff; }
+.topbar .nav { width: min(1320px, 94%); gap: 24px; }
+.topbar .mainnav { gap: 18px; }
+.topbar .mainnav a { white-space: nowrap; }
+@media (min-width: 801px) and (max-width: 1199px) {
+  .topbar, .topbar .nav { height: auto; }
+  .topbar .nav { min-height: 76px; flex-wrap: wrap; padding: 12px 0; row-gap: 14px; }
+  .topbar .mainnav { order: 3; flex-basis: 100%; justify-content: center; }
+  .topbar .actions { margin-left: auto; }
+}
+@media (max-width: 800px) {
+  .topbar { height: auto; }
+  .topbar .nav { height: auto; min-height: 72px; flex-wrap: wrap; padding: 12px 0; gap: 14px; }
+}
+@media (max-width: 550px) {
+  .brand-logo-icon { width: 38px; height: 38px; }
+  .brand-logo { gap: 8px; }
+  .topbar .nav { gap: 12px; }
+}
 .usa-service { background: linear-gradient(120deg, #e8efff, #f8faff 65%, #fff3cf); }
 .usa-service h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -1px; }
 .usa-steps { display: grid; gap: 12px; margin: 24px 0; }

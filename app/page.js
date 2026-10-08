@@ -1,4 +1,5 @@
 "use client";
+import SiteLogo from "@/components/SiteLogo";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -241,9 +242,7 @@ export default function HomePage() {
       <footer>
         <div className="container footer">
           <div>
-            <Link className="logo footer-logo" href="/">
-              Pinoy<span>Buy</span><span className="brand-green">NSell</span>
-            </Link>
+            <SiteLogo footer />
 
             <p>Your Philippine online marketplace.</p>
             <div className="facebook-links">
