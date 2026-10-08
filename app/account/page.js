@@ -130,6 +130,7 @@ export default function AccountPage() {
           <Link className="view" href="/verify">ID verification and approval status</Link>
           <Link className="view" href="/admin/verifications">Administrator verification queue</Link>
           <Link className="view" href="/usa-shopping">Request USA shopping assistance</Link>
+          <Link className="view" href="/admin/listings">Administrator listing management</Link>
           <Link className="view" href="/admin/usa-requests">Administrator USA shopping requests</Link>
 
           <form
@@ -237,7 +238,7 @@ export default function AccountPage() {
                 <p>₱{Number(item.price).toLocaleString("en-PH")} · {item.status}</p>
                 <ShippingDetails product={item} />
                 <Link className="view" href={`/product/${item.id}`}>View listing</Link>
-                <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>
+                {item.deleted_at ? <p>Removed by administrator</p> : <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}
               </article>
             ))}
           </section>

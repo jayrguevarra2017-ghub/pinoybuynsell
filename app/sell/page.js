@@ -36,7 +36,7 @@ export default function SellPage({ listingId = null }) {
         if (authError || !user) { router.push("/login"); return; }
         const { data, error } = await supabase.from("products").select("*")
           .eq("id", listingId).eq("seller_id", user.id).single();
-        if (error || !data) throw new Error("This listing is unavailable or does not belong to you.");
+        if (error || !data || data.deleted_at) throw new Error("This listing is unavailable or does not belong to you.");
         if (cancelled) return;
         setExistingListing(data);
         setForm({ title: data.title ?? "", description: data.description ?? "",

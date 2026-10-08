@@ -22,6 +22,7 @@ export default function HomePage() {
           "*"
         )
         .eq("status", "active")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(12);
 
@@ -45,7 +46,7 @@ export default function HomePage() {
           ends_at,
           status,
           created_at,
-          products (
+          products!inner (
             id,
             title,
             category,
@@ -53,6 +54,7 @@ export default function HomePage() {
           )
         `)
         .eq("status", "active")
+        .is("products.deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(4);
 

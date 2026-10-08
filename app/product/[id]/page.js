@@ -99,6 +99,7 @@ export default function ProductPage() {
           return;
         }
 
+        if (data?.deleted_at) { setErrorMessage("This listing has been removed."); return; }
         setProduct(data);
 
         const { data: auctionData, error: auctionError } = await supabase
