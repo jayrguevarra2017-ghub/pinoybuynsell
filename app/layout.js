@@ -1,4 +1,5 @@
 import "./globals.css";
+import SupportChat from "@/components/SupportChat";
 
 export const metadata = {
   title: "PinoyBuyNSell | Buy • Sell • Connect",
@@ -8,7 +9,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>{children}<SupportChat /></body>
     </html>
   );
 }

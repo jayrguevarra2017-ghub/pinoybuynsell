@@ -162,3 +162,21 @@ footer { background: #242424; color: #e2e2e8; }
 .website-offer-button { display: inline-flex; gap: 14px; justify-content: center; align-items: center; border-radius: 999px; padding: 16px 22px; background: #5934a8; color: #fff; font-weight: 750; text-align: center; }
 .website-offer-button:hover { background: #442681; }
 @media(max-width: 850px) { .website-offer-panel { grid-template-columns: 1fr; padding: 24px; gap: 20px; } .website-offer-button { justify-self: start; } }
+.support-widget { position: fixed; bottom: 20px; right: 20px; z-index: 80; }
+.support-launcher { display: flex; align-items: center; gap: 10px; border: 0; border-radius: 999px; background: #2454d6; color: #fff; padding: 15px 22px; font-weight: 750; box-shadow: 0 8px 28px #14213d30; margin-left: auto; }
+.support-launcher span { font-size: 24px; }
+.support-panel { width: min(380px, calc(100vw - 32px)); margin-bottom: 12px; background: #fff; border: 1px solid #dce4f0; border-radius: 20px; box-shadow: 0 18px 60px #14213d30; overflow: hidden; }
+.support-heading { background: #162b55; color: #fff; display: flex; align-items: start; justify-content: space-between; gap: 12px; padding: 20px; }
+.support-heading h2 { font-size: 18px; margin: 0; }
+.support-heading p { font-size: 12px; color: #d9e5f7; margin: 7px 0 0; }
+.support-heading button { background: transparent; color: #fff; border: 0; font-size: 28px; padding: 0 5px; }
+.support-content { padding: 18px; max-height: min(65vh, 580px); overflow-y: auto; overscroll-behavior: contain; }
+.support-notice { font-size: 12px; color: #586476; line-height: 1.6; margin-top: 0; }
+.support-content .listing-form { margin-top: 16px; gap: 12px; }
+.support-content .listing-form label { font-size: 12px; }
+.support-content .listing-form input, .support-content .listing-form textarea { width: 100%; min-width: 0; }
+.support-message { padding: 12px; margin: 12px 0; border-radius: 12px; border: 1px solid #e1e6ee; background: #f3f5f9; font-size: 13px; overflow-wrap: anywhere; }
+.support-message p { white-space: pre-wrap; line-height: 1.6; margin: 6px 0; }
+.support-message small { font-size: 10px; color: #586476; }
+.support-support { background: #edf2ff; border-color: #cad8fb; }
+@media(max-width:500px) { .support-widget { bottom: 12px; right: 12px; } .support-launcher { padding: 12px 16px; font-size: 13px; } .support-content { max-height: 60dvh; } }
