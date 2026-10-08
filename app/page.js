@@ -221,6 +221,20 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        <section className="website-offer" aria-labelledby="website-offer-title">
+          <div className="container website-offer-panel">
+            <div>
+              <p className="eyebrow">YOUR NEXT IDEA STARTS HERE</p>
+              <h2 id="website-offer-title">Want to build your own website?</h2>
+              <p>Bring your business, portfolio, or next big idea online with Hostinger.</p>
+              <p>Use our referral link for a special discount offer. Code: <strong className="website-offer-code">CU7JAYRGUJE4</strong></p>
+              <small>Referral link. Available discounts and eligibility are shown by Hostinger.</small>
+            </div>
+            <a className="website-offer-button" href="https://www.hostinger.com/ph?REFERRALCODE=CU7JAYRGUJE4" target="_blank" rel="sponsored noopener noreferrer">
+              Build your website with Hostinger <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </section>
       </main>
 
       <footer>

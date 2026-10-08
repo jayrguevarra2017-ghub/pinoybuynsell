@@ -151,3 +151,14 @@ footer { background: #242424; color: #e2e2e8; }
 .usa-faq p { color: #576174; line-height: 1.7; }
 @media(max-width: 850px) { .usa-showcase-grid, .usa-quote-layout { grid-template-columns: 1fr; gap: 28px; } .usa-showcase { padding: 48px 0; } .usa-route-card { max-width: 520px; width: 100%; margin: 0 auto; transform: none; } .usa-process-cards { grid-template-columns: 1fr; } .usa-quote-panel { padding: 22px; } }
 @media(max-width: 450px) { .usa-route-card { padding: 20px; } .usa-showcase h1, .usa-showcase h2 { font-size: 38px; } .usa-quote-button { font-size: 14px; padding: 15px 20px; gap: 12px; } .usa-quote-panel { padding: 18px; } }
+
+.website-offer { padding: 48px 0; background: #f4f0ff; }
+.website-offer-panel { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 32px; padding: 36px; border: 1px solid #dacdf9; border-radius: 22px; background: radial-gradient(ellipse at top right, #e3d9ff, transparent 65%), #fff; }
+.website-offer h2 { margin: 10px 0; font-size: clamp(26px, 3vw, 36px); letter-spacing: -1px; }
+.website-offer p { line-height: 1.7; color: #505366; }
+.website-offer .eyebrow { color: #5934a8; }
+.website-offer-code { display: inline-block; background: #f0eaff; color: #49307e; padding: 4px 10px; border-radius: 6px; overflow-wrap: anywhere; }
+.website-offer small { color: #686678; line-height: 1.6; }
+.website-offer-button { display: inline-flex; gap: 14px; justify-content: center; align-items: center; border-radius: 999px; padding: 16px 22px; background: #5934a8; color: #fff; font-weight: 750; text-align: center; }
+.website-offer-button:hover { background: #442681; }
+@media(max-width: 850px) { .website-offer-panel { grid-template-columns: 1fr; padding: 24px; gap: 20px; } .website-offer-button { justify-self: start; } }
