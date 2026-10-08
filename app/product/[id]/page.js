@@ -11,6 +11,7 @@ export default function ProductPage() {
   const id = params?.id;
 
   const [product, setProduct] = useState(null);
+  const [auction, setAuction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -21,39 +22,47 @@ export default function ProductPage() {
       setLoading(true);
       setErrorMessage("");
 
-      const { data, error } = await supabase
-        .from("products")
-        .select(
-          "id, seller_id, title, description, price, category, condition, location, status, created_at"
-        )
-        .eq("id", id)
-        .single();
+      setProduct(null);
+      setAuction(null);
 
-      if (error) {
-        console.error("Product load error:", error);
-        setErrorMessage(error.message);
-        setProduct(null);
-     } else {
-  setProduct(data);
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select(
+            "id, seller_id, title, description, price, category, condition, location, status, created_at"
+          )
+          .eq("id", id)
+          .single();
 
-  const { data: auctionData, error: auctionError } = await supabase
-    .from("auctions")
-    .select(
-      "id, product_id, starting_price, current_bid, starts_at, ends_at, status, created_at"
-    )
-    .eq("product_id", id)
-    .eq("status", "active")
-    .maybeSingle();
+        if (error) {
+          console.error("Product load error:", error);
+          setErrorMessage(error.message);
+          return;
+        }
 
-  if (auctionError) {
-    console.error("Auction load error:", auctionError);
-    setAuction(null);
-  } else {
-    setAuction(auctionData);
-  }
-}
+        setProduct(data);
 
-      setLoading(false);
+        const { data: auctionData, error: auctionError } = await supabase
+          .from("auctions")
+          .select(
+            "id, product_id, starting_price, current_bid, starts_at, ends_at, status, created_at"
+          )
+          .eq("product_id", id)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (auctionError) {
+          console.error("Auction load error:", auctionError);
+          setErrorMessage("Auction details could not be loaded. Please refresh to try again.");
+        } else {
+          setAuction(auctionData);
+        }
+      } catch (error) {
+        console.error("Item load error:", error);
+        setErrorMessage("Item details could not be loaded. Please refresh to try again.");
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadProduct();
@@ -116,6 +125,8 @@ export default function ProductPage() {
             <p className="eyebrow">PINoyBuyNSell LISTING</p>
 
             <h1>{product.title}</h1>
+
+            {errorMessage && <p role="alert">{errorMessage}</p>}
 
             <h2 style={{ marginTop: "15px" }}>
               ₱{Number(product.price).toLocaleString("en-PH")}
