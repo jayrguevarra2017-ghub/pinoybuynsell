@@ -33,9 +33,25 @@ export default function ProductPage() {
         console.error("Product load error:", error);
         setErrorMessage(error.message);
         setProduct(null);
-      } else {
-        setProduct(data);
-      }
+     } else {
+  setProduct(data);
+
+  const { data: auctionData, error: auctionError } = await supabase
+    .from("auctions")
+    .select(
+      "id, product_id, starting_price, current_bid, starts_at, ends_at, status, created_at"
+    )
+    .eq("product_id", id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (auctionError) {
+    console.error("Auction load error:", auctionError);
+    setAuction(null);
+  } else {
+    setAuction(auctionData);
+  }
+}
 
       setLoading(false);
     }
@@ -122,7 +138,37 @@ export default function ProductPage() {
                 <strong>Status:</strong> {product.status}
               </p>
             </div>
+{auction && (
+  <div
+    style={{
+      marginTop: "30px",
+      padding: "20px",
+      border: "1px solid #e5e7eb",
+      borderRadius: "12px",
+    }}
+  >
+    <p className="eyebrow">LIVE AUCTION</p>
 
+    <h3 style={{ marginTop: "10px" }}>
+      Current Bid: ₱
+      {Number(
+        auction.current_bid ?? auction.starting_price ?? 0
+      ).toLocaleString("en-PH")}
+    </h3>
+
+    <p>
+      <strong>Starting Price:</strong> ₱
+      {Number(auction.starting_price ?? 0).toLocaleString("en-PH")}
+    </p>
+
+    <p>
+      <strong>Auction Ends:</strong>{" "}
+      {auction.ends_at
+        ? new Date(auction.ends_at).toLocaleString("en-PH")
+        : "Not set"}
+    </p>
+  </div>
+)}
             <div style={{ marginTop: "30px" }}>
               <h3>Description</h3>
               <p style={{ marginTop: "10px" }}>
