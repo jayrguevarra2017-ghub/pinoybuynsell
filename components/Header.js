@@ -42,6 +42,7 @@ export default function Header() {
           <Link href="/#browse">Browse</Link>
           <Link href="/auctions">Auctions</Link>
           <Link href="/#categories">Categories</Link>
+          <Link href="/usa-shopping">Buy from USA</Link>
         </nav>
 
         <div className="actions">

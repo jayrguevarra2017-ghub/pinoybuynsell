@@ -91,3 +91,10 @@ footer { background: #242424; color: #e2e2e8; }
 }
 .footer-logo span { color: #8caeff; }
 .footer-logo .brand-green { color: #a3d681; }
+.usa-service { background: linear-gradient(120deg, #e8efff, #f8faff 65%, #fff3cf); }
+.usa-service h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -1px; }
+.usa-steps { display: grid; gap: 12px; margin: 24px 0; }
+.usa-steps p { margin: 0; padding: 18px; border-radius: 12px; background: #edf2ff; line-height: 1.6; }
+.usa-steps p:nth-child(2) { background: #fff6d6; }
+.usa-steps p:nth-child(3) { background: #eef5e8; }
+@media (min-width: 801px) and (max-width: 1150px) { .mainnav { gap: 12px; } .nav { gap: 16px; } .mainnav a { white-space: nowrap; } }

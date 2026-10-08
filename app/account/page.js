@@ -129,6 +129,8 @@ export default function AccountPage() {
           <p>Manage your account and marketplace activity.</p>
           <Link className="view" href="/verify">ID verification and approval status</Link>
           <Link className="view" href="/admin/verifications">Administrator verification queue</Link>
+          <Link className="view" href="/usa-shopping">Request USA shopping assistance</Link>
+          <Link className="view" href="/admin/usa-requests">Administrator USA shopping requests</Link>
 
           <form
             onSubmit={handleSave}
