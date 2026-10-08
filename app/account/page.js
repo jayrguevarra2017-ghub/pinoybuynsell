@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ListingPhoto from "@/components/ListingPhoto";
 import ShippingDetails from "@/components/ShippingDetails";
+import AdminAccountLinks from "@/components/AdminAccountLinks";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
@@ -128,11 +129,9 @@ export default function AccountPage() {
 
           <p>Manage your account and marketplace activity.</p>
           <Link className="view" href="/verify">ID verification and approval status</Link>
-          <Link className="view" href="/admin/verifications">Administrator verification queue</Link>
           <Link className="view" href="/usa-shopping">Request USA shopping assistance</Link>
-          <Link className="view" href="/admin/support">Administrator support inbox</Link>
-          <Link className="view" href="/admin/listings">Administrator listing management</Link>
-          <Link className="view" href="/admin/usa-requests">Administrator USA shopping requests</Link>
+
+          <AdminAccountLinks />
 
           <form
             onSubmit={handleSave}
