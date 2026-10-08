@@ -197,3 +197,9 @@ footer { background: #242424; color: #e2e2e8; }
 .listing-restrictions a { color: #2454d6; font-weight: 750; text-decoration: underline; }
 .policy-confirm { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; line-height: 1.6; }
 .policy-confirm input { flex: 0 0 auto; margin-top: 6px; }
+.facebook-links { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.facebook-links a { display: inline-block; border: 1px solid #6686c0; padding: 10px 14px; border-radius: 999px; font-size: 13px; color: #edf3ff; }
+.facebook-links a:hover { background: #344567; }
+.facebook-share { display: inline-block; margin: 0 0 16px; padding: 10px 15px; color: #2454d6; border: 1px solid #c5d4f9; border-radius: 999px; font-size: 13px; font-weight: 750; }
+.facebook-share:hover, .messenger-contact:hover { background: #edf2ff; }
+.messenger-contact { display: block; padding: 10px; margin-bottom: 14px; border: 1px solid #c5d4f9; border-radius: 10px; color: #2454d6; font-size: 12px; text-align: center; line-height: 1.5; }

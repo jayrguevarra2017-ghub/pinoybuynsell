@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ListingPhoto from "@/components/ListingPhoto";
+import { listingShareUrl } from "@/lib/facebook";
 import ShippingDetails from "@/components/ShippingDetails";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
@@ -187,6 +188,7 @@ export default function ProductPage() {
             <ListingPhoto product={product} detail />
 
             <h1>{product.title}</h1>
+            <a className="facebook-share" href={listingShareUrl(product.id)} target="_blank" rel="noopener noreferrer">Share this item on Facebook ↗</a>
 
             {errorMessage && <p role="alert">{errorMessage}</p>}
 

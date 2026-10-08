@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { facebookPageUrl, messengerUrl } from "@/lib/facebook";
 import USAShoppingHero from "@/components/USAShoppingHero";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
@@ -245,6 +246,10 @@ export default function HomePage() {
             </Link>
 
             <p>Your Philippine online marketplace.</p>
+            <div className="facebook-links">
+              <a href={facebookPageUrl} target="_blank" rel="noopener noreferrer">Follow us on Facebook ↗</a>
+              <a href={messengerUrl} target="_blank" rel="noopener noreferrer">Message us on Messenger ↗</a>
+            </div>
           </div>
 
           <div><Link href="/prohibited-items">Prohibited items policy</Link><p>© 2026 PinoyBuyNSell</p></div>

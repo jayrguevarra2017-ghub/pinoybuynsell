@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
+import { messengerUrl } from "@/lib/facebook";
 import SupportGuide from "@/components/SupportGuide";
 import Link from "next/link";
 import {supabase} from "@/lib/supabase";
@@ -28,6 +29,7 @@ export default function SupportChat(){
  return <div className="support-widget">{open&&<section className="support-panel" role="dialog" aria-modal="false" aria-labelledby="support-title">
  <div className="support-heading"><div><h2 id="support-title">PinoyBuyNSell support</h2><p>{mode==="guide"?"Instant help getting started":"Leave a message. We’ll reply here."}</p></div><button ref={closeButton} type="button" onClick={close} aria-label="Close support chat">×</button></div>
  <div className="support-content">
+ <a className="messenger-contact" href={messengerUrl} target="_blank" rel="noopener noreferrer">Prefer Messenger? Message our Facebook Page ↗</a>
  <div className="support-mode-tabs" role="group" aria-label="Support options"><button type="button" aria-pressed={mode==="guide"} onClick={()=>setMode("guide")}>Website guide</button><button type="button" aria-pressed={mode==="human"} onClick={()=>setMode("human")}>Support team</button></div>
  {mode==="guide"?<SupportGuide onHuman={question=>{setBody(question);setError("");setMode("human")}}/>:<><p className="support-notice">Replies may take time. Please don’t send passwords, payment card details, or ID photos here.</p>
  {!ready?<p>Checking sign-in...</p>:!user?<><p>Sign in to keep your conversation private.</p><Link className="view" href="/login">Sign in to contact support</Link></>:<>
