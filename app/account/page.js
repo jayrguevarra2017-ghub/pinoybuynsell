@@ -2,12 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import ListingPhoto from "@/components/ListingPhoto";
+import ShippingDetails from "@/components/ShippingDetails";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
 export default function AccountPage() {
   const router = useRouter();
 
+  const [listings, setListings] = useState([]);
+  const [listingsError, setListingsError] = useState("");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,6 +53,14 @@ export default function AccountPage() {
         });
       }
 
+      try {
+        const { data: items, error: itemsError } = await supabase.from("products")
+          .select("*").eq("seller_id", user.id).order("created_at", { ascending: false });
+        if (itemsError) throw itemsError;
+        setListings(items || []);
+      } catch {
+        setListingsError("Could not load your listings. Please refresh to try again.");
+      }
       setLoading(false);
     }
 
@@ -210,6 +223,20 @@ export default function AccountPage() {
               </p>
             )}
           </form>
+
+          <section style={{ marginTop: "30px" }} aria-labelledby="my-listings">
+            <h2 id="my-listings">My listings</h2>
+            {listingsError ? <p role="alert">{listingsError}</p> : listings.length === 0 ? <p>You have no listings yet.</p> : listings.map((item) => (
+              <article key={item.id} style={{ padding: "20px", border: "1px solid #e5e7eb", borderRadius: "12px", marginBottom: "16px" }}>
+                <ListingPhoto product={item} detail />
+                <h3>{item.title}</h3>
+                <p>₱{Number(item.price).toLocaleString("en-PH")} · {item.status}</p>
+                <ShippingDetails product={item} />
+                <Link className="view" href={`/product/${item.id}`}>View listing</Link>
+                <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>
+              </article>
+            ))}
+          </section>
 
           <div
             style={{

@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
-import { createListing, validatePhoto } from "@/lib/listing-photo";
+import ListingPhoto from "@/components/ListingPhoto";
+import { createListing, updateListing, validatePhoto } from "@/lib/listing-photo";
 import { shippingCarriers, validateShipping } from "@/lib/shipping";
 
-export default function SellPage() {
+export default function SellPage({ listingId = null }) {
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -21,6 +22,36 @@ export default function SellPage() {
     shipping_carrier: "",
     shipping_fee: "",
   });
+
+  const [existingListing, setExistingListing] = useState(null);
+  const [loadingListing, setLoadingListing] = useState(Boolean(listingId));
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    if (!listingId) return;
+    let cancelled = false;
+    async function loadListing() {
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) { router.push("/login"); return; }
+        const { data, error } = await supabase.from("products").select("*")
+          .eq("id", listingId).eq("seller_id", user.id).single();
+        if (error || !data) throw new Error("This listing is unavailable or does not belong to you.");
+        if (cancelled) return;
+        setExistingListing(data);
+        setForm({ title: data.title ?? "", description: data.description ?? "",
+          price: String(data.price ?? ""), category: data.category ?? "",
+          condition: data.condition ?? "", location: data.location ?? "",
+          shipping_carrier: data.shipping_carrier ?? "", shipping_fee: String(data.shipping_fee ?? "") });
+      } catch (error) {
+        if (!cancelled) setLoadError(error.message);
+      } finally {
+        if (!cancelled) setLoadingListing(false);
+      }
+    }
+    loadListing();
+    return () => { cancelled = true; };
+  }, [listingId, router]);
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -54,7 +85,7 @@ export default function SellPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (saving) return;
+    if (saving || loadingListing || loadError || (listingId && !existingListing)) return;
     const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
     if (shippingError) { setMessage(shippingError); return; }
     setSaving(true);
@@ -63,13 +94,16 @@ export default function SellPage() {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) { router.push("/login"); return; }
-      const data = await createListing(supabase, user.id, {
+      const values = {
         title: form.title.trim(), description: form.description.trim(),
         price: Number(form.price), category: form.category, condition: form.condition,
         location: form.location.trim(), shipping_carrier: form.shipping_carrier,
-        shipping_fee: Number(form.shipping_fee), status: "active",
-      }, photo);
-      setMessage("Item listed successfully!");
+        shipping_fee: Number(form.shipping_fee),
+      };
+      const data = listingId
+        ? await updateListing(supabase, user.id, listingId, values, photo)
+        : await createListing(supabase, user.id, { ...values, status: "active" }, photo);
+      setMessage(listingId ? "Listing updated successfully!" : "Item listed successfully!");
       if (data?.id) router.push(`/product/${data.id}`);
     } catch (error) {
       setMessage(error.message || "Could not confirm your listing. Check your listings before trying again.");
@@ -78,6 +112,12 @@ export default function SellPage() {
     }
   }
 
+  if (loadingListing || loadError) return <><Header /><main className="page"><div className="container narrow">
+    <h1>{loadingListing ? "Loading your listing..." : "Cannot edit listing"}</h1>
+    {loadError && <p role="alert">{loadError}</p>}
+    <a className="view" href="/account">Back to my account</a>
+  </div></main></>;
+
   return (
     <>
       <Header />
@@ -85,9 +125,9 @@ export default function SellPage() {
       <main className="page">
         <div className="container narrow">
           <p className="eyebrow">SELL ON PINOYBUYSELL</p>
-          <h1>List an Item</h1>
+          <h1>{listingId ? "Edit Listing" : "List an Item"}</h1>
           <p className="lead">
-            Create your listing and start selling on PinoyBuyNSell.
+            {listingId ? "Update your item details, shipping, or photo." : "Create your listing and start selling on PinoyBuyNSell."}
           </p>
 
           <form
@@ -100,6 +140,8 @@ export default function SellPage() {
             }}
           >
             <div className="listing-form" style={{ marginBottom: "20px" }}>
+              {existingListing?.image_path && !photoPreview && <ListingPhoto product={existingListing} detail />}
+              {listingId && <p>Your current photo stays unless you select a replacement.</p>}
               <label htmlFor="item-photo">Item photo (optional)
                 <input id="item-photo" type="file" accept="image/jpeg,image/png,image/webp"
                   onChange={choosePhoto} disabled={saving} />
@@ -247,7 +289,7 @@ export default function SellPage() {
             </div>
 
             <button type="submit" disabled={saving}>
-              {saving ? "Publishing..." : "Publish Listing"}
+              {saving ? "Saving..." : listingId ? "Save Changes" : "Publish Listing"}
             </button>
 
             {message && (

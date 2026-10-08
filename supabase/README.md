@@ -21,3 +21,11 @@ Run `migrations/202610080003_listing_photos.sql` once as a new query in Supabase
 The Sell an Item form reached from My Account supports one optional photo with a preview. The image is uploaded before listing insertion; an explicitly rejected insertion triggers cleanup. Network failures with unknown save outcomes retain the image to avoid deleting a successful listing's photo. Public listing photos can be viewed without sign-in. Existing listings remain unchanged, and attaching photos to existing listings is not yet supported by an account editing screen.
 
 Production build, mocked upload/save failure checks, and local PostgreSQL-compatible migration and cross-user ownership checks passed. Real hosted Storage upload and photo display require the migration and a signed-in seller smoke test after Hostinger deployment.
+
+## Seller listing edits
+
+Run `migrations/202610080004_seller_listing_edits.sql` once as a new Supabase SQL query after the shipping and photo migrations. My Account now lists the signed-in seller's items with View and Edit links. Editing reuses the seller form and saves title, description, price, category, condition, location, shipping carrier/fee, and an optional replacement photo. Existing status and auction/bid records are preserved. Old listings must receive shipping details before saving.
+
+The migration enables product RLS, adds owner-only SELECT and UPDATE policies, and adds a restrictive UPDATE guard that also applies when a legacy permissive policy is broad. Ownership transfers are rejected by a trigger. Existing policies restricting visibility may still require project-specific review. It does not grant anonymous editing. Replaced photos are retained to avoid deleting photos referenced elsewhere; storage cleanup can be handled separately.
+
+The production build and local owner/cross-user/ownership-transfer tests passed, including a broad legacy UPDATE policy. Mock checks covered photo retention, replacement, rejected saves and uncertain network outcomes. Real signed-in hosted edits remain a deployment smoke test: edit your own item, confirm public details update, and ensure a second account cannot edit it.
