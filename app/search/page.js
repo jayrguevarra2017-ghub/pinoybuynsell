@@ -1,156 +1,50 @@
-import ShippingDetails from "@/components/ShippingDetails";
 import Link from "next/link";
 import Header from "@/components/Header";
-import { products } from "@/lib/data";
+import ProductCard from "@/components/ProductCard";
+import { categories } from "@/lib/data";
+import { getBrowseListings } from "@/lib/public-listings.mjs";
+import { publicPageMetadata } from "@/lib/seo.mjs";
 
-export default function SearchPage({ searchParams }) {
-  const category = searchParams?.category || "";
-  const query = searchParams?.q || "";
+export const dynamic = "force-dynamic";
+function filters(searchParams) {
+  const text = value => typeof value === "string" ? value.trim().slice(0, 150) : "";
+  const category = text(searchParams?.category);
+  return { query: text(searchParams?.q), category: categories.some(c => c.name === category) ? category : "",
+    page: Math.min(1000, Math.max(1, Number.parseInt(searchParams?.page, 10) || 1)) };
+}
 
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      !category ||
-      product.category?.toLowerCase() === category.toLowerCase();
+export function generateMetadata({ searchParams }) {
+  const { query, category, page } = filters(searchParams);
+  const metadata = publicPageMetadata({ path: "/search", title: "Browse Items for Sale in the Philippines | PinoyBuyNSell",
+    description: "Browse current marketplace listings, compare item prices and shipping fees, and discover new and pre-owned goods from sellers across the Philippines." });
+  // Keep duplicate search/filter URLs out of search results while allowing item links to be followed.
+  if (query || category || page > 1 || Object.keys(searchParams || {}).length) metadata.robots = { index: false, follow: true };
+  return metadata;
+}
 
-    const matchesQuery =
-      !query ||
-      product.title?.toLowerCase().includes(query.toLowerCase()) ||
-      product.description?.toLowerCase().includes(query.toLowerCase());
-
-    return matchesCategory && matchesQuery;
-  });
-
-  return (
-    <>
-      <Header />
-
-      <main className="page">
-        <div className="container">
-        <div style={{ marginBottom: "32px" }}>
-          <p
-            style={{
-              color: "#1478ff",
-              fontWeight: "700",
-              textTransform: "uppercase",
-              letterSpacing: "2px",
-            }}
-          >
-            Browse Marketplace
-          </p>
-
-          <h1 style={{ fontSize: "40px", margin: "8px 0" }}>
-            {category
-              ? `${category} Listings`
-              : query
-              ? `Search results for "${query}"`
-              : "All Listings"}
-          </h1>
-
-          <p style={{ color: "#64748b" }}>
-            Find great deals from sellers across the Philippines.
-          </p>
-        </div>
-
-        {filteredProducts.length > 0 ? (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: "24px",
-            }}
-          >
-            {filteredProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/product/${product.id}`}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "16px",
-                  padding: "20px",
-                  background: "#fff",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "48px",
-                    marginBottom: "16px",
-                  }}
-                >
-                  {product.icon || "🛍️"}
-                </div>
-
-                <h2
-                  style={{
-                    fontSize: "20px",
-                    marginBottom: "8px",
-                  }}
-                >
-                  {product.title}
-                </h2>
-
-                <p
-                  style={{
-                    color: "#1478ff",
-                    fontWeight: "700",
-                    fontSize: "20px",
-                  }}
-                >
-                  ₱{Number(product.price).toLocaleString()}
-                </p>
-
-                <ShippingDetails product={product} />
-
-                {product.location && (
-                  <p
-                    style={{
-                      color: "#64748b",
-                      marginTop: "8px",
-                    }}
-                  >
-                    📍 {product.location}
-                  </p>
-                )}
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div
-            style={{
-              padding: "50px",
-              textAlign: "center",
-              border: "1px solid #e2e8f0",
-              borderRadius: "16px",
-            }}
-          >
-            <div style={{ fontSize: "50px" }}>🔎</div>
-
-            <h2>No listings found</h2>
-
-            <p style={{ color: "#64748b" }}>
-              We couldn't find any items matching your search.
-            </p>
-
-            <Link
-              href="/"
-              style={{
-                display: "inline-block",
-                marginTop: "20px",
-                padding: "12px 20px",
-                background: "#1478ff",
-                color: "#fff",
-                borderRadius: "8px",
-                textDecoration: "none",
-                fontWeight: "700",
-              }}
-            >
-              Back to Home
-            </Link>
-          </div>
-        )}
-        </div>
-      </main>
-    </>
-  );
+export default async function SearchPage({ searchParams }) {
+  const filter = filters(searchParams);
+  let products = [], unavailable = false;
+  try { products = await getBrowseListings(filter, { env: process.env }); } catch { unavailable = true; }
+  const pageUrl = page => {
+    const params = new URLSearchParams({ ...(filter.query ? { q: filter.query } : {}), ...(filter.category ? { category: filter.category } : {}), page: String(page) });
+    return `/search?${params}`;
+  };
+  return <><Header /><main className="page"><div className="container">
+    <p className="eyebrow">BROWSE MARKETPLACE</p>
+    <h1>{filter.category ? `${filter.category} Listings` : filter.query ? `Search results for “${filter.query}”` : "All Listings"}</h1>
+    <p>Find new and pre-owned items from sellers across the Philippines.</p>
+    <form action="/search" className="browse-filters">
+      <label>Search items<input name="q" type="search" maxLength={150} defaultValue={filter.query} placeholder="Item name or description" /></label>
+      <label>Category<select name="category" defaultValue={filter.category}><option value="">All categories</option>{categories.map(c => <option key={c.name}>{c.name}</option>)}</select></label>
+      <button className="sell" type="submit">Search</button>
+    </form>
+    {unavailable ? <p role="alert">Listings could not be loaded. Please refresh to try again.</p> : products.length ?
+      <div className="product-grid">{products.slice(0, 24).map(product => <ProductCard key={product.id} product={product} />)}</div> :
+      <><h2>No listings found</h2><p>Try another search or category.</p><Link className="view inline" href="/search">Browse all items</Link></>}
+    {!unavailable && <nav className="browse-pagination" aria-label="Listing pages">
+      {filter.page > 1 && <Link className="secondary" href={pageUrl(filter.page - 1)}>← Previous</Link>}
+      {products.length > 24 && filter.page < 1000 && <Link className="secondary" href={pageUrl(filter.page + 1)}>Next →</Link>}
+    </nav>}
+  </div></main></>;
 }

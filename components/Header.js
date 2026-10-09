@@ -39,7 +39,7 @@ export default function Header() {
 
         <nav className="mainnav">
           <Link href="/">Home</Link>
-          <Link href="/#browse">Browse</Link>
+          <Link href="/search">Browse</Link>
           <Link href="/auctions">Auctions</Link>
           <Link href="/#categories">Categories</Link>
           <Link href="/usa-shopping">Buy from USA</Link>

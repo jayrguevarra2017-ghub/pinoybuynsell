@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import {prohibitedItems,listingPolicyVersion} from "@/lib/listing-policy";
-export const metadata={title:"Prohibited Items | PinoyBuyNSell"};
+import { publicPageMetadata } from "@/lib/seo.mjs";
+export const metadata=publicPageMetadata({ path: "/prohibited-items", title: "Prohibited Items & Marketplace Rules | PinoyBuyNSell",
+ description: "Review items and services that cannot be listed, auctioned, or requested through PinoyBuyNSell, plus seller responsibilities and how to report a listing." });
 export default function ProhibitedItems(){return <><Header/><main className="page"><div className="container narrow">
  <p className="eyebrow">MARKETPLACE RULES</p><h1>Items we do not accept</h1><p>Help keep PinoyBuyNSell safe. The following items and services must not be listed, auctioned, or requested through our USA shopping service.</p>
  <p>Policy version: {listingPolicyVersion}</p>

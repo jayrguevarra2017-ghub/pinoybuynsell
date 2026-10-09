@@ -7,7 +7,7 @@ import { peso } from "@/lib/data";
 export default function ProductCard({ product }) {
   if (!product) return null;
   const auction = Array.isArray(product.auctions)
-    ? [...product.auctions].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0] : null;
+    ? [...product.auctions].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0] : product.auctions || null;
 
   return (
     <article className="product">

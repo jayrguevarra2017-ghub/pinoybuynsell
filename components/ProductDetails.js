@@ -11,13 +11,13 @@ import AuctionCountdown from "@/components/AuctionCountdown";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
-export default function ProductPage() {
+export default function ProductPage({ initialProduct = null }) {
   const params = useParams();
   const id = params?.id;
 
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState(initialProduct);
   const [auction, setAuction] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialProduct);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [user, setUser] = useState(null);
@@ -82,10 +82,11 @@ export default function ProductPage() {
     if (!id) return;
 
     async function loadProduct() {
-      setLoading(true);
+      const seed = initialProduct && String(initialProduct.id) === String(id) ? initialProduct : null;
+      setLoading(!seed);
       setErrorMessage("");
 
-      setProduct(null);
+      setProduct(seed);
       setAuction(null);
 
       try {
@@ -95,7 +96,9 @@ export default function ProductPage() {
             "*"
           )
           .eq("id", id)
-          .single();
+          .eq("status", "active")
+          .is("deleted_at", null)
+          .maybeSingle();
 
         if (error) {
           console.error("Product load error:", error);
@@ -103,7 +106,7 @@ export default function ProductPage() {
           return;
         }
 
-        if (data?.deleted_at) { setErrorMessage("This listing has been removed."); return; }
+        if (!data || data.deleted_at) { setProduct(null); setErrorMessage("This listing is unavailable."); return; }
         setProduct(data);
 
         if (data.listing_type === "fixed_price") return;
@@ -133,7 +136,7 @@ export default function ProductPage() {
     }
 
     loadProduct();
-  }, [id]);
+  }, [id, initialProduct]);
 
   if (loading) {
     return (

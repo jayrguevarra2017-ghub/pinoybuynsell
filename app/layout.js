@@ -3,8 +3,8 @@ import SupportChat from "@/components/SupportChat";
 
 export const metadata = {
   metadataBase: new URL("https://pinoybuynsell.com"),
-  title: "PinoyBuyNSell | Buy • Sell • Connect",
-  description: "A modern Philippine marketplace for buying and selling new and pre-owned items.",
+  title: "PinoyBuyNSell | Buy, Sell & Bid in the Philippines",
+  description: "Buy and sell new and pre-owned items, join online auctions, and request USA shopping assistance on PinoyBuyNSell, your Philippine marketplace.",
   icons: {
     icon: [{ url: "/branding/pinoybuynsell-mark.png", type: "image/png" }],
     apple: "/branding/pinoybuynsell-facebook-profile.png",
