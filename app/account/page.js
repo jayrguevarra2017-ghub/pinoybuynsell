@@ -7,6 +7,8 @@ import ListingPhoto from "@/components/ListingPhoto";
 import ShippingDetails from "@/components/ShippingDetails";
 import AdminAccountLinks from "@/components/AdminAccountLinks";
 import Header from "@/components/Header";
+import FollowedSellers from "@/components/FollowedSellers";
+import { sellerUrl } from "@/lib/seller-community.mjs";
 import { supabase } from "@/lib/supabase";
 
 export default function AccountPage() {
@@ -132,6 +134,9 @@ export default function AccountPage() {
           <Link className="view" href="/usa-shopping">Request USA shopping assistance</Link>
 
           <AdminAccountLinks />
+          {sellerUrl(user?.id) && listings.some(item => !item.deleted_at && ["active", "sold"].includes(item.status)) &&
+            <Link className="view" href={sellerUrl(user.id)}>My public seller profile</Link>}
+          <FollowedSellers />
 
           <form
             onSubmit={handleSave}
@@ -165,6 +170,7 @@ export default function AccountPage() {
                   marginBottom: "16px",
                 }}
               />
+              <small>Your username appears on your seller profile and recommendations.</small>
 
               <label>
                 <strong>Full Name</strong>

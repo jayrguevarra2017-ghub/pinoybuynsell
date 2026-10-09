@@ -2,15 +2,29 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import MobileAppNav from "@/components/MobileAppNav";
 import { appPlatform, installedDisplay } from "@/lib/app-install.mjs";
+import { supabase } from "@/lib/supabase";
 
 const AppContext = createContext(null);
 export function useApp() { return useContext(AppContext); }
 
 export default function AppProvider({ children }) {
+  const [user, setUser] = useState(null), [authReady, setAuthReady] = useState(false);
   const [installed, setInstalled] = useState(false), [online, setOnline] = useState(true);
   const [platform, setPlatform] = useState("desktop"), [prompt, setPrompt] = useState(null);
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
   const dialog = useRef(null), installLock = useRef(false);
+  useEffect(() => {
+    let cancelled = false, revision = 0;
+    const timer = setTimeout(() => { if (!cancelled) setAuthReady(true); }, 8000);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      revision++; if (!cancelled) { setUser(session?.user ?? null); setAuthReady(true); clearTimeout(timer); }
+    });
+    const initialRevision = revision;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled && revision === initialRevision) { setUser(data?.session?.user ?? null); setAuthReady(true); clearTimeout(timer); }
+    }).catch(() => { if (!cancelled && revision === initialRevision) setAuthReady(true); });
+    return () => { cancelled = true; clearTimeout(timer); subscription.unsubscribe(); };
+  }, []);
   useEffect(() => {
     setInstalled(installedDisplay(window, navigator)); setPlatform(appPlatform(navigator)); setOnline(navigator.onLine);
     const installable = event => { event.preventDefault(); setPrompt(event); setMessage(""); };
@@ -49,7 +63,7 @@ export default function AppProvider({ children }) {
     finally { setPrompt(null); setBusy(false); installLock.current = false; }
   }
 
-  return <AppContext.Provider value={{ installed, online, openInstall: () => setOpen(true) }}>
+  return <AppContext.Provider value={{ installed, online, user, authReady, openInstall: () => setOpen(true) }}>
     {children}
     <MobileAppNav online={online} />
     <dialog ref={dialog} className="app-install-dialog" aria-labelledby="app-install-title" onCancel={() => setOpen(false)}

@@ -62,6 +62,18 @@ After Hostinger deploys the changes:
 
 Search Console and organic listing submission are free. These changes improve crawlability; Google decides whether to index pages and their rankings. Publish accurate, original item descriptions and photos, keep availability current, and earn relevant links from your Facebook Page and other trusted sites. Recrawling and ranking changes take time and do not guarantee a first-place result.
 
+## Seller following and customer recommendations
+
+Apply `supabase/migrations/202610100013_seller_following_and_recommendations.sql` once in Supabase SQL Editor after the existing migrations, then deploy the website. This is an additive migration and preserves existing listings, auctions and Facebook posts. It needs no new Hostinger environment variables. The connected data API cannot run database schema migrations, so SQL Editor activation is required.
+
+Each item links to `/seller/SELLER_UUID`, where visitors can browse that seller's active listings and community recommendations. Signed-in users can follow/unfollow sellers; My Account shows their private followed-seller list and, for sellers with public listings, their own public profile link. Only aggregate follower counts are public. Public seller and recommendation author names use the account username, with a generic fallback, never the legal name, phone or email.
+
+Approved accounts can write one positive recommendation per other seller (10–1,000 Unicode characters), edit it or remove it. Sellers cannot recommend/follow themselves, change another member's comment or see who follows them. Removing one's own recommendation remains possible if ID approval later changes. Recommendations are community experiences, not verified purchase reviews; there is no checkout/order proof or automatic notification. They are not used as product ratings in structured data.
+
+All reads/writes use narrowly scoped database functions. The new RLS-enabled tables have no direct browser grants; mutation functions derive identity from the verified Supabase session and check self-action, seller availability, ID approval and content length. Public functions expose only approved public fields. The existing private account fields and tables are unchanged. Profile listings and recommendations paginate. Missing schema and network failures display an unavailable message instead of invented counts; mutations have bounded waits, offline controls and double-click guards.
+
+Validation: all 81 automated tests and the production build passed. A local PostgreSQL-compatible database passed 59 access, privacy and mutation checks. Mocked browser checks passed following across profiles/accounts, recommendation create/edit/remove, escaped text, sign-in/owner/approval restrictions, missing-schema handling, deadlines, pagination and 320/390/1280 layouts. No hosted follows/recommendations were written during validation. After migration and deployment, use an approved second account to follow a seller, add/edit/remove a recommendation, and confirm the public profile and private following list update.
+
 ## Listing photos and Facebook sharing
 
 Auction cards on Home and Auctions use the listing's public cover photo, with an icon when no photo is attached. Item pages use an original PinoyBuyNSell layout with a large photo, thumbnail navigation, enlarged photo dialog, pricing/bidding, stock options, shipping, description and item details. Desktop places photos beside the details; phones stack them. No seller ratings, views, favorites or purchase protections are invented.

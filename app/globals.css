@@ -374,3 +374,46 @@ footer { background: #242424; color: #e2e2e8; }
   .listing-details-bottom { margin-top: 24px; padding-top: 24px; }
   .photo-picker-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
+
+/* Public seller profiles, private following lists and community recommendations. */
+.seller-summary { margin: 20px 0; padding: 18px; border: 1px solid #dce4f2; border-radius: 16px; background: #f7faff; }
+.seller-summary-top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.seller-avatar { width: 46px; height: 46px; flex: 0 0 46px; display: grid; place-items: center; border-radius: 50%; background: #e2ebff; color: #2454d6; font-size: 22px; font-weight: 800; }
+.seller-summary-name { flex: 1; min-width: 130px; overflow-wrap: anywhere; }
+.seller-summary-name .eyebrow { display: block; margin-bottom: 5px; font-size: 10px; }
+.seller-summary-name > a { font-size: 16px; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; }
+.seller-summary-name > p { margin: 6px 0 0; font-size: 12px; color: #526078; }
+.seller-follow-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border: 1px solid #2454d6; border-radius: 999px; background: #2454d6; color: white; font: inherit; font-size: 13px; font-weight: 750; cursor: pointer; }
+button.seller-follow-button[aria-pressed=true],.followed-seller-list .seller-follow-button { background: white; color: #2454d6; }
+.seller-summary > p { font-size: 13px; }
+.seller-own-label { font-size: 12px; color: #526078; }
+.seller-profile-link { display: inline-block; margin-top: 14px; color: #2454d6; font-size: 13px; font-weight: 700; }
+.seller-profile-page h1 { margin-top: 12px; }
+.seller-profile-page .muted { font-size: 14px; line-height: 1.6; }
+.seller-listings,.seller-recommendations,.followed-sellers { margin-top: 32px; padding-top: 28px; border-top: 1px solid #e3e7ef; }
+.seller-listings h2,.seller-recommendations h2,.followed-sellers h2 { margin: 0 0 14px; font-size: clamp(23px,3vw,32px); letter-spacing: -.5px; }
+.seller-count { font-size: 13px; color: #526078; }
+.seller-recommendation-list { display: grid; gap: 16px; margin: 22px 0; }
+.seller-recommendation { padding: 20px; border: 1px solid #dce4f2; border-radius: 14px; background: #fafcff; min-width: 0; }
+.seller-recommendation > div { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.seller-recommendation strong { overflow-wrap: anywhere; }
+.seller-recommendation-badge { border-radius: 999px; background: #eaf5e4; color: #346022; padding: 6px 10px; font-size: 11px; font-weight: 700; }
+.seller-recommendation > p { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.7; }
+.seller-recommendation small { color: #526078; }
+.page .seller-recommendation-form { display: grid; gap: 12px; margin: 24px 0 12px; padding: 22px; border: 1px solid #dce4f2; border-radius: 14px; background: #f7faff; }
+.seller-recommendation-form label { font-weight: 750; }
+.seller-recommendation-form textarea { width: 100%; resize: vertical; }
+.seller-recommendation-form .muted { margin: 0; font-size: 12px; }
+.seller-remove-recommendation { min-height: 44px; padding: 10px 16px; border: 1px solid #dedfe5; border-radius: 999px; background: white; color: #aa3030; font: inherit; font-size: 13px; }
+.seller-pagination { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.seller-pagination button { min-height: 44px; padding: 10px 14px; border: 1px solid #b9c7f0; border-radius: 999px; color: #2454d6; background: white; font: inherit; font-size: 13px; }
+.followed-seller-list { display: grid; gap: 12px; margin-top: 18px; }
+.followed-seller-list article { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px; border: 1px solid #dce4f2; border-radius: 12px; }
+.followed-seller-list article > div { min-width: 0; flex: 1 1 180px; overflow-wrap: anywhere; }
+.followed-seller-list article p { margin: 8px 0 0; color: #526078; font-size: 12px; }
+@media(max-width:550px) {
+ .seller-summary { padding: 14px; }
+ .seller-summary-top > .seller-follow-button { flex-basis: 100%; }
+ .seller-recommendation,.page .seller-recommendation-form { padding: 16px; }
+ .seller-profile-page .section-head { flex-wrap: wrap; gap: 8px; }
+}
