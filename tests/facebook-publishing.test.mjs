@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { handleFacebookPublish, facebookCaption } from "../lib/facebook-publishing.mjs";
+import { handleFacebookPublish, facebookCaption, facebookRejectionMessage } from "../lib/facebook-publishing.mjs";
 
 const product = { id: 1, seller_id: "admin", title: "Test item", price: 100, status: "active", description: "Item details",
   location: "Cavite", condition: "Used", shipping_carrier: "LBC", shipping_fee: 50 };
@@ -10,12 +10,12 @@ function fixture(options = {}) {
     SUPABASE_SERVICE_ROLE_KEY: "server-secret", FACEBOOK_PAGE_ID: "1286818197857823", FACEBOOK_PAGE_ACCESS_TOKEN: "page-secret", FACEBOOK_GRAPH_API_VERSION: "v26.0", ...options.env };
   const query = { select() { return this; }, eq(field, value) { calls.push([field, value]); return this; },
     async maybeSingle() { return { data: options.product === null ? null : { ...product, ...options.product }, error: null }; } };
-  const user = { auth: { getUser: async () => options.authError ? { error: {} } : { data: { user: { id: "admin" } } } },
+  const user = { auth: { getUser: async () => options.hangAuth ? new Promise(() => {}) : options.authError ? { error: {} } : { data: { user: { id: "admin" } } } },
     rpc: async () => ({ data: options.admin ?? true }), from: () => query };
   const server = { rpc: async (name, values) => {
     calls.push([name, values]);
-    if (name === "claim_facebook_listing_post") return { data: options.job || { status: "processing", claim_token: "claim", product: { ...product, ...options.product } } };
-    finished.push(values); return { data: true, error: options.saveError ? {} : null };
+    if (name === "claim_facebook_listing_post") return options.hangClaim ? new Promise(() => {}) : { data: options.job || { status: "processing", claim_token: "claim", product: { ...product, ...options.product } } };
+    finished.push(values); return options.hangFinish ? new Promise(() => {}) : { data: true, error: options.saveError ? {} : null };
   }, storage: { from: bucket => ({ getPublicUrl: path => ({ data: { publicUrl: `https://example.supabase.co/storage/v1/object/public/${bucket}/${path}` } }) }) } };
   const createClient = (_url, key) => key === env.SUPABASE_SERVICE_ROLE_KEY ? server : user;
   let requests = 0;
@@ -26,7 +26,7 @@ function fixture(options = {}) {
   };
   const request = new Request("https://pinoybuynsell.com/api/facebook/publish", { method: "POST",
     headers: options.noAuth ? {} : { Authorization: "Bearer user-token" }, body: JSON.stringify({ listingId: "1" }) });
-  return { run: () => handleFacebookPublish(request, { env, createClient, fetchImpl }), calls, finished, requests: () => requests };
+  return { run: () => handleFacebookPublish(request, { env, createClient, fetchImpl, databaseTimeoutMs: options.databaseTimeoutMs ?? 8000 }), calls, finished, requests: () => requests };
 }
 
 test("anonymous, invalid sessions and regular sellers cannot post", async () => {
@@ -90,4 +90,25 @@ test("a published post with an unsaved result is reported as uncertain", async (
 test("caption has no account IDs and bounds listing text", () => {
   const caption = facebookCaption({ ...product, title: "a".repeat(1000), description: "b".repeat(10000) });
   assert.ok(caption.length < 2200); assert.ok(!caption.includes("seller_id"));
+});
+
+test("hanging authorization or database claims return without posting to Meta", async () => {
+  for (const options of [{ hangAuth: true }, { hangClaim: true }]) {
+    const f = fixture({ ...options, databaseTimeoutMs: 10 });
+    const response = await f.run(); assert.equal(response.status, 503); assert.equal(f.requests(), 0);
+  }
+});
+
+test("a hanging result save cannot leave the HTTP request pending or cause another Meta post", async () => {
+  const f = fixture({ hangFinish: true, databaseTimeoutMs: 10 });
+  const response = await f.run(); assert.equal(response.status, 503); assert.equal(f.requests(), 1);
+  assert.match((await response.json()).message, /check Facebook/i);
+});
+
+test("Meta errors give specific safe guidance without echoing raw provider details", () => {
+  for (const [code, pattern] of [[190, /token/], [200, /pages_manage_posts/], [10, /Page access/], [324, /photo/], [368, /Account Status/], [613, /limit/], [100, /error 100/]]) {
+    const message = facebookRejectionMessage({ code, message: "page-secret private-provider-response" });
+    assert.match(message, pattern); assert(!message.includes("secret")); assert(!message.includes("private-provider-response"));
+  }
+  assert(!facebookRejectionMessage({ code: "<script>alert(1)</script>" }).includes("<script>"));
 });

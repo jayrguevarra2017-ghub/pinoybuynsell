@@ -245,7 +245,7 @@ export default function ProductPage({ initialProduct = null }) {
             <section className="listing-shipping" aria-label="Shipping details"><h2>Shipping</h2>
               <ShippingDetails product={product} /><p className="muted">Shipping is separate from the item price or winning bid.</p>
             </section>
-            <ListingShare id={product.id} />
+            <ListingShare id={product.id} product={product} user={user} />
           </div>
         </div>
         <div className="listing-details-bottom">
