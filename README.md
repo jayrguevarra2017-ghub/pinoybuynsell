@@ -27,7 +27,7 @@ Public homepage listings, Browse results, active auction cards and item details 
 - `/sitemap.xml` includes the public pages and active listings, with paginated Supabase reads. Database failures fail the request rather than publishing an empty sitemap. A sitemap index will be needed before reaching 45,000 active listings.
 - `/robots.txt` links to the sitemap. Account, admin, sign-in, ID verification and seller forms also carry `noindex` metadata. Authentication and database policies still control access.
 - Public pages have descriptive titles, descriptions and canonical URLs. Filtered search and pagination URLs use `noindex,follow` to limit duplicate search results.
-- Item pages include safe Product structured data. Fixed-price listings use PHP offers and current stock; auction reference values are never advertised as purchase prices. Ratings, reviews and delivery promises are not fabricated.
+- Item pages include safe structured data. Fixed-price listings with a valid purchase price use Product data, PHP offers and current stock. Auctions and listings without a purchase price use WebPage data, so Google isn't given an incomplete Product snippet. Auction reference values are never advertised as purchase prices. Ratings, reviews and delivery promises are not fabricated.
 
 After Hostinger deploys the changes:
 

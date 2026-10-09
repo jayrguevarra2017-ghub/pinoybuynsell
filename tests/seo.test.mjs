@@ -61,6 +61,7 @@ test("auction discovery excludes ended auctions and orders by closing time", asy
 
 test("structured data states real PHP offers, stock and condition without fictional ratings", () => {
   const data = productStructuredData("1", item, productPreviewMetadata("1", item, env.NEXT_PUBLIC_SUPABASE_URL));
+  assert.equal(data["@type"], "Product");
   assert.equal(data.offers.priceCurrency, "PHP"); assert.equal(data.offers.price, "500.00");
   assert.equal(data.offers.availability, "https://schema.org/InStock"); assert.equal(data.itemCondition, "https://schema.org/NewCondition");
   assert.ok(!data.aggregateRating); assert.ok(!data.review);
@@ -68,9 +69,24 @@ test("structured data states real PHP offers, stock and condition without fictio
   assert.equal(productStructuredData("1", zero, productPreviewMetadata("1", zero, env.NEXT_PUBLIC_SUPABASE_URL)).offers.availability, "https://schema.org/OutOfStock");
 });
 
-test("auction values cannot become offer prices and private listings have no structured data", () => {
-  const auction = { ...item, listing_type: "auction" };
-  assert.ok(!productStructuredData("1", auction, productPreviewMetadata("1", auction, env.NEXT_PUBLIC_SUPABASE_URL)).offers);
+test("auctions and listings without purchase prices use page metadata without invalid Product snippets", () => {
+  for (const product of [{ ...item, listing_type: "auction" }, { ...item, listing_type: undefined },
+    { ...item, price: null }, { ...item, price: 0 }, { ...item, price: -5 }, { ...item, price: "invalid" }]) {
+    const data = productStructuredData("1", product, productPreviewMetadata("1", product, env.NEXT_PUBLIC_SUPABASE_URL));
+    assert.equal(data["@type"], "WebPage");
+    assert.equal(data.name, item.title);
+    assert.equal(data.url, "https://pinoybuynsell.com/product/1");
+    assert.ok(!data.offers); assert.ok(!data.review); assert.ok(!data.aggregateRating);
+    assert.ok(!JSON.stringify(data).includes('"@type":"Product"'));
+  }
+});
+
+test("auction page metadata preserves public photos and private listings have no structured data", () => {
+  const auction = { ...item, listing_type: "auction", image_path: "00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002.jpg" };
+  const metadata = productPreviewMetadata("1", auction, env.NEXT_PUBLIC_SUPABASE_URL);
+  const data = productStructuredData("1", auction, metadata);
+  assert.equal(data.primaryImageOfPage.contentUrl, metadata.openGraph.images[0].url);
+  assert.equal(data.primaryImageOfPage.caption, item.title);
   assert.equal(productStructuredData("1", { ...item, status: "draft" }, {}), null);
   assert.equal(productStructuredData("1", { ...item, deleted_at: "2026-10-09" }, {}), null);
 });
