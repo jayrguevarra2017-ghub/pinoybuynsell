@@ -10,10 +10,12 @@ import ListingAvailability from "@/components/ListingAvailability";
 import AuctionCountdown from "@/components/AuctionCountdown";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
+import { useApp } from "@/components/AppProvider";
 
 export default function ProductPage({ initialProduct = null }) {
   const params = useParams();
   const id = params?.id;
+  const app = useApp();
 
   const [product, setProduct] = useState(initialProduct);
   const [auction, setAuction] = useState(null);
@@ -41,6 +43,7 @@ export default function ProductPage({ initialProduct = null }) {
     event.preventDefault();
     if (submittingBid) return;
     setBidMessage("");
+    if (app && !app.online) { setBidMessage("Reconnect to the internet before placing a bid."); return; }
     const amount = Number(bidAmount);
     const current = Math.max(Number(auction?.current_bid ?? 0), Number(auction?.starting_price ?? 0));
     if (!/^\d+(\.\d{1,2})?$/.test(bidAmount) || !Number.isFinite(amount) || amount <= current) {
@@ -274,11 +277,11 @@ export default function ProductPage({ initialProduct = null }) {
           <input id="bid-amount" type="number" inputMode="decimal" step="0.01"
             min={(Math.max(Number(auction.current_bid ?? 0), Number(auction.starting_price ?? 0)) + 0.01).toFixed(2)}
             required value={bidAmount} onChange={(event) => setBidAmount(event.target.value)}
-            disabled={submittingBid} />
+            disabled={submittingBid || app?.online === false} />
         </label>
         <p>Enter an amount higher than the current bid. Bids are recorded when submitted.</p>
         <Link href="/verify">ID verification is required before bidding</Link>
-        <button className="sell" type="submit" disabled={submittingBid}>
+        <button className="sell" type="submit" disabled={submittingBid || app?.online === false}>
           {submittingBid ? "Placing bid..." : "Place bid"}
         </button>
       </form>

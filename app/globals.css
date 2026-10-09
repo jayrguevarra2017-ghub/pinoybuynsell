@@ -265,3 +265,35 @@ footer { background: #242424; color: #e2e2e8; }
 .browse-filters label {display:grid; gap:8px; flex:1 1 240px; min-width:0; font-weight:600;}
 .browse-filters input, .browse-filters select {min-width:0; width:100%; padding:12px 14px; border:1px solid #dce0e8; border-radius:10px; background:white; font:inherit;}
 .browse-pagination {display:flex; gap:16px; margin-top:24px;}
+.app-header-actions {display:flex;align-items:center;gap:8px;margin-right:auto;}
+.site-activity {gap:12px;flex-wrap:wrap;}
+.app-install-button,.mobile-menu-toggle {border:1px solid #c7d4f4;background:#edf2ff;color:#2454d6;padding:8px 12px;border-radius:999px;font:inherit;font-size:12px;font-weight:750;cursor:pointer;min-height:36px;}
+.mobile-menu-toggle,.mobile-site-menu,.mobile-app-nav {display:none;}
+.app-connection-notice {margin:0;padding:10px 16px;text-align:center;font-size:13px;line-height:1.5;background:#fff3cd;color:#654b00;}
+.app-install-dialog {width:min(460px,calc(100% - 32px));max-height:calc(100dvh - 32px);padding:28px;border:1px solid #dce4f0;border-radius:24px;color:#242424;background:#fff;box-shadow:0 20px 80px #14213d30;overflow-y:auto;overscroll-behavior:contain;}
+.app-install-dialog::backdrop {background:#101f4280;}
+.app-dialog-close {float:right;width:36px;height:36px;border:0;background:#f1f4f8;border-radius:50%;font:inherit;font-size:26px;cursor:pointer;}
+.app-install-logo {display:block;object-fit:contain;margin:0 0 18px;}
+.app-install-dialog h2 {font-size:30px;line-height:1.15;letter-spacing:-1px;margin:12px 0;}
+.app-install-dialog p,.app-install-dialog li {font-size:14px;line-height:1.65;}
+.app-install-dialog ol {padding-left:22px;}
+.app-install-dialog li {margin:12px 0;}
+.app-install-primary {width:100%;padding:14px 18px;border:0;border-radius:999px;background:#2454d6;color:#fff;font:inherit;font-weight:750;cursor:pointer;}
+.app-install-primary:disabled {opacity:.65;cursor:wait;}
+.app-install-note {padding:14px;border-radius:12px;background:#edf2ff;color:#526075;}
+@media(max-width:800px){
+  body {padding-bottom:calc(74px + env(safe-area-inset-bottom,0px));padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);}
+  .topbar {padding-top:env(safe-area-inset-top,0px);}
+  .mobile-menu-toggle {display:inline-flex;align-items:center;gap:5px;}
+  .mobile-site-menu:not([hidden]) {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 0 16px;max-height:50dvh;overflow-y:auto;}
+  .mobile-site-menu a {padding:12px;border-radius:10px;background:#f1f4f8;font-size:13px;font-weight:650;min-height:44px;}
+  .mobile-app-nav {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:70;padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:#fff;border-top:1px solid #dce4f0;box-shadow:0 -4px 20px #14213d08;}
+  .mobile-app-nav a {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 2px;min-height:48px;border-radius:12px;color:#526075;font-size:11px;font-weight:700;}
+  .mobile-app-nav svg {width:22px;height:22px;}
+  .mobile-app-nav a[aria-current="page"] {color:#2454d6;background:#edf2ff;}
+  .mobile-app-nav a[href="/sell"] svg {border-radius:50%;background:#2454d6;color:#fff;padding:3px;}
+  .support-widget {bottom:calc(86px + env(safe-area-inset-bottom,0px));right:12px;}
+  .support-content {max-height:calc(100dvh - 270px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));}
+}
+@media(max-width:400px){.site-activity{gap:6px;}.app-header-actions{gap:5px;}.app-install-button,.mobile-menu-toggle{font-size:11px;padding:7px 9px;}.visitor-counter{font-size:11px;padding:5px 8px;}.app-install-dialog{padding:22px;}}
+@media(display-mode:standalone){.app-install-button{display:none;}}

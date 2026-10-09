@@ -20,6 +20,20 @@ npm start
 
 The auction countdown is intentionally client-updated after mount so it does not cause an SSR hydration mismatch.
 
+## Installable mobile app (PWA)
+
+The website installs as PinoyBuyNSell with the existing marketplace logo and opens in its own app window. It uses the same live accounts, ID approval, listings, bidding and USA shopping service. This build is a web app; it has not been submitted to Google Play or the App Store.
+
+- Android: open `https://pinoybuynsell.com/` in Chrome, tap **Install app** on the website, then confirm the browser installation. Chrome's menu also offers **Install app** or **Add to Home screen** when available.
+- iPhone/iPad: open the website in Safari → Share → **Add to Home Screen**. Enable **Open as Web App** if offered, then tap **Add**.
+- Desktop Chrome/Edge: use the website's installation button or the install option in the browser's address bar/menu. Browser installation availability varies.
+
+Mobile pages have Home, Browse, Sell, Auctions and Account navigation, with additional services in the header's Menu. The bottom bar and support popup leave space for the phone's safe area. The install guide disappears when the app is already running in standalone mode.
+
+`/manifest.webmanifest` declares app identity, scope, shortcuts and a browser-compatible app icon made from the existing logo through Next's image optimizer, plus the original high-resolution logo. `/sw.js` caches only `/offline.html` and its public logo. Navigations always fetch current server HTML; no account HTML, product data, APIs, bids, photos, ID documents or messages are stored by the service worker or queued for later. Without a connection, full-page navigation opens the reconnect screen. Bidding is disabled when the browser reports offline. There are no push notifications in this version.
+
+On future offline-shell changes, increment the service worker cache version. The worker updates with `updateViaCache: none`, and its HTTP response disables caching. It removes only this app's old offline-shell caches and never reloads a page automatically, protecting work in progress in forms.
+
 ## Search engine visibility
 
 Public homepage listings, Browse results, active auction cards and item details are rendered on the server so crawlers can read them without JavaScript. Only public, active, undeleted listing fields are fetched with the Supabase anonymous key; this does not bypass database access rules. Browse queries the real marketplace instead of sample products.

@@ -1,13 +1,19 @@
 import "./globals.css";
 import SupportChat from "@/components/SupportChat";
+import AppProvider from "@/components/AppProvider";
+
+export const viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#2454d6" };
 
 export const metadata = {
   metadataBase: new URL("https://pinoybuynsell.com"),
+  manifest: "/manifest.webmanifest",
+  applicationName: "PinoyBuyNSell",
+  appleWebApp: { capable: true, title: "PinoyBuyNSell", statusBarStyle: "default" },
   title: "PinoyBuyNSell | Buy, Sell & Bid in the Philippines",
   description: "Buy and sell new and pre-owned items, join online auctions, and request USA shopping assistance on PinoyBuyNSell, your Philippine marketplace.",
   icons: {
     icon: [{ url: "/branding/pinoybuynsell-mark.png", type: "image/png" }],
-    apple: "/branding/pinoybuynsell-facebook-profile.png",
+    apple: "/branding/pinoybuynsell-app-icon.png",
   },
   openGraph: {
     title: "PinoyBuyNSell | Buy • Sell • Connect",
@@ -23,7 +29,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}<SupportChat /></body>
+      <body><AppProvider>{children}<SupportChat /></AppProvider></body>
     </html>
   );
 }

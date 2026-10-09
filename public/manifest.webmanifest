@@ -1,0 +1,48 @@
+{
+  "id": "/",
+  "name": "PinoyBuyNSell",
+  "short_name": "PinoyBuyNSell",
+  "description": "Buy, sell and bid in the Philippines. Shop current listings and request USA shopping assistance.",
+  "lang": "en-PH",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f7fa",
+  "theme_color": "#2454d6",
+  "icons": [
+    {
+      "src": "/branding/pinoybuynsell-app-icon.png",
+      "sizes": "640x640",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/branding/pinoybuynsell-facebook-profile.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse marketplace",
+      "short_name": "Browse",
+      "url": "/search"
+    },
+    {
+      "name": "Live auctions",
+      "short_name": "Auctions",
+      "url": "/auctions"
+    },
+    {
+      "name": "Sell an item",
+      "short_name": "Sell",
+      "url": "/sell"
+    },
+    {
+      "name": "Buy from USA",
+      "short_name": "USA shopping",
+      "url": "/usa-shopping"
+    }
+  ]
+}

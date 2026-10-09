@@ -1,14 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import SiteLogo from "@/components/SiteLogo";
 import VisitorCounter from "@/components/VisitorCounter";
 import { supabase } from "@/lib/supabase";
+import { useApp } from "@/components/AppProvider";
 
 export default function Header() {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const menuButton = useRef(null), header = useRef(null);
+  const app = useApp();
+
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const dismiss = event => {
+      if (event.type === "keydown" && event.key === "Escape") { setMenuOpen(false); menuButton.current?.focus(); }
+      if (event.type === "pointerdown" && !header.current?.contains(event.target)) setMenuOpen(false);
+    };
+    window.addEventListener("keydown", dismiss); window.addEventListener("pointerdown", dismiss);
+    return () => { window.removeEventListener("keydown", dismiss); window.removeEventListener("pointerdown", dismiss); };
+  }, [menuOpen]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -33,7 +50,7 @@ export default function Header() {
   }
 
   return (
-    <header className="topbar">
+    <header className="topbar" ref={header}>
       <div className="container nav">
         <SiteLogo />
 
@@ -71,7 +88,19 @@ export default function Header() {
           </Link>
         </div>
       </div>
-      <div className="container site-activity"><VisitorCounter /></div>
+      <div className="container site-activity">
+        <div className="app-header-actions">
+          <button ref={menuButton} type="button" className="mobile-menu-toggle" aria-expanded={menuOpen} aria-controls="mobile-site-menu" onClick={() => setMenuOpen(!menuOpen)}><span aria-hidden="true">☰</span> Menu</button>
+          {app && !app.installed && <button type="button" className="app-install-button" onClick={app.openInstall}>Install app</button>}
+        </div>
+        <VisitorCounter />
+      </div>
+      {app && !app.online && <p className="app-connection-notice" role="status">You’re offline. Reconnect to refresh listings, place bids or send messages.</p>}
+      <nav id="mobile-site-menu" className="container mobile-site-menu" aria-label="More mobile links" hidden={!menuOpen}>
+        {[ ["Home", "/"], ["Browse", "/search"], ["Auctions", "/auctions"], ["Buy from USA", "/usa-shopping"],
+          ["Categories", "/#categories"], ["My account", "/account"], ["Marketplace rules", "/prohibited-items"] ].map(([label, href]) =>
+          <Link key={href} href={href} prefetch={false} onClick={() => setMenuOpen(false)}>{label}</Link>)}
+      </nav>
     </header>
   );
 }
