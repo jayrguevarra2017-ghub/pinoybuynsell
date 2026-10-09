@@ -9,6 +9,8 @@ import ShippingDetails from "@/components/ShippingDetails";
 import { facebookPageUrl } from "@/lib/facebook";
 import { supabase } from "@/lib/supabase";
 import { facebookPostingState, publishFacebookListing, validFacebookListingId, withFacebookDeadline } from "@/lib/facebook-posting.mjs";
+import { updateFacebookDetails } from "@/lib/facebook-edit-sync.mjs";
+import { facebookSyncBusy } from "@/lib/facebook-sync-state.mjs";
 
 export default function FacebookPage() {
   return <Suspense fallback={<><Header /><main className="page"><div className="container"><p role="status">Loading Page publishing...</p></div></main></>}>
@@ -81,10 +83,21 @@ function FacebookListings() {
     try { await load(); } finally { setMessage(resultMessage); lock.current = false; }
   }
 
+  async function sync(item) {
+    if(lock.current || !ready) return;
+    lock.current=true;setBusy(String(item.id));setMessage(`Updating Facebook details for “${item.title}”…`);
+    let resultMessage;
+    try { resultMessage=(await updateFacebookDetails(supabase,String(item.id))).message; }
+    catch(error){resultMessage=error.message || "Check the Facebook post and refresh its update status.";}
+    finally{setBusy(null);}
+    try{await load();}finally{setMessage(resultMessage);lock.current=false;}
+  }
+
   return <><Header /><main className="page"><div className="container narrow">
     <p className="eyebrow">ADMINISTRATOR FACEBOOK POSTING</p><h1 className="facebook-publishing-title">Post to PinoyBuyNSell Page</h1>
     <p>Review your own active listing, then click Post to Facebook. The website publishes directly to the PinoyBuyNSell Page with the item details, shipping fee, website link, and cover photo.</p>
-    <p>Check your Facebook Page before posting here. Posts made through Facebook’s share window do not appear in this posting status. Editing a website listing does not update a published Facebook post.</p>
+    <p>Saving a website listing edit automatically updates the text of its linked Page post. Use Update Facebook details to retry an update. Change a published photo or link preview directly on Facebook.</p>
+    <p>Check your Facebook Page before posting here. Posts made through Facebook’s share window do not appear in this posting status.</p>
     <div className="listing-share-actions" style={{ marginBottom: 16 }}>
       <a className="facebook-share" href={facebookPageUrl} target="_blank" rel="noopener noreferrer">Open Facebook Page ↗</a>
       {listingId !== null && <Link className="facebook-share" href="/admin/facebook">All my Facebook listings</Link>}
@@ -103,7 +116,10 @@ function FacebookListings() {
         <ShippingDetails product={item} /><Link className="view" href={`/product/${item.id}`}>View listing</Link>
         {post && <p>Facebook status: <strong>{post.status}</strong>{post.message && ` — ${post.message}`}</p>}
         {post?.status === "published" && /^\d+(?:_\d+)?$/.test(post.post_id || "")
-          ? <a className="view" href={`https://www.facebook.com/${post.post_id}`} target="_blank" rel="noopener noreferrer">View Facebook post ↗</a>
+          ? <><a className="view" href={`https://www.facebook.com/${post.post_id}`} target="_blank" rel="noopener noreferrer">View Facebook post ↗</a>
+              <button className="sell" type="button" disabled={!ready || busy !== null || facebookSyncBusy(post)} onClick={() => sync(item)}>
+                {busy===String(item.id) || facebookSyncBusy(post) ? "Updating Facebook…" : "Update Facebook details"}</button>
+              <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit website listing</Link></>
           : <button className="sell" disabled={!ready || busy !== null || (post && post.status !== "failed")} onClick={() => publish(item)}>
             {busy === String(item.id) ? "Posting..." : post?.status === "failed" ? "Retry Facebook post" : "Post to Facebook"}
           </button>}

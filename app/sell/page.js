@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +12,8 @@ import Link from "next/link";
 import { prohibitedItems, listingPolicyVersion } from "@/lib/listing-policy";
 import { shippingCarriers, validateShipping } from "@/lib/shipping";
 import { validateListingOptions, toManilaInput, fromManilaInput, maxVariations } from "@/lib/listing-options.mjs";
+import { syncFacebookAfterEdit } from "@/lib/facebook-edit-sync.mjs";
+import { facebookPublishingUrl } from "@/lib/facebook-posting.mjs";
 
 export default function SellPage({ listingId = null }) {
   const router = useRouter();
@@ -74,6 +76,8 @@ export default function SellPage({ listingId = null }) {
   const [policyAccepted, setPolicyAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [saveResult, setSaveResult] = useState(null);
+  const saveLock = useRef(false);
 
   const [photoItems, setPhotoItems] = useState(null);
   const [checkingPhoto, setCheckingPhoto] = useState(false);
@@ -100,12 +104,13 @@ export default function SellPage({ listingId = null }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (saving || checkingPhoto || loadingListing || loadError || (listingId && !existingListing)) return;
+    if (saveLock.current || saving || checkingPhoto || loadingListing || loadError || (listingId && !existingListing)) return;
     if (!policyAccepted) { setMessage("Read and confirm the prohibited-items policy before saving your listing."); return; }
     const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
     if (shippingError) { setMessage(shippingError); return; }
     const optionsError = validateListingOptions({ ...form, auction_ends_at: form.auction_ends_at ? `${form.auction_ends_at}+08:00` : "" }, Date.now(), auctionLocked);
     if (optionsError) { setMessage(optionsError); return; }
+    saveLock.current = true;
     setSaving(true);
     setMessage("");
 
@@ -132,11 +137,20 @@ export default function SellPage({ listingId = null }) {
       const data = listingId
         ? await updateListing(supabase, user.id, listingId, values, photoItems)
         : await createListing(supabase, user.id, { ...values, status: "active" }, photoItems);
+      if(listingId && data?.id) {
+        // Website save is already committed. A Facebook error must never be
+        // presented as a failed listing save or trigger another photo upload.
+        setExistingListing(data); setPhotoItems(null);
+        setMessage("Listing saved. Checking its Facebook update…");
+        const facebook = await syncFacebookAfterEdit(supabase,String(data.id));
+        if(facebook.status !== "skipped") { setSaveResult({id:data.id,facebook}); setMessage(""); return; }
+      }
       setMessage(listingId ? "Listing updated successfully!" : "Item listed successfully!");
       if (data?.id) router.push(`/product/${data.id}`);
     } catch (error) {
       setMessage(error.message || "Could not confirm your listing. Check your listings before trying again.");
     } finally {
+      saveLock.current = false;
       setSaving(false);
     }
   }
@@ -159,8 +173,17 @@ export default function SellPage({ listingId = null }) {
           <p className="lead">
             {listingId ? "Update your item details, selling options, shipping, or photo." : "Choose a fixed price or let buyers bid on your item."}
           </p>
+          {listingId && <p className="muted">Saving an edit automatically updates the text of a linked Facebook Page post. Changed photos or link previews need an edit on Facebook.</p>}
 
-          <form
+          {saveResult ? <section className="listing-save-result" aria-labelledby="listing-save-result-title">
+            <h2 id="listing-save-result-title">Your website listing is saved</h2>
+            <p role="status" aria-live="polite">{saveResult.facebook.message}</p>
+            <div className="listing-share-actions">
+              <Link className="view inline" href={`/product/${saveResult.id}`}>View updated listing</Link>
+              <Link className="view inline" href={facebookPublishingUrl(saveResult.id)}>Check Facebook update</Link>
+              <button className="view inline" type="button" onClick={() => {setSaveResult(null);setMessage("");}}>Edit again</button>
+            </div>
+          </section> : <form
             onSubmit={handleSubmit}
             style={{
               marginTop: "30px",
@@ -169,6 +192,7 @@ export default function SellPage({ listingId = null }) {
               borderRadius: "12px",
             }}
           >
+            <fieldset className="listing-edit-fields" disabled={saving}>
             <ListingPhotoPicker items={photoItems ?? initialPhotoItems} onChange={setPhotoItems}
               onPreparing={setCheckingPhoto} disabled={saving} />
 
@@ -372,13 +396,14 @@ export default function SellPage({ listingId = null }) {
             <button type="submit" disabled={saving || checkingPhoto}>
               {checkingPhoto ? "Preparing photo…" : saving ? "Saving..." : listingId ? "Save Changes" : "Publish Listing"}
             </button>
+            </fieldset>
 
             {message && (
               <p style={{ marginTop: "15px" }}>
                 <strong>{message}</strong>
               </p>
             )}
-          </form>
+          </form>}
         </div>
       </main>
     </>
