@@ -1,5 +1,13 @@
 # Enable marketplace bidding
 
+## Multiple-photo galleries (October 9, 2026)
+
+Run `migrations/202610090012_listing_gallery.sql` once as a **new query** in the hosted SQL Editor after earlier migrations. Codex's connected service-role key can update listing data but cannot execute this schema SQL. The additive migration keeps `image_path` as cover and adds `image_paths` for up to eight unique, seller-owned public images. Its first path must match the cover; existing single-photo listings use an empty array plus their original cover. Existing seller RLS, verification and policy checks remain in force, including gallery-only edits. The same public JPEG/PNG/WebP bucket and 5 MB per-file limit are retained; HEIC/HEIF conversion runs locally before uploading.
+
+The seller form supports optional multi-select, previews, removing images and choosing a cover. Editing starts with the saved gallery and retains unchanged images. New item pages have selectable thumbnails, previous/next navigation and an enlarged dialog with Escape/arrow-key controls. Auction cards and Facebook use the cover photo. A pending migration does not break existing public reads or single-photo saves; multiple-photo saves reject before uploading until setup is complete. No existing auctions, bids or photos are deleted by this migration.
+
+Validation includes local PostgreSQL-compatible constraints and RLS checks, mock multi-photo create/edit/cleanup tests, real HEIF browser conversion and gallery navigation checks. Read-only checks on October 9 confirmed the hosted gallery column and validator are available. A signed-in seller smoke test remains after deployment.
+
 Run `migrations/202610080001_place_bid.sql` once in the Supabase project's SQL Editor, using an administrator session. The script runs in a transaction and assumes the existing public products and auctions columns used by the app. If it fails, the transaction rolls back; share the error without credentials rather than disabling checks.
 
 The migration adds marketplace_bids and the authenticated place_marketplace_bid RPC. It records bids and updates the auction price atomically under a row lock. It rejects anonymous users, sellers bidding on their own products, unavailable listings, auctions outside their date range, invalid money amounts, and amounts that do not exceed both the current and starting prices. Minimum increase is PHP 0.01. It removes client insert/update/delete privileges on auctions; future auction management should use separately validated server functions. Do not restore direct client price-update privileges.

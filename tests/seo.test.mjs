@@ -47,13 +47,17 @@ test("browse filters quote delimiters and paginate real public listings", async 
 
 test("auction discovery excludes ended auctions and orders by closing time", async () => {
   const now = Date.parse("2026-10-09T00:00:00Z");
-  const auctions = await getPublicAuctionCards({ env, fetchImpl: async () => Response.json([{ ...item, auctions: [
+  const image_path = "00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002.jpg";
+  const auctions = await getPublicAuctionCards({ env, fetchImpl: async (_url) => {
+    assert(new URL(_url).searchParams.get("select").includes("image_path"));
+    return Response.json([{ ...item, image_path, auctions: [
     { id: "late", status: "active", ends_at: "2026-10-11T00:00:00Z", current_bid: 200 },
     { id: "closed", status: "ended", ends_at: "2026-10-11T00:00:00Z" },
     { id: "expired", status: "active", ends_at: "2026-10-08T00:00:00Z" },
     { id: "soon", status: "active", ends_at: "2026-10-10T00:00:00Z", starting_price: 100 },
-  ] }]) }, now);
+  ] }]); } }, now);
   assert.deepEqual(auctions.map(a => a.id), ["soon", "late"]); assert.equal(auctions[0].currentBid, 100);
+  assert(auctions.every(a => a.imagePath === image_path));
   const one = await getPublicAuctionCards({ env, fetchImpl: async () => Response.json([{ ...item,
     auctions: { id: "single", status: "active", ends_at: "2026-10-10T00:00:00Z", starting_price: 100 } }]) }, now);
   assert.equal(one[0].id, "single");

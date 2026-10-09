@@ -52,6 +52,7 @@ export default function HomePage({ initialProducts = null }) {
           products!inner (
             id,
             title,
+            image_path,
             category,
             location
           )
@@ -71,6 +72,7 @@ export default function HomePage({ initialProducts = null }) {
           id: auction.id,
           productId: auction.product_id,
           title: auction.products?.title || "Auction item",
+          imagePath: auction.products?.image_path,
           category: auction.products?.category || "Auction",
           location: auction.products?.location || "Philippines",
           currentBid: auction.current_bid ?? auction.starting_price ?? 0,

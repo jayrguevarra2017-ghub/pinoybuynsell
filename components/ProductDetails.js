@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import ListingPhoto from "@/components/ListingPhoto";
-import { listingShareUrl } from "@/lib/facebook";
+import ListingGallery from "@/components/ListingGallery";
+import ListingShare from "@/components/ListingShare";
 import ShippingDetails from "@/components/ShippingDetails";
 import ListingAvailability from "@/components/ListingAvailability";
 import AuctionCountdown from "@/components/AuctionCountdown";
@@ -177,127 +177,90 @@ export default function ProductPage({ initialProduct = null }) {
     );
   }
 
-  return (
-    <>
-      <Header />
-
-      <main className="page">
-        <div className="container narrow">
-          <Link href="/" className="back">
-            ← Back to marketplace
-          </Link>
-
-          <div
-            style={{
-              marginTop: "25px",
-              padding: "28px",
-              border: "1px solid #e5e7eb",
-              borderRadius: "14px",
-            }}
-          >
-            <p className="eyebrow">PINoyBuyNSell LISTING</p>
-
-            <ListingPhoto product={product} detail />
-
+  const isAuction = product.listing_type === "auction" || Boolean(auction);
+  const priceLabel = isAuction ? (auction ? "Current bid" : "Starting bid") : "Price";
+  const price = isAuction ? (auction?.current_bid ?? auction?.starting_price ?? product.auction_starting_price) : product.price;
+  return <>
+    <Header />
+    <main className="page listing-detail-page">
+      <div className="container">
+        <Link href="/search" className="back">← Back to marketplace</Link>
+        <div className="listing-detail-layout">
+          <ListingGallery product={product} />
+          <div className="listing-purchase-panel">
+            <p className="eyebrow">{isAuction ? "BID & WIN" : "FIND YOUR NEXT FAVORITE"}</p>
             <h1>{product.title}</h1>
-            <a className="facebook-share" href={listingShareUrl(product.id)} target="_blank" rel="noopener noreferrer">Share this item on Facebook ↗</a>
-
+            <div className="listing-summary-tags"><span>{isAuction ? "Auction / bidding" : "Fixed price"}</span>
+              {product.condition && <span>{product.condition}</span>}<span>📍 {product.location || "Philippines"}</span></div>
             {errorMessage && <p role="alert">{errorMessage}</p>}
-
-            <h2 style={{ marginTop: "15px" }}>
-              {product.listing_type === "auction" && "Item value: "}₱{Number(product.price).toLocaleString("en-PH")}
-            </h2>
-
-            <div style={{ marginTop: "25px" }}>
-              <p>
-                <strong>Category:</strong> {product.category}
-              </p>
-
-              <p>
-                <strong>Condition:</strong> {product.condition}
-              </p>
-
-              <p>
-                <strong>Location:</strong> {product.location}
-              </p>
-
-              <p>
-                <strong>Status:</strong> {product.status}
-              </p>
-              <p><strong>Selling format:</strong> {product.listing_type === "auction" || auction ? "Auction / bidding" : "Fixed price — no bidding"}</p>
+            <div className="listing-price-block"><span>{priceLabel}</span>
+              <strong>{price != null ? `₱${Number(price).toLocaleString("en-PH")}` : "Checking auction price…"}</strong>
+              {isAuction && <p className="muted">Seller’s reference item value: ₱{Number(product.price).toLocaleString("en-PH")}</p>}
             </div>
-            <ListingAvailability key={product.id} product={product} />
-            {(auction || product.listing_type === "auction") && <div className="auction-countdown-panel">
+            {isAuction && <div className="auction-countdown-panel">
               <AuctionCountdown endTime={auction?.ends_at ?? product.auction_ends_at} startsAt={auction?.starts_at}
                 status={product.status === "active" ? (auction?.status ?? "active") : "ended"} showLabel />
             </div>}
-            <section aria-label="Shipping details">
-              <h3>Shipping</h3>
-              <ShippingDetails product={product} />
-              <p>Shipping is charged separately from the item price or winning bid.</p>
+            {auction && (
+              <div className="listing-bid-panel">
+                <p className="eyebrow">LIVE AUCTION</p>
+
+                <p>
+                  <strong>Starting Price:</strong> ₱
+                  {Number(auction.starting_price ?? 0).toLocaleString("en-PH")}
+                </p>
+
+                <p>
+                  <strong>Auction Ends (Philippine time):</strong>{" "}
+                  {auction.ends_at
+                    ? new Date(auction.ends_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })
+                    : "Not set"}
+                </p>
+                {!authReady ? <p>Checking sign-in...</p> : !auctionOpen ? (
+                  <p>This auction is not open for bidding.</p>
+                ) : !user ? (
+                  <Link className="view" href="/login">Sign in to place a bid</Link>
+                ) : user.id === product.seller_id ? (
+                  <p>You cannot bid on your own listing.</p>
+                ) : (
+                  <form className="listing-form" onSubmit={placeBid}>
+                    <label htmlFor="bid-amount">Your bid (₱)
+                      <input id="bid-amount" type="number" inputMode="decimal" step="0.01"
+                        min={(Math.max(Number(auction.current_bid ?? 0), Number(auction.starting_price ?? 0)) + 0.01).toFixed(2)}
+                        required value={bidAmount} onChange={(event) => setBidAmount(event.target.value)}
+                        disabled={submittingBid || app?.online === false} />
+                    </label>
+                    <p>Enter an amount higher than the current bid. Bids are recorded when submitted.</p>
+                    <Link href="/verify">ID verification is required before bidding</Link>
+                    <button className="sell" type="submit" disabled={submittingBid || app?.online === false}>
+                      {submittingBid ? "Placing bid..." : "Place bid"}
+                    </button>
+                  </form>
+                )}
+                {bidMessage && <p role="status" aria-live="polite">{bidMessage}</p>}
+              </div>
+            )}
+
+            <ListingAvailability key={product.id} product={product} />
+            <section className="listing-shipping" aria-label="Shipping details"><h2>Shipping</h2>
+              <ShippingDetails product={product} /><p className="muted">Shipping is separate from the item price or winning bid.</p>
             </section>
-{auction && (
-  <div
-    style={{
-      marginTop: "30px",
-      padding: "20px",
-      border: "1px solid #e5e7eb",
-      borderRadius: "12px",
-    }}
-  >
-    <p className="eyebrow">LIVE AUCTION</p>
-
-    <h3 style={{ marginTop: "10px" }}>
-      Current Bid: ₱
-      {Number(
-        auction.current_bid ?? auction.starting_price ?? 0
-      ).toLocaleString("en-PH")}
-    </h3>
-
-    <p>
-      <strong>Starting Price:</strong> ₱
-      {Number(auction.starting_price ?? 0).toLocaleString("en-PH")}
-    </p>
-
-    <p>
-      <strong>Auction Ends (Philippine time):</strong>{" "}
-      {auction.ends_at
-        ? new Date(auction.ends_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })
-        : "Not set"}
-    </p>
-    {!authReady ? <p>Checking sign-in...</p> : !auctionOpen ? (
-      <p>This auction is not open for bidding.</p>
-    ) : !user ? (
-      <Link className="view" href="/login">Sign in to place a bid</Link>
-    ) : user.id === product.seller_id ? (
-      <p>You cannot bid on your own listing.</p>
-    ) : (
-      <form className="listing-form" onSubmit={placeBid}>
-        <label htmlFor="bid-amount">Your bid (₱)
-          <input id="bid-amount" type="number" inputMode="decimal" step="0.01"
-            min={(Math.max(Number(auction.current_bid ?? 0), Number(auction.starting_price ?? 0)) + 0.01).toFixed(2)}
-            required value={bidAmount} onChange={(event) => setBidAmount(event.target.value)}
-            disabled={submittingBid || app?.online === false} />
-        </label>
-        <p>Enter an amount higher than the current bid. Bids are recorded when submitted.</p>
-        <Link href="/verify">ID verification is required before bidding</Link>
-        <button className="sell" type="submit" disabled={submittingBid || app?.online === false}>
-          {submittingBid ? "Placing bid..." : "Place bid"}
-        </button>
-      </form>
-    )}
-    {bidMessage && <p role="status" aria-live="polite">{bidMessage}</p>}
-  </div>
-)}
-            <div style={{ marginTop: "30px" }}>
-              <h3>Description</h3>
-              <p style={{ marginTop: "10px" }}>
-                {product.description}
-              </p>
-            </div>
+            <ListingShare id={product.id} />
           </div>
         </div>
-      </main>
-    </>
-  );
+        <div className="listing-details-bottom">
+          <section className="listing-description"><p className="eyebrow">A CLOSER LOOK</p><h2>About this item</h2>
+            <p>{product.description || "The seller has not added a description."}</p>
+          </section>
+          <section className="listing-specifics"><h2>Item details</h2><dl>
+            <div><dt>Category</dt><dd>{product.category || "Not specified"}</dd></div>
+            <div><dt>Condition</dt><dd>{product.condition || "Not specified"}</dd></div>
+            <div><dt>Location</dt><dd>{product.location || "Philippines"}</dd></div>
+            <div><dt>Selling format</dt><dd>{isAuction ? "Auction / bidding" : "Fixed price"}</dd></div>
+            <div><dt>Listing number</dt><dd>{product.id}</dd></div>
+          </dl></section>
+        </div>
+      </div>
+    </main>
+  </>;
 }

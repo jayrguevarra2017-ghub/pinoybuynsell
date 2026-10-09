@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
-import ListingPhoto from "@/components/ListingPhoto";
-import { createListing, updateListing, validatePhoto } from "@/lib/listing-photo";
+import ListingPhotoPicker from "@/components/ListingPhotoPicker";
+import { listingPhotoPaths } from "@/lib/listing-gallery.mjs";
+import { createListing, updateListing } from "@/lib/listing-photo";
 import Link from "next/link";
 import { prohibitedItems, listingPolicyVersion } from "@/lib/listing-policy";
 import { shippingCarriers, validateShipping } from "@/lib/shipping";
@@ -74,23 +75,9 @@ export default function SellPage({ listingId = null }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  const [photo, setPhoto] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState("");
-
-  useEffect(() => {
-    if (!photo) { setPhotoPreview(""); return; }
-    const url = URL.createObjectURL(photo);
-    setPhotoPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [photo]);
-
-  function choosePhoto(event) {
-    const file = event.target.files?.[0] ?? null;
-    const error = validatePhoto(file);
-    setMessage(error);
-    if (error) { event.target.value = ""; setPhoto(null); return; }
-    setPhoto(file);
-  }
+  const [photoItems, setPhotoItems] = useState(null);
+  const [checkingPhoto, setCheckingPhoto] = useState(false);
+  const initialPhotoItems = useMemo(() => listingPhotoPaths(existingListing).map(path => ({ path })), [existingListing]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -113,7 +100,7 @@ export default function SellPage({ listingId = null }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (saving || loadingListing || loadError || (listingId && !existingListing)) return;
+    if (saving || checkingPhoto || loadingListing || loadError || (listingId && !existingListing)) return;
     if (!policyAccepted) { setMessage("Read and confirm the prohibited-items policy before saving your listing."); return; }
     const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
     if (shippingError) { setMessage(shippingError); return; }
@@ -143,8 +130,8 @@ export default function SellPage({ listingId = null }) {
           ? (auctionLocked ? existingListing.auction_ends_at : fromManilaInput(form.auction_ends_at)) : null,
       };
       const data = listingId
-        ? await updateListing(supabase, user.id, listingId, values, photo)
-        : await createListing(supabase, user.id, { ...values, status: "active" }, photo);
+        ? await updateListing(supabase, user.id, listingId, values, photoItems)
+        : await createListing(supabase, user.id, { ...values, status: "active" }, photoItems);
       setMessage(listingId ? "Listing updated successfully!" : "Item listed successfully!");
       if (data?.id) router.push(`/product/${data.id}`);
     } catch (error) {
@@ -182,17 +169,8 @@ export default function SellPage({ listingId = null }) {
               borderRadius: "12px",
             }}
           >
-            <div className="listing-form" style={{ marginBottom: "20px" }}>
-              {existingListing?.image_path && !photoPreview && <ListingPhoto product={existingListing} detail />}
-              {listingId && <p>Your current photo stays unless you select a replacement.</p>}
-              <label htmlFor="item-photo">Item photo (optional)
-                <input id="item-photo" type="file" accept="image/jpeg,image/png,image/webp"
-                  onChange={choosePhoto} disabled={saving} />
-              </label>
-              <p>Attach one JPEG, PNG, or WebP photo, up to 5 MB. Listing photos are public.</p>
-              {photoPreview && <img src={photoPreview} alt="Selected item photo preview"
-                style={{ maxWidth: "100%", maxHeight: "260px", objectFit: "contain" }} />}
-            </div>
+            <ListingPhotoPicker items={photoItems ?? initialPhotoItems} onChange={setPhotoItems}
+              onPreparing={setCheckingPhoto} disabled={saving} />
 
             <label>
               <strong>Item Title</strong>
@@ -391,8 +369,8 @@ export default function SellPage({ listingId = null }) {
               </label>
             </section>
 
-            <button type="submit" disabled={saving}>
-              {saving ? "Saving..." : listingId ? "Save Changes" : "Publish Listing"}
+            <button type="submit" disabled={saving || checkingPhoto}>
+              {checkingPhoto ? "Preparing photo…" : saving ? "Saving..." : listingId ? "Save Changes" : "Publish Listing"}
             </button>
 
             {message && (

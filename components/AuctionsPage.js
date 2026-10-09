@@ -13,12 +13,12 @@ export default function AuctionsPage({ initialAuctions = null }) {
     async function load() {
       try {
         const { data, error } = await supabase.from("auctions")
-          .select("id,product_id,starting_price,current_bid,starts_at,ends_at,status,products!inner(id,title,location,status,deleted_at)")
+          .select("id,product_id,starting_price,current_bid,starts_at,ends_at,status,products!inner(id,title,image_path,location,status,deleted_at)")
           .eq("status", "active").eq("products.status", "active").is("products.deleted_at", null)
           .gt("ends_at", new Date().toISOString()).order("ends_at", { ascending: true });
         if (error) throw error;
         if (!cancelled) setAuctions((data || []).map(a => ({ id: a.id, productId: a.product_id,
-          title: a.products.title, location: a.products.location,
+          title: a.products.title, imagePath: a.products.image_path, location: a.products.location,
           currentBid: a.current_bid ?? a.starting_price, startTime: a.starts_at, status: a.status, endTime: a.ends_at, icon: "🏷️" })));
       } catch { if (!cancelled) setError("Could not load auctions. Please refresh to try again."); }
       finally { if (!cancelled) setLoading(false); }

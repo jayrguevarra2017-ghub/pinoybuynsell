@@ -62,6 +62,20 @@ After Hostinger deploys the changes:
 
 Search Console and organic listing submission are free. These changes improve crawlability; Google decides whether to index pages and their rankings. Publish accurate, original item descriptions and photos, keep availability current, and earn relevant links from your Facebook Page and other trusted sites. Recrawling and ranking changes take time and do not guarantee a first-place result.
 
+## Listing photos and Facebook sharing
+
+Auction cards on Home and Auctions use the listing's public cover photo, with an icon when no photo is attached. Item pages use an original PinoyBuyNSell layout with a large photo, thumbnail navigation, enlarged photo dialog, pricing/bidding, stock options, shipping, description and item details. Desktop places photos beside the details; phones stack them. No seller ratings, views, favorites or purchase protections are invented.
+
+New and edited listings accept up to eight optional JPEG, PNG, WebP, HEIC or HEIF photos, up to 5 MB each. Sellers can append/remove photos and select the cover. Uploads inspect the actual file bytes rather than trusting the filename. HEIC/HEIF photos convert locally in a browser worker to JPEG before preview or upload, including HEIC files incorrectly named `.jpg`. The decoder loads only when needed. Converted images over 5 MB are resized and compressed to fit; unreadable files stop before any upload. The storage bucket continues to receive browser-compatible JPEG, PNG or WebP files.
+
+To enable saving multiple photos, run `supabase/migrations/202610090012_listing_gallery.sql` once as a new Supabase SQL Editor query after prior migrations. It adds `products.image_paths` with a maximum of eight unique, seller-owned paths and enforces the first path as the existing `image_path` cover. Existing single-photo listings remain unchanged. Server reads fall back to the existing columns while this migration is pending, and single-photo saves still work. A multiple-photo save fails before uploading if the column is missing. Editing preserves existing photos unless removed; removed objects are retained because external posts or other references can still use them. Explicit failed saves clean up only newly uploaded objects; uncertain network outcomes retain them to protect a potentially successful save.
+
+On October 9, 2026, listing 5's mislabeled HEIF photo was converted to a metadata-free JPEG in a new public storage object and only that listing's `image_path` was updated. Its original photo and auction terms were preserved.
+
+Item pages include **Copy listing link**, with a selectable link when browser clipboard access is unavailable. A Facebook share dialog can stall inside Facebook; the website cannot confirm or cancel that external post. Check the Page before retrying to avoid duplicates. For an outdated preview, enter the product URL in https://developers.facebook.com/tools/debug/ and choose **Scrape Again**, then paste the listing link into the Page's normal post composer. The existing `/admin/facebook` publisher is a separate, admin-only feature for an administrator's own active listings.
+
+Validation for this update: 64 automated tests, 50 local database checks, zero reported npm vulnerabilities, a production build, real HEIF conversion in Chromium, multi-photo mock create/edit flows, gallery keyboard/focus checks and mobile/desktop layouts. Browser writes and bids are mocked; no real Facebook post is sent. Read-only hosted checks confirmed the gallery column and validator are available; a signed-in seller smoke test and Hostinger deployment still need confirmation.
+
 ## Next development stages
 
 - Database and real product listings
