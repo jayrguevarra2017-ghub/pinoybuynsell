@@ -13,17 +13,18 @@ function filters(searchParams) {
     page: Math.min(1000, Math.max(1, Number.parseInt(searchParams?.page, 10) || 1)) };
 }
 
-export function generateMetadata({ searchParams }) {
-  const { query, category, page } = filters(searchParams);
+export async function generateMetadata({ searchParams }) {
+  const resolved = await searchParams;
+  const { query, category, page } = filters(resolved);
   const metadata = publicPageMetadata({ path: "/search", title: "Browse Items for Sale in the Philippines | PinoyBuyNSell",
     description: "Browse current marketplace listings, compare item prices and shipping fees, and discover new and pre-owned goods from sellers across the Philippines." });
   // Keep duplicate search/filter URLs out of search results while allowing item links to be followed.
-  if (query || category || page > 1 || Object.keys(searchParams || {}).length) metadata.robots = { index: false, follow: true };
+  if (query || category || page > 1 || Object.keys(resolved || {}).length) metadata.robots = { index: false, follow: true };
   return metadata;
 }
 
 export default async function SearchPage({ searchParams }) {
-  const filter = filters(searchParams);
+  const filter = filters(await searchParams);
   let products = [], unavailable = false;
   try { products = await getBrowseListings(filter, { env: process.env }); } catch { unavailable = true; }
   const pageUrl = page => {

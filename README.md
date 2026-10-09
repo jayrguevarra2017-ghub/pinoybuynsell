@@ -5,7 +5,7 @@ Initial Next.js App Router marketplace prototype for Hostinger.
 ## Run locally
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -19,6 +19,16 @@ npm start
 ```
 
 The auction countdown is intentionally client-updated after mount so it does not cause an SSR hydration mismatch.
+
+## Runtime and dependency security
+
+Use the latest patched Node.js 24 LTS release (preferred) or Node.js 22 LTS. `.nvmrc` selects Node 24 for local tools; Hostinger's deployed Node version must also be selected in its Node.js application settings. A Git push cannot confirm or update the hosting runtime by itself.
+
+The dependency versions and `package-lock.json` are committed so deployments install the reviewed dependency tree with `npm ci`. On October 9, 2026, the vulnerable Next.js 14.2.15/PostCSS tree was replaced with Next.js 16.4.0 and PostCSS 8.5.23. React and React DOM are both 19.3.0; Supabase is pinned to 2.117.3. Product and search pages await route parameters as required by the updated framework.
+
+Validation for that update: zero reported npm vulnerabilities, 49 passing tests, production builds on Node 24.19.0 and 24.21.0, and browser checks for mobile installation, navigation, offline recovery and bidding. HTTP checks cover product/search metadata, escaping user input, rejecting unauthorized publishing and keeping private keys out of browser assets. No database migration is needed.
+
+Run `npm run check:security`, `npm test` and `npm run build` when updating dependencies. The audit checks currently published npm advisories; a clean result does not establish that the entire website or the hosting runtime is free of vulnerabilities. Keep Hostinger's runtime patched and review future dependency alerts. Never commit `.env` files or place private Supabase/Meta tokens in `NEXT_PUBLIC_*` variables.
 
 ## Installable mobile app (PWA)
 
