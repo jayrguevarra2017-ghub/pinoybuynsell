@@ -25,6 +25,7 @@ export default function SearchPage({ searchParams }) {
       <Header />
 
       <main className="page">
+        <div className="container">
         <div style={{ marginBottom: "32px" }}>
           <p
             style={{
@@ -148,6 +149,7 @@ export default function SearchPage({ searchParams }) {
             </Link>
           </div>
         )}
+        </div>
       </main>
     </>
   );

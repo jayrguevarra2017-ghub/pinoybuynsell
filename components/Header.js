@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteLogo from "@/components/SiteLogo";
+import VisitorCounter from "@/components/VisitorCounter";
 import { supabase } from "@/lib/supabase";
 
 export default function Header() {
@@ -70,6 +71,7 @@ export default function Header() {
           </Link>
         </div>
       </div>
+      <div className="container site-activity"><VisitorCounter /></div>
     </header>
   );
 }

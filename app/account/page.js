@@ -122,7 +122,7 @@ export default function AccountPage() {
       <Header />
 
       <main className="page">
-        <div className="container narrow auth">
+        <div className="container narrow auth account-page">
           <p className="eyebrow">MY ACCOUNT</p>
 
           <h1>Welcome to PinoyBuyNSell</h1>

@@ -1,6 +1,5 @@
 import "./globals.css";
 import SupportChat from "@/components/SupportChat";
-import VisitorCounter from "@/components/VisitorCounter";
 
 export const metadata = {
   metadataBase: new URL("https://pinoybuynsell.com"),
@@ -24,7 +23,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}<VisitorCounter /><SupportChat /></body>
+      <body>{children}<SupportChat /></body>
     </html>
   );
 }
