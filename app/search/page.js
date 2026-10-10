@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Header from "@/components/Header";
-import ProductCard from "@/components/ProductCard";
+import OrderedProductGrid from "@/components/OrderedProductGrid";
 import { categories } from "@/lib/data";
 import { getBrowseListings } from "@/lib/public-listings.mjs";
 import { publicPageMetadata } from "@/lib/seo.mjs";
@@ -41,7 +41,7 @@ export default async function SearchPage({ searchParams }) {
       <button className="sell" type="submit">Search</button>
     </form>
     {unavailable ? <p role="alert">Listings could not be loaded. Please refresh to try again.</p> : products.length ?
-      <div className="product-grid">{products.slice(0, 24).map(product => <ProductCard key={product.id} product={product} />)}</div> :
+      <OrderedProductGrid products={products.slice(0, 24)} refreshOnExpiry /> :
       <><h2>No listings found</h2><p>Try another search or category.</p><Link className="view inline" href="/search">Browse all items</Link></>}
     {!unavailable && <nav className="browse-pagination" aria-label="Listing pages">
       {filter.page > 1 && <Link className="secondary" href={pageUrl(filter.page - 1)}>← Previous</Link>}

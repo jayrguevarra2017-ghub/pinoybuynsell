@@ -89,11 +89,12 @@ test("unknown database outcomes retain uploaded photos instead of deleting a pot
 test("public reads fall back only for a missing gallery column while retaining public filters", async () => {
   const env={NEXT_PUBLIC_SUPABASE_URL:"https://example.supabase.co",NEXT_PUBLIC_SUPABASE_ANON_KEY:"anon"};let calls=0;
   const data=await getFeaturedListings({env,fetchImpl:async url=>{
-    const params=new URL(url).searchParams;assert.equal(params.get("status"),"eq.active");assert.equal(params.get("deleted_at"),"is.null");
+    const params=new URL(url).searchParams;assert.equal(params.get("status"),"in.(active,sold)");assert.equal(params.get("deleted_at"),"is.null");
     calls++;
-    if(calls===1){assert(params.get("select").includes("image_paths"));return Response.json({code:"42703",message:"column products.image_paths does not exist"},{status:400});}
+    if(calls===1){assert(!params.get("select").includes("image_paths"));return Response.json([{id:5,status:"active",image_path:path}]);}
+    if(calls===2){assert(params.get("select").includes("image_paths"));return Response.json({code:"42703",message:"column products.image_paths does not exist"},{status:400});}
     assert(!params.get("select").includes("image_paths"));return Response.json([{id:5,status:"active",image_path:path}]);
   }});
-  assert.equal(calls,2);assert.equal(data[0].image_path,path);
+  assert.equal(calls,3);assert.equal(data[0].image_path,path);
   await assert.rejects(getFeaturedListings({env,fetchImpl:async()=>Response.json({code:"42501",message:"Denied"},{status:403})}),/unavailable/);
 });

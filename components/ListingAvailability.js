@@ -7,6 +7,7 @@ export default function ListingAvailability({ product }) {
   const variations = Array.isArray(product.variations) ? product.variations : [];
   const choice = selected === "" ? null : variations[Number(selected)];
   const available = variations.length ? (choice ? Number(choice.quantity) : null) : Number(product.quantity ?? 1);
+  if (product.status === "sold") return <p className="stock-unavailable"><strong>Sold</strong> — this item is no longer available.</p>;
   if (product.listing_type === "auction") return <p><strong>Quantity:</strong> One item or lot, as described by the seller.</p>;
   return <section className="listing-options listing-form" aria-labelledby="availability-title">
     <h3 id="availability-title">Availability</h3>

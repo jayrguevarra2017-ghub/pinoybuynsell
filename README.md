@@ -46,7 +46,7 @@ On future offline-shell changes, increment the service worker cache version. The
 
 ## Search engine visibility
 
-Public homepage listings, Browse results, active auction cards and item details are rendered on the server so crawlers can read them without JavaScript. Only public, active, undeleted listing fields are fetched with the Supabase anonymous key; this does not bypass database access rules. Browse queries the real marketplace instead of sample products.
+Public homepage listings, Browse results and auction cards are rendered on the server. Marketplace lists include public active/sold undeleted items, while item SEO previews and the sitemap remain active-only. Reads use the Supabase anonymous key and never bypass database access rules. Browse queries the real marketplace instead of sample products.
 
 - `/sitemap.xml` includes the public pages and active listings, with paginated Supabase reads. Database failures fail the request rather than publishing an empty sitemap. A sitemap index will be needed before reaching 45,000 active listings.
 - `/robots.txt` links to the sitemap. Account, admin, sign-in, ID verification and seller forms also carry `noindex` metadata. Authentication and database policies still control access.
@@ -73,6 +73,16 @@ Approved accounts can write one positive recommendation per other seller (10–1
 All reads/writes use narrowly scoped database functions. The new RLS-enabled tables have no direct browser grants; mutation functions derive identity from the verified Supabase session and check self-action, seller availability, ID approval and content length. Public functions expose only approved public fields. The existing private account fields and tables are unchanged. Profile listings and recommendations paginate. Missing schema and network failures display an unavailable message instead of invented counts; mutations have bounded waits, offline controls and double-click guards.
 
 Validation: all 81 automated tests and the production build passed. A local PostgreSQL-compatible database passed 59 access, privacy and mutation checks. Mocked browser checks passed following across profiles/accounts, recommendation create/edit/remove, escaped text, sign-in/owner/approval restrictions, missing-schema handling, deadlines, pagination and 320/390/1280 layouts. No hosted follows/recommendations were written during validation. After migration and deployment, use an approved second account to follow a seller, add/edit/remove a recommendation, and confirm the public profile and private following list update.
+
+## Marketplace ordering
+
+Home, Browse, Auctions and seller listings show live auctions in closing-time order, then available fixed-price stock, upcoming auctions, and finally sold, ended or out-of-stock items. Available fixed-price and closed items use newest-first ordering within their groups. Only the latest auction for an item is considered. Expiry is determined from the closing timestamp as well as the saved status; a timer reaching zero never marks an item as sold or changes bid records.
+
+Ordering happens before selecting each 24-item page. The public `/api/marketplace/listings` endpoint reads a lightweight anonymous index in 1,000-row pages, then retrieves photos/descriptions for the selected IDs only. It preserves category/search/seller filters and excludes hidden/deleted items. Index reads stop with an explicit error if 10,000 rows or inconsistent repeated IDs are encountered; move ordering into a paginated database function before the marketplace reaches that scale. Nothing is silently truncated. This feature requires no SQL migration or new secrets.
+
+Mounted grids reorder when an auction expires. Home, Auctions and seller listings also refresh every 30 seconds to update page membership and availability; Browse refreshes its server page when a visible auction changes state. Closed cards are labeled, and sold-item links show a sold notice with stock-selection controls disabled. Existing bidding authorization still prevents bidding on closed or sold items.
+
+Validation: 118 automated tests and a production build, plus browser checks with local REST fixtures for global pagination, expiry ordering, sold-item navigation, privacy guards, photos, hearts and mobile widths. Hosted Supabase checks were read-only.
 
 ## Item hearts and likes
 

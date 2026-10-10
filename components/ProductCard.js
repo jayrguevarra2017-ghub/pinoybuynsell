@@ -1,14 +1,18 @@
+"use client";
 import ListingPhoto from "@/components/ListingPhoto";
 import ShippingDetails from "@/components/ShippingDetails";
 import AuctionCountdown from "@/components/AuctionCountdown";
 import Link from "next/link";
 import { peso } from "@/lib/data";
 import ListingLike from "@/components/ListingLike";
+import useMarketplaceClock from "./useMarketplaceClock";
+import { latestListingAuction, listingAvailability } from "@/lib/listing-order.mjs";
 
 export default function ProductCard({ product }) {
+  const now = useMarketplaceClock();
   if (!product) return null;
-  const auction = Array.isArray(product.auctions)
-    ? [...product.auctions].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0] : product.auctions || null;
+  const auction = latestListingAuction(product);
+  const availability = listingAvailability(product, now ?? (Date.parse(product.created_at) || 0));
 
   return (
     <article className="product">
@@ -17,7 +21,7 @@ export default function ProductCard({ product }) {
         className="product-image"
       >
         <ListingPhoto product={product} />
-        <b>{product.condition || "Item"}</b>
+        <b>{now === null && product.listing_type === "auction" && product.status !== "sold" ? "Auction" : availability.rank >= 1 ? availability.label : product.condition || "Item"}</b>
       </Link>
       <ListingLike listingId={product.id} title={product.title} overlay /></div>
 
@@ -32,8 +36,8 @@ export default function ProductCard({ product }) {
         <strong className="price">
           {peso(product.price || 0)}
         </strong>
-        {product.listing_type === "auction" ? <small>Item value · open listing to bid</small> : product.quantity != null &&
-          <p className="stock-label">{product.quantity === 0 ? "Out of stock" : `${product.quantity} available`}{product.variations?.length ? ` · ${product.variations.length} variations` : ""}</p>}
+        {product.listing_type === "auction" ? <small>{now === null ? "Checking auction time…" : availability.state === "active" ? "Item value · open listing to bid" : availability.label}</small> : product.status !== "sold" && product.quantity != null &&
+          <p className="stock-label">{Number(product.quantity) === 0 ? "Out of stock" : `${product.quantity} available`}{product.variations?.length ? ` · ${product.variations.length} variations` : ""}</p>}
         {product.listing_type === "auction" && <div className="listing-bid-countdown">
           <AuctionCountdown endTime={auction?.ends_at ?? product.auction_ends_at} startsAt={auction?.starts_at}
             status={product.status === "active" ? (auction?.status ?? "active") : "ended"} showLabel />

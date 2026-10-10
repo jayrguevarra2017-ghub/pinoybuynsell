@@ -37,7 +37,7 @@ test("sitemap errors and size limits cannot silently return empty or truncated d
 test("browse filters quote delimiters and paginate real public listings", async () => {
   await getBrowseListings({ query: 'card",status.eq.draft', category: 'Home & Living', page: 2 }, { env, fetchImpl: async url => {
     const query = new URL(url).searchParams;
-    assert.equal(query.get("offset"), "24"); assert.equal(query.get("limit"), "25");
+    assert.equal(query.get("offset"), "0"); assert.equal(query.get("limit"), "1000");
     assert.equal(query.get("category"), 'eq."Home & Living"');
     assert.equal(query.get("or"), '(title.ilike."*card\\",status.eq.draft*",description.ilike."*card\\",status.eq.draft*")');
     assert.ok(!query.get("select").includes("seller_id"));
@@ -45,22 +45,30 @@ test("browse filters quote delimiters and paginate real public listings", async 
   } });
 });
 
-test("auction discovery excludes ended auctions and orders by closing time", async () => {
+test("auction discovery keeps one latest auction per listing, ending soonest first and closed last", async () => {
   const now = Date.parse("2026-10-09T00:00:00Z");
   const image_path = "00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002.jpg";
-  const auctions = await getPublicAuctionCards({ env, fetchImpl: async (_url) => {
-    assert(new URL(_url).searchParams.get("select").includes("image_path"));
-    return Response.json([{ ...item, image_path, auctions: [
-    { id: "late", status: "active", ends_at: "2026-10-11T00:00:00Z", current_bid: 200 },
-    { id: "closed", status: "ended", ends_at: "2026-10-11T00:00:00Z" },
-    { id: "expired", status: "active", ends_at: "2026-10-08T00:00:00Z" },
-    { id: "soon", status: "active", ends_at: "2026-10-10T00:00:00Z", starting_price: 100 },
-  ] }]); } }, now);
-  assert.deepEqual(auctions.map(a => a.id), ["soon", "late"]); assert.equal(auctions[0].currentBid, 100);
+  const rows = [
+    { ...item, id: 1, listing_type: "auction", image_path, auctions: [
+      { id: "historical", status: "active", ends_at: "2026-10-09T01:00:00Z", created_at: "2026-10-01" },
+      { id: "late", status: "active", ends_at: "2026-10-11T00:00:00Z", current_bid: 200, created_at: "2026-10-08" }
+    ] },
+    { ...item, id: 2, listing_type: "auction", image_path, auctions: { id: "closed", status: "ended", ends_at: "2026-10-11T00:00:00Z" } },
+    { ...item, id: 3, listing_type: "auction", image_path, auctions: { id: "expired", status: "active", ends_at: "2026-10-08T00:00:00Z" } },
+    { ...item, id: 4, listing_type: "auction", image_path, auctions: { id: "soon", status: "active", ends_at: "2026-10-10T00:00:00Z", starting_price: 100 } },
+    { ...item, id: 5, status: "sold", listing_type: "auction", image_path, auctions: { id: "sold", status: "active", ends_at: "2026-10-09T01:00:00Z" } }
+  ];
+  const auctions = await getPublicAuctionCards({ env, fetchImpl: async url => {
+    const params = new URL(url).searchParams;
+    assert.equal(params.get("status"), "in.(active,sold)");
+    if (params.has("offset")) { assert.equal(params.get("listing_type"), "eq.auction"); assert(!params.get("select").includes("image_path")); }
+    else assert(params.get("select").includes("image_path"));
+    return Response.json(rows);
+  } }, now);
+  assert.deepEqual(auctions.map(a => a.id), ["soon", "late", "sold", "expired", "closed"]);
+  assert.equal(auctions[0].currentBid, 100);
+  assert.equal(auctions[2].status, "sold");
   assert(auctions.every(a => a.imagePath === image_path));
-  const one = await getPublicAuctionCards({ env, fetchImpl: async () => Response.json([{ ...item,
-    auctions: { id: "single", status: "active", ends_at: "2026-10-10T00:00:00Z", starting_price: 100 } }]) }, now);
-  assert.equal(one[0].id, "single");
 });
 
 test("structured data states real PHP offers, stock and condition without fictional ratings", () => {

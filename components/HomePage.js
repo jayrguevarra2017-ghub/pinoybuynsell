@@ -6,10 +6,12 @@ import Link from "next/link";
 import { facebookPageUrl, messengerUrl } from "@/lib/facebook";
 import USAShoppingHero from "@/components/USAShoppingHero";
 import Header from "@/components/Header";
-import ProductCard from "@/components/ProductCard";
+import OrderedProductGrid from "@/components/OrderedProductGrid";
 import AuctionCard from "@/components/AuctionCard";
 import { categories } from "@/lib/data";
-import { supabase } from "@/lib/supabase";
+import { fetchMarketplaceListings } from "@/lib/marketplace-client.mjs";
+import { sortAuctionCards } from "@/lib/listing-order.mjs";
+import useMarketplaceClock from "./useMarketplaceClock";
 
 export default function HomePage({ initialProducts = null }) {
   const [products, setProducts] = useState(initialProducts || []);
@@ -17,79 +19,29 @@ export default function HomePage({ initialProducts = null }) {
   const [auctions, setAuctions] = useState([]);
   const [loadingAuctions, setLoadingAuctions] = useState(true);
 
+  const [listingError, setListingError] = useState("");
+  const [auctionError, setAuctionError] = useState("");
+  const now = useMarketplaceClock();
   useEffect(() => {
-    async function loadProducts() {
-      const { data, error } = await supabase
-        .from("products")
-        .select(
-          "*, auctions(starts_at,ends_at,status,created_at)"
-        )
-        .eq("status", "active")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(12);
-
-      if (error) {
-        console.error("Product load error:", error);
-        setProducts([]);
-      } else {
-        setProducts(data || []);
-      }
-
-      setLoadingProducts(false);
-    }    async function loadAuctions() {
-      const { data, error } = await supabase
-        .from("auctions")
-        .select(`
-          id,
-          product_id,
-          starting_price,
-          current_bid,
-          starts_at,
-          ends_at,
-          status,
-          created_at,
-          products!inner (
-            id,
-            title,
-            image_path,
-            category,
-            location
-          )
-        `)
-        .eq("status", "active")
-        .is("products.deleted_at", null)
-        .eq("products.status", "active")
-        .gt("ends_at", new Date().toISOString())
-        .order("created_at", { ascending: false })
-        .limit(4);
-
-      if (error) {
-        console.error("Auction load error:", error);
-        setAuctions([]);
-      } else {
-        const formattedAuctions = (data || []).map((auction) => ({
-          id: auction.id,
-          productId: auction.product_id,
-          title: auction.products?.title || "Auction item",
-          imagePath: auction.products?.image_path,
-          category: auction.products?.category || "Auction",
-          location: auction.products?.location || "Philippines",
-          currentBid: auction.current_bid ?? auction.starting_price ?? 0,
-          startTime: auction.starts_at,
-          status: auction.status,
-          endTime: auction.ends_at,
-          icon: "🏷️"
-        }));
-
-        setAuctions(formattedAuctions);
-      }
-
-      setLoadingAuctions(false);
+    let cancelled = false, running = false;
+    async function load() {
+      if (running) return;
+      running = true;
+      await Promise.allSettled([
+        fetchMarketplaceListings({ mode: "featured" }).then(items => {
+          if (!cancelled) { setProducts(items); setListingError(""); }
+        }).catch(() => { if (!cancelled) setListingError("Could not refresh listings. Please try again."); })
+          .finally(() => { if (!cancelled) setLoadingProducts(false); }),
+        fetchMarketplaceListings({ mode: "auctions" }).then(items => {
+          if (!cancelled) { setAuctions(items); setAuctionError(""); }
+        }).catch(() => { if (!cancelled) setAuctionError("Could not load auctions. Please try again."); })
+          .finally(() => { if (!cancelled) setLoadingAuctions(false); })
+      ]);
+      running = false;
     }
-
-     loadProducts();
-    loadAuctions();
+    load();
+    const timer = setInterval(load, 30000);
+    return () => { cancelled = true; clearInterval(timer); };
   }, []);
 
   return (
@@ -155,28 +107,23 @@ export default function HomePage({ initialProducts = null }) {
           <div className="container">
             <div className="section-head">
               <div>
-                <p className="eyebrow">JUST LISTED</p>
+                <p className="eyebrow">SHOP & BID</p>
                 <h2>Featured items</h2>
               </div>
 
               <Link href="/search">See all items</Link>
             </div>
 
+            {listingError && <p role="alert">{listingError}</p>}
             {loadingProducts ? (
               <p>Loading listings...</p>
-            ) : products.length === 0 ? (
+            ) : listingError && products.length === 0 ? null : products.length === 0 ? (
               <div>
-                <p>No active listings yet.</p>
+                <p>No listings yet.</p>
                 <Link href="/sell">Be the first to list an item →</Link>
               </div>
             ) : (
-              <div className="product-grid">
-               {(products || [])
-  .filter((product) => product && product.id)
-  .map((product) => (
-    <ProductCard key={product.id} product={product} />
-  ))}
-              </div>
+              <OrderedProductGrid products={products} />
             )}
           </div>
         </section>
@@ -186,20 +133,16 @@ export default function HomePage({ initialProducts = null }) {
             <div className="section-head">
               <div>
                 <p className="eyebrow">BID & WIN</p>
-                <h2>Live auctions</h2>
+                <h2>Auctions</h2>
               </div>
 
               <Link href="/auctions">View all auctions</Link>
             </div>
 
-            <div className="product-grid">
-  {(auctions || [])
-    .filter((auction) => auction && auction.id)
-    .slice(0, 4)
-    .map((auction) => (
-      <AuctionCard key={auction.id} item={auction} />
-    ))}
-</div>
+            {loadingAuctions ? <p>Loading auctions…</p> : auctionError ? <p role="alert">{auctionError}</p> : !auctions.length ? <p>No auctions yet.</p> :
+              <div className="product-grid">{(now === null ? auctions : sortAuctionCards(auctions, now)).slice(0, 4)
+                .map(auction => <AuctionCard key={auction.id} item={auction} />)}</div>}
+
           </div>
         </section>
 

@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
-import ProductCard from "@/components/ProductCard";
+import OrderedProductGrid from "@/components/OrderedProductGrid";
 import SellerSummary from "@/components/SellerSummary";
 import SellerRecommendations from "@/components/SellerRecommendations";
 import { useApp } from "@/components/AppProvider";
 import { supabase } from "@/lib/supabase";
 import { communityRequest, communityError, validSellerId } from "@/lib/seller-community.mjs";
-import { publicListingFields } from "@/lib/public-listings.mjs";
+import { fetchMarketplaceListings } from "@/lib/marketplace-client.mjs";
 
 export default function SellerProfile({ sellerId }) {
   const app = useApp();
@@ -34,12 +34,19 @@ function ProfileContent({ sellerId }) {
   useEffect(() => {
     if (!validSellerId(sellerId)) { setListingLoading(false); return; }
     let cancelled = false; setListingLoading(true); setListingError("");
-    communityRequest(supabase.from("products").select(`${publicListingFields},auctions(starts_at,ends_at,status,created_at)`)
-      .eq("seller_id", sellerId).eq("status", "active").is("deleted_at", null).order("created_at", { ascending: false }).order("id", { ascending: false }).range(page*24,page*24+24))
-      .then(data => { if (!cancelled) { const rows = data || []; setProducts(rows.slice(0,24)); setHasMore(rows.length>24); } })
-      .catch(e => { if (!cancelled) setListingError(communityError(e)); })
-      .finally(() => { if (!cancelled) setListingLoading(false); });
-    return () => { cancelled = true; };
+    let running = false;
+    async function load() {
+      if (running) return;
+      running = true;
+      try {
+        const rows = await fetchMarketplaceListings({ seller: sellerId, page: page + 1 });
+        if (!cancelled) { setProducts(rows.slice(0, 24)); setHasMore(rows.length > 24); setListingError(""); }
+      } catch { if (!cancelled) setListingError("Could not load listings. Please try again."); }
+      finally { if (!cancelled) setListingLoading(false); running = false; }
+    }
+    load();
+    const timer = setInterval(load, 30000);
+    return () => { cancelled = true; clearInterval(timer); };
   }, [sellerId, page]);
 
   return <><Header /><main className="page seller-profile-page"><div className="container">
@@ -50,7 +57,7 @@ function ProfileContent({ sellerId }) {
     <section className="seller-listings" aria-labelledby="seller-listings-title">
       <div className="section-head"><h2 id="seller-listings-title">Seller’s listings</h2>{profile && <span>{profile.active_listing_count} active {Number(profile.active_listing_count) === 1 ? "listing" : "listings"}</span>}</div>
       {listingLoading ? <p>Loading listings…</p> : listingError ? <p role="alert">{listingError}</p> : products.length ?
-        <div className="product-grid">{products.map(product => <ProductCard key={product.id} product={product} />)}</div> : <p>No active listings to show.</p>}
+        <OrderedProductGrid products={products} /> : <p>No listings to show.</p>}
       {(page>0 || hasMore) && <div className="seller-pagination"><button type="button" disabled={listingLoading || page===0} onClick={() => setPage(v => Math.max(0,v-1))}>Previous listings</button>
         <button type="button" disabled={listingLoading || !hasMore} onClick={() => setPage(v => v+1)}>Next listings</button></div>}
     </section>

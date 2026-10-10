@@ -101,7 +101,7 @@ export default function ProductPage({ initialProduct = null }) {
             "*"
           )
           .eq("id", id)
-          .eq("status", "active")
+          .in("status", ["active", "sold"])
           .is("deleted_at", null)
           .maybeSingle();
 
@@ -111,7 +111,7 @@ export default function ProductPage({ initialProduct = null }) {
           return;
         }
 
-        if (!data || data.deleted_at) { setProduct(null); setErrorMessage("This listing is unavailable."); return; }
+        if (!data || !["active", "sold"].includes(data.status) || data.deleted_at) { setProduct(null); setErrorMessage("This listing is unavailable."); return; }
         setProduct(data);
 
         if (data.listing_type === "fixed_price") return;
@@ -207,7 +207,7 @@ export default function ProductPage({ initialProduct = null }) {
             </div>}
             {auction && (
               <div className="listing-bid-panel">
-                <p className="eyebrow">LIVE AUCTION</p>
+                <p className="eyebrow">{auctionOpen ? "LIVE AUCTION" : "AUCTION"}</p>
 
                 <p>
                   <strong>Starting Price:</strong> ₱
