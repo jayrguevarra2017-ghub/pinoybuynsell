@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
+import { withDeadline } from "@/lib/verification-actions";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -12,9 +14,13 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const lock = useRef(false), redirectTimer = useRef(null);
+  useEffect(() => () => clearTimeout(redirectTimer.current), []);
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (lock.current || completed) return;
     setMessage("");
 
     if (password.length < 6) {
@@ -27,23 +33,15 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    setLoading(true);
-
-    const { error } = await supabase.auth.updateUser({
-      password: password,
-    });
-
-    if (error) {
-      setMessage(error.message);
-      setLoading(false);
-      return;
-    }
-
-    setMessage("Password updated successfully!");
-
-    setTimeout(() => {
-      router.push("/login");
-    }, 1500);
+    lock.current = true; setLoading(true);
+    try {
+      const { error } = await withDeadline(supabase.auth.updateUser({ password }));
+      if (error) { setMessage(error.message || "This reset link could not be used. Request another email from the login page."); return; }
+      setCompleted(true); setMessage("Password updated successfully!");
+      redirectTimer.current = setTimeout(() => { router.replace("/login"); }, 1500);
+    } catch {
+      setMessage("Could not confirm the password update. Try signing in with your new password before requesting another reset.");
+    } finally { lock.current = false; setLoading(false); }
   }
 
   return (
@@ -62,33 +60,41 @@ export default function ResetPasswordPage() {
 
           <form onSubmit={handleSubmit}>
             <div>
-              <label>New Password</label>
+              <label htmlFor="new-password">New Password</label>
               <input
+                id="new-password"
                 type="password"
                 placeholder="Enter new password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
+                autoComplete="new-password"
+                disabled={loading || completed}
                 required
               />
             </div>
 
             <div>
-              <label>Confirm Password</label>
+              <label htmlFor="confirm-password">Confirm Password</label>
               <input
+                id="confirm-password"
                 type="password"
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+                disabled={loading || completed}
                 required
               />
             </div>
 
-            <button type="submit" disabled={loading}>
-              {loading ? "Updating..." : "Update Password"}
+            <button type="submit" disabled={loading || completed}>
+              {loading ? "Updating..." : completed ? "Password updated" : "Update Password"}
             </button>
           </form>
 
-          {message && <p>{message}</p>}
+          {message && <p role="status">{message}</p>}
+          <Link className="view" href="/login">Return to login</Link>
         </div>
       </main>
     </>

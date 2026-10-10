@@ -142,6 +142,14 @@ Unavailable counts are identified explicitly, with a partial total when other qu
 
 Validation: 130 automated tests and the production build passed. Mocked Chromium checks cover admin/member visibility, counts above 1,000, partial errors and recovery, badge overflow, updates after each queue action, all-clear state, offline recovery, automatic polling, role revocation, and 320/390/1280 layouts. Hosted checks were read-only and confirmed the three exact-count queries and browser access to their count headers. No real customer records were updated during testing.
 
+## October 10 marketplace reliability review
+
+Bidding locks the form before the ID-approval request starts, so repeated submissions during a slow approval check send one bid request. Approval and bid requests have deadlines; a changed account/listing or an auction closing during approval prevents the write. Unknown outcomes ask the buyer to refresh and check the current price before trying again.
+
+My Account requires a successful profile read before editing or saving. Failed reads offer a retry instead of allowing blank fields to overwrite saved details. Profile saves confirm the affected account row and update only username, full name, phone and location. Account and item reads have deadlines and discard responses after navigation. Password resets recover from stalled requests, prevent overlapping submissions and provide a login link; successful updates redirect to login.
+
+Validation: 144 automated tests and a production build passed; the dependency audit reported zero vulnerabilities. Chromium checks reproduce the original duplicate-bid, failed-profile-read and stalled-reset problems and verify recovery plus successful saves. Public routes, search, seller profiles, mobile layouts and administrator task notices were checked. Public Supabase reads used hosted data; all browser writes were intercepted and mocked. Hostinger deployment is separate from these local production-build checks. No new SQL or environment variables are needed.
+
 ## Next development stages
 
 - Database and real product listings

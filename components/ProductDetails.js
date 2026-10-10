@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ListingGallery from "@/components/ListingGallery";
@@ -13,6 +13,8 @@ import SellerSummary from "@/components/SellerSummary";
 import ListingLike from "@/components/ListingLike";
 import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
+import { submitMarketplaceBid } from "@/lib/marketplace-bidding.mjs";
+import { withDeadline } from "@/lib/verification-actions";
 
 export default function ProductPage({ initialProduct = null }) {
   const params = useParams();
@@ -24,56 +26,43 @@ export default function ProductPage({ initialProduct = null }) {
   const [loading, setLoading] = useState(!initialProduct);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [user, setUser] = useState(null);
-  const [authReady, setAuthReady] = useState(false);
+  const user = app?.user ?? null, authReady = app?.authReady === true;
   const [bidAmount, setBidAmount] = useState("");
   const [submittingBid, setSubmittingBid] = useState(false);
   const [bidMessage, setBidMessage] = useState("");
   const [now, setNow] = useState(null);
+  const bidLock = useRef(false), bidContext = useRef(null);
+  bidContext.current = { id, userId: user?.id, auction, product, online: app?.online !== false };
 
   useEffect(() => {
     setNow(Date.now());
     const timer = setInterval(() => setNow(Date.now()), 1000);
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setAuthReady(true);
-    });
-    return () => { clearInterval(timer); data.subscription.unsubscribe(); };
+    return () => { clearInterval(timer); bidContext.current = null; };
   }, []);
 
   async function placeBid(event) {
     event.preventDefault();
-    if (submittingBid) return;
+    if (bidLock.current) return;
     setBidMessage("");
     if (app && !app.online) { setBidMessage("Reconnect to the internet before placing a bid."); return; }
-    const amount = Number(bidAmount);
-    const current = Math.max(Number(auction?.current_bid ?? 0), Number(auction?.starting_price ?? 0));
-    if (!/^\d+(\.\d{1,2})?$/.test(bidAmount) || !Number.isFinite(amount) || amount <= current) {
-      setBidMessage("Enter a bid higher than the current bid, with up to two decimal places.");
-      return;
-    }
-    const verification = await supabase.rpc("is_marketplace_verified");
-    if (verification.error || !verification.data) {
-      setBidMessage("Submit your ID and wait for administrator approval before bidding.");
-      return;
-    }
+    const snapshot = bidContext.current;
+    if (!snapshot) return;
+    bidLock.current = true;
     setSubmittingBid(true);
     try {
-      const { data, error } = await supabase.rpc("place_marketplace_bid", {
-        p_auction_id: String(auction.id), p_amount: amount,
-      });
-      if (error) {
-        setBidMessage(error.code === "PGRST202"
-          ? "Bidding is not available yet. Please try again later."
-          : error.message);
-        return;
-      }
+      const isCurrent = () => bidContext.current?.id === snapshot.id && bidContext.current?.userId === snapshot.userId
+        && bidContext.current?.auction?.id === snapshot.auction?.id && bidContext.current?.online
+        && bidContext.current?.product?.status === "active" && !bidContext.current?.product?.deleted_at;
+      const data = await submitMarketplaceBid(supabase, { auction, product, user, amountText: bidAmount }, { isCurrent });
+      if (!isCurrent()) return;
       setAuction(data);
       setBidAmount("");
       setBidMessage("Your bid was placed successfully.");
-    } catch {
-      setBidMessage("Could not confirm your bid. Refresh to check the current price before trying again.");
+    } catch (error) {
+      if (bidContext.current?.id === snapshot.id && bidContext.current?.userId === snapshot.userId)
+        setBidMessage(error.message || "Could not confirm your bid. Refresh to check the current price before trying again.");
     } finally {
+      bidLock.current = false;
       setSubmittingBid(false);
     }
   }
@@ -85,6 +74,7 @@ export default function ProductPage({ initialProduct = null }) {
 
   useEffect(() => {
     if (!id) return;
+    let active = true;
 
     async function loadProduct() {
       const seed = initialProduct && String(initialProduct.id) === String(id) ? initialProduct : null;
@@ -93,9 +83,10 @@ export default function ProductPage({ initialProduct = null }) {
 
       setProduct(seed);
       setAuction(null);
+      setBidMessage(""); setBidAmount("");
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await withDeadline(supabase
           .from("products")
           .select(
             "*"
@@ -103,11 +94,13 @@ export default function ProductPage({ initialProduct = null }) {
           .eq("id", id)
           .in("status", ["active", "sold"])
           .is("deleted_at", null)
-          .maybeSingle();
+          .maybeSingle());
+
+        if (!active) return;
 
         if (error) {
           console.error("Product load error:", error);
-          setErrorMessage(error.message);
+          setErrorMessage("Item details could not be loaded. Please refresh to try again.");
           return;
         }
 
@@ -116,7 +109,7 @@ export default function ProductPage({ initialProduct = null }) {
 
         if (data.listing_type === "fixed_price") return;
 
-        const { data: auctionData, error: auctionError } = await supabase
+        const { data: auctionData, error: auctionError } = await withDeadline(supabase
           .from("auctions")
           .select(
             "id, product_id, starting_price, current_bid, starts_at, ends_at, status, created_at"
@@ -124,7 +117,9 @@ export default function ProductPage({ initialProduct = null }) {
           .eq("product_id", id)
           .order("created_at", { ascending: false })
           .limit(1)
-          .maybeSingle();
+          .maybeSingle());
+
+        if (!active) return;
 
         if (auctionError) {
           console.error("Auction load error:", auctionError);
@@ -133,14 +128,16 @@ export default function ProductPage({ initialProduct = null }) {
           setAuction(auctionData);
         }
       } catch (error) {
+        if (!active) return;
         console.error("Item load error:", error);
         setErrorMessage("Item details could not be loaded. Please refresh to try again.");
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
 
     loadProduct();
+    return () => { active = false; };
   }, [id, initialProduct]);
 
   if (loading) {
