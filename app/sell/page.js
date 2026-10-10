@@ -6,7 +6,6 @@ import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
 import ListingPhotoPicker from "@/components/ListingPhotoPicker";
-import ListingPhotoSuggestions from "@/components/ListingPhotoSuggestions";
 import { listingPhotoPaths } from "@/lib/listing-gallery.mjs";
 import { createListing, updateListing } from "@/lib/listing-photo";
 import Link from "next/link";
@@ -208,9 +207,6 @@ function SellPage({ listingId = null }) {
             <fieldset className="listing-edit-fields" disabled={saving}>
             <ListingPhotoPicker items={photoItems ?? initialPhotoItems} onChange={setPhotoItems}
               onPreparing={setCheckingPhoto} disabled={saving} />
-            <ListingPhotoSuggestions items={photoItems ?? initialPhotoItems} title={form.title} description={form.description}
-              disabled={saving || checkingPhoto || app?.online === false}
-              onUse={(field, value) => setForm(current => ({ ...current, [field]: value }))} />
 
             <label>
               <strong>Item Title</strong>
