@@ -8,6 +8,7 @@ export const metadata = {
   metadataBase: new URL("https://pinoybuynsell.com"),
   manifest: "/manifest.webmanifest",
   applicationName: "PinoyBuyNSell",
+  facebook: { appId: "2368945230513347" },
   appleWebApp: { capable: true, title: "PinoyBuyNSell", statusBarStyle: "default" },
   title: "PinoyBuyNSell | Buy, Sell & Bid in the Philippines",
   description: "Buy and sell new and pre-owned items, join online auctions, and request USA shopping assistance on PinoyBuyNSell, your Philippine marketplace.",
