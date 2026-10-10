@@ -8,7 +8,7 @@ import ListingPhoto from "@/components/ListingPhoto";
 import ShippingDetails from "@/components/ShippingDetails";
 import { facebookPageUrl } from "@/lib/facebook";
 import { supabase } from "@/lib/supabase";
-import { facebookPostingState, publishFacebookListing, validFacebookListingId, withFacebookDeadline } from "@/lib/facebook-posting.mjs";
+import { facebookDebuggerUrl, facebookPostingBlocked, facebookPostingState, publishFacebookListing, validFacebookListingId, withFacebookDeadline } from "@/lib/facebook-posting.mjs";
 import { updateFacebookDetails } from "@/lib/facebook-edit-sync.mjs";
 import { facebookSyncBusy } from "@/lib/facebook-sync-state.mjs";
 
@@ -115,6 +115,11 @@ function FacebookListings() {
         <ListingPhoto product={item} detail /><h2>{item.title}</h2><p>₱{Number(item.price).toLocaleString("en-PH")}</p>
         <ShippingDetails product={item} /><Link className="view" href={`/product/${item.id}`}>View listing</Link>
         {post && <p>Facebook status: <strong>{post.status}</strong>{post.message && ` — ${post.message}`}</p>}
+        {facebookPostingBlocked(post) && <aside className="facebook-blocked-help" aria-label="Facebook publishing checks">
+          <p>Check this listing’s URL for Facebook warnings, then review any instructions Meta provides. These links open diagnostic screens and do not publish a post.</p>
+          <a className="view" href={facebookDebuggerUrl(item.id)} target="_blank" rel="noopener noreferrer">Check listing in Meta Sharing Debugger ↗</a>
+          <a className="view" href="https://www.facebook.com/account_status/" target="_blank" rel="noopener noreferrer">Check Facebook Account Status ↗</a>
+        </aside>}
         {post?.status === "published" && /^\d+(?:_\d+)?$/.test(post.post_id || "")
           ? <><a className="view" href={`https://www.facebook.com/${post.post_id}`} target="_blank" rel="noopener noreferrer">View Facebook post ↗</a>
               <button className="sell" type="button" disabled={!ready || busy !== null || facebookSyncBusy(post)} onClick={() => sync(item)}>

@@ -112,3 +112,17 @@ test("Meta errors give specific safe guidance without echoing raw provider detai
   }
   assert(!facebookRejectionMessage({ code: "<script>alert(1)</script>" }).includes("<script>"));
 });
+
+test("error 368 guidance allows a clear Page status and preserves only a numeric diagnostic subcode", async () => {
+  const error = { code: 368, error_subcode: 12345, message: "page-secret private-provider-response" };
+  const f = fixture({ graphStatus: 400, graph: { error } });
+  const result = await (await f.run()).json();
+  assert.equal(result.status, "failed"); assert.equal(f.requests(), 1);
+  assert.match(result.message, /even if Page status shows no issues/);
+  assert.match(result.message, /Sharing Debugger/); assert.match(result.message, /subcode: 12345/);
+  assert(!result.message.includes("secret")); assert(!result.message.includes("private-provider-response"));
+  assert.equal(f.finished[0].p_message, result.message);
+  for (const subcode of [true, Infinity, -1, 1.5, "page-secret", {}]) {
+    assert(!facebookRejectionMessage({ code: 368, error_subcode: subcode }).includes("Diagnostic subcode"));
+  }
+});

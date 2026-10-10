@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canPublishListingToPage, facebookPublishingUrl, facebookPostingState, publishFacebookListing, validFacebookListingId, withFacebookDeadline } from "../lib/facebook-posting.mjs";
+import { canPublishListingToPage, facebookBlockedMessage, facebookDebuggerUrl, facebookPostingBlocked, facebookPublishingUrl, facebookPostingState, legacyFacebookBlockedMessage, publishFacebookListing, validFacebookListingId, withFacebookDeadline } from "../lib/facebook-posting.mjs";
 
 const product = { id: 5, seller_id: "admin", status: "active", deleted_at: null };
 const client = { auth: { getSession: async () => ({ data: { session: { access_token: "user-session" } } }) } };
@@ -84,4 +84,26 @@ test("stale processing becomes uncertain while published and failed records reta
 test("status checks resolve normally and bound promises that never settle", async () => {
   assert.equal(await withFacebookDeadline(Promise.resolve(true), 10), true);
   await assert.rejects(withFacebookDeadline(new Promise(() => {}), 10), /timed out/);
+});
+
+test("older saved publishing and caption-update blocks get accurate guidance without changing their outcome", () => {
+  for (const [status, prefix] of [["failed", ""], ["published", "Facebook update failed: "]]) {
+    const record = { status, post_id: status === "published" ? "123_456" : null, message: prefix + legacyFacebookBlockedMessage };
+    const display = facebookPostingState(record);
+    assert.equal(display.status, status); assert.equal(display.post_id, record.post_id);
+    assert.equal(display.message, prefix + facebookBlockedMessage);
+    assert.equal(record.message, prefix + legacyFacebookBlockedMessage);
+    assert.equal(facebookPostingBlocked(display), true);
+  }
+  for (const record of [undefined, { status: "failed", message: "Authorization expired." }, { status: "processing", message: facebookBlockedMessage }]) {
+    assert.equal(facebookPostingBlocked(record), false);
+  }
+});
+
+test("Sharing Debugger links are read-only links to the exact public listing, without credentials or arbitrary domains", () => {
+  const url = new URL(facebookDebuggerUrl(7));
+  assert.equal(url.origin, "https://developers.facebook.com");
+  assert.equal(url.pathname, "/tools/debug/");
+  assert.equal(url.searchParams.get("q"), "https://pinoybuynsell.com/product/7");
+  for (const id of [null, undefined, true, 0, -1, [], "7&access_token=secret", "https://other.example/"]) assert.equal(facebookDebuggerUrl(id), null);
 });
