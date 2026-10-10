@@ -126,3 +126,27 @@ test("error 368 guidance allows a clear Page status and preserves only a numeric
     assert(!facebookRejectionMessage({ code: 368, error_subcode: subcode }).includes("Diagnostic subcode"));
   }
 });
+
+test("blocked requests save Meta's user-facing reason and support reference without retrying", async () => {
+  const error = { code: 368, error_subcode: 4854002, fbtrace_id: "Trace_123-abc", error_user_msg: "Publishing is temporarily unavailable. Follow the instructions in Facebook.", message: "page-secret internal error" };
+  const f = fixture({ graphStatus: 400, graph: { error } });
+  const result = await (await f.run()).json();
+  assert.equal(result.status, "failed"); assert.equal(f.requests(), 1);
+  assert.match(result.message, /subcode: 4854002/);
+  assert.match(result.message, /Support reference: Trace_123-abc/);
+  assert.match(result.message, /Meta explanation: Publishing is temporarily unavailable/);
+  assert(!result.message.includes("page-secret")); assert(!result.message.includes("internal error"));
+  assert.equal(f.finished[0].p_message, result.message); assert(result.message.length <= 475);
+});
+
+test("Meta diagnostic fields cannot expose credentials or overflow the saved message", async () => {
+  for (const unsafe of ["page-secret", "server-secret", "user-token", "Bearer unknown-token", "EAA" + "a".repeat(50), "eyJabcdef.payload.signature", "access_token=unknown", "<script>bad</script>"]) {
+    const f = fixture({ graphStatus: 400, graph: { error: { code: 368, error_user_msg: unsafe, error_user_title: "Action unavailable", fbtrace_id: unsafe, message: unsafe } } });
+    const result = await (await f.run()).json();
+    assert(!result.message.includes(unsafe)); assert.match(result.message, /Meta explanation: Action unavailable/);
+    assert(!result.message.includes("Support reference:")); assert.equal(f.requests(), 1);
+  }
+  const message = facebookRejectionMessage({ code: 368, error_subcode: 4854002, fbtrace_id: "T".repeat(64), error_user_msg: "reason ".repeat(200) });
+  assert(message.length <= 475); assert.match(message, /subcode: 4854002/); assert.match(message, /Support reference: T{64}/);
+  assert(!facebookRejectionMessage({ code: 368, error_user_msg: {}, error_user_title: true, fbtrace_id: 123 }).includes("Meta explanation:"));
+});

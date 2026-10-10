@@ -115,6 +115,16 @@ test("definite Meta rejection keeps the published post and redacts provider secr
     assert.equal(f.job().status,"published");assert.equal(f.job().post_id,postId);assert.equal(f.graph.length,1);
   }
 });
+test("blocked caption updates retain safe Meta diagnostics and the original published post",async()=>{
+  const f=fixture({graphStatus:400,graph:{error:{code:368,error_subcode:4854002,fbtrace_id:"Trace_sync",error_user_msg:"page-secret",error_user_title:"Action unavailable",message:"server-secret"}}});
+  const result=await (await f.run()).json();
+  assert.equal(result.status,"failed");assert.equal(f.graph.length,1);
+  assert.match(result.message,/subcode: 4854002/);assert.match(result.message,/Support reference: Trace_sync/);
+  assert.match(result.message,/Meta explanation: Action unavailable/);
+  assert(!result.message.includes("page-secret"));assert(!result.message.includes("server-secret"));
+  assert.equal(f.job().message,result.message);assert(f.job().message.length<=500);
+  assert.equal(f.job().status,"published");assert.equal(f.job().post_id,postId);
+});
 test("unknown Meta outcomes are bounded and safe to retry as updates",async()=>{
   for(const options of [{networkError:true},{graph:{}},{graph:{error:{message:"page-secret"}},graphStatus:500},{hangGraph:true},{hangJson:true}]){
     const f=fixture({...options,graphTimeoutMs:10});const result=await (await f.run()).json();
