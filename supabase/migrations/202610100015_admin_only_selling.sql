@@ -1,5 +1,9 @@
 begin;
 
+-- This migration changes public marketplace objects only. Supabase owns
+-- storage.objects; its additional photo-write guard is a separate migration
+-- (016) so lack of Storage ownership cannot roll back the selling restriction.
+
 -- Trusted administrator membership replaces the ID-approval requirement for
 -- listing writes. Buyer verification and bidding functions are unchanged.
 alter policy verified_listing_insert on public.products
@@ -39,25 +43,7 @@ drop trigger if exists require_admin_listing_write on public.products;
 create trigger require_admin_listing_write before insert or update or delete
   on public.products for each row execute function public.require_admin_listing_write();
 
--- Existing public photo reads, other buckets and owner-folder rules stay intact.
--- Members cannot upload, overwrite or delete listing photos through Storage.
--- Supabase manages this table and already enables RLS. SQL Editor can manage
--- its policies but must not alter ownership or table-level Storage settings.
-drop policy if exists admin_only_listing_photo_insert on storage.objects;
-create policy admin_only_listing_photo_insert on storage.objects as restrictive
-  for insert to anon,authenticated
-  with check (bucket_id <> 'listing-photos' or public.is_marketplace_admin());
-drop policy if exists admin_only_listing_photo_update on storage.objects;
-create policy admin_only_listing_photo_update on storage.objects as restrictive
-  for update to anon,authenticated
-  using (bucket_id <> 'listing-photos' or public.is_marketplace_admin())
-  with check (bucket_id <> 'listing-photos' or public.is_marketplace_admin());
-drop policy if exists admin_only_listing_photo_delete on storage.objects;
-create policy admin_only_listing_photo_delete on storage.objects as restrictive
-  for delete to anon,authenticated
-  using (bucket_id <> 'listing-photos' or public.is_marketplace_admin());
-
--- A non-sensitive readiness check lets deployment verify the transaction ran.
+-- This readiness check confirms listing restrictions, not Storage policies.
 create or replace function public.marketplace_selling_policy() returns text
 language sql stable set search_path = '' as $$select 'admin-only'::text$$;
 revoke all on function public.marketplace_selling_policy() from public;
