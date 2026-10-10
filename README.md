@@ -52,6 +52,16 @@ Mobile pages have Home, Browse, Sell, Auctions and Account navigation, with addi
 
 On future offline-shell changes, increment the service worker cache version. The worker updates with `updateViaCache: none`, and its HTTP response disables caching. It removes only this app's old offline-shell caches and never reloads a page automatically, protecting work in progress in forms.
 
+## Relisting and deleting listings
+
+Administrators have **Relist** and **Delete listing** controls under My account → My listings and Administrator listing management. Relist appears for the administrator's own ended auctions, sold items and items that are out of stock. Refresh listings after an auction closes to update the controls. The form copies item details and the existing public photos; the administrator reviews stock, chooses a new Philippine closing time for an auction and confirms the listing policy before publishing.
+
+Relisting inserts a fresh active product through the existing admin-only selling rules and auction creation trigger. It never restarts or overwrites the old auction, bids or Facebook post. The original remains in history until separately deleted. Ownership, administrator membership and closed availability are checked again before publishing; an uncertain save directs the administrator to check My listings before trying again.
+
+Deletion requires confirmation and a reason, uses the existing `admin_delete_listing` RPC and audit log, and hides the listing while retaining photos and auction/bid records. A failed or uncertain result requires refreshing listings before retrying. Deleted listings cannot be relisted or restored with these controls. Administrators can delete other sellers' listings through the moderation page, but can relist only their own items. No additional SQL migration or paid service is needed when the existing listing-options and admin-deletion setup is installed.
+
+Validation covers ownership and role changes, a new listing with historical bids, photo reuse, deletion receipts and rejected operations. Browser checks use mocked writes; real listings and bids are not modified during verification.
+
 ## Search engine visibility
 
 Public homepage listings, Browse results and auction cards are rendered on the server. Marketplace lists include public active/sold undeleted items, while item SEO previews and the sitemap remain active-only. Reads use the Supabase anonymous key and never bypass database access rules. Browse queries the real marketplace instead of sample products.

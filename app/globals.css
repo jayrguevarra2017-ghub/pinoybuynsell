@@ -475,3 +475,8 @@ button.seller-follow-button[aria-pressed=true],.followed-seller-list .seller-fol
 }
 .selling-coming-soon h2 { margin: 0 0 12px; }
 .selling-coming-soon .listing-share-actions { margin-top: 18px; }
+.listing-management-actions { margin-top: 12px; }
+.listing-delete-confirm { margin-top: 16px; padding: 16px; border: 1px solid #c93632; border-radius: 12px; }
+.listing-delete-confirm h4 { margin-top: 0; }
+.listing-delete-confirm label { display: block; }
+.listing-delete-confirm textarea { width: 100%; min-height: 90px; margin: 8px 0 16px; }

@@ -15,6 +15,9 @@ import SellingComingSoon from "@/components/SellingComingSoon";
 import { readAccountProfile, saveAccountProfile } from "@/lib/account-profile.mjs";
 import { withDeadline } from "@/lib/verification-actions";
 import BidNotifications from "@/components/BidNotifications";
+import ListingManagementActions from "@/components/ListingManagementActions";
+import { managementListingFields } from "@/lib/listing-management.mjs";
+import { listingAvailability } from "@/lib/listing-order.mjs";
 
 export default function AccountPage() {
   const app = useApp();
@@ -27,6 +30,7 @@ function AccountContent() {
 
   const [listings, setListings] = useState([]);
   const [listingsError, setListingsError] = useState("");
+  const [listingsMessage, setListingsMessage] = useState("");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -45,7 +49,7 @@ function AccountContent() {
   useEffect(() => {
     let active = true;
     async function loadAccount() {
-      setLoading(true); setProfileReady(false); setProfileError(""); setAccountError(""); setMessage("");
+      setLoading(true); setProfileReady(false); setProfileError(""); setAccountError(""); setMessage(""); setListingsMessage("");
       try {
         const auth = await withDeadline(supabase.auth.getUser());
         if (!active) return;
@@ -57,7 +61,7 @@ function AccountContent() {
           readAccountProfile(supabase, account.id).then(data => {
             if (active) { setProfile(data); setProfileReady(true); }
           }).catch(() => { if (active) setProfileError("Your profile could not be loaded. Retry before editing."); }),
-          withDeadline(supabase.from("products").select("*").eq("seller_id", account.id).order("created_at", { ascending: false }))
+          withDeadline(supabase.from("products").select(managementListingFields).eq("seller_id", account.id).order("created_at", { ascending: false }))
             .then(result => {
               if (result.error) throw result.error;
               if (active) { setListings(result.data || []); setListingsError(""); }
@@ -249,15 +253,21 @@ function AccountContent() {
 
           <section style={{ marginTop: "30px" }} aria-labelledby="my-listings">
             <h2 id="my-listings">My listings</h2>
+            <button type="button" className="view" disabled={!app?.online || saving} onClick={() => setRevision(value => value + 1)}>Refresh my listings</button>
+            {listingsMessage && <p role="status">{listingsMessage}</p>}
+            {app?.isAdmin && <p>Relist ended auctions, sold items or items that are out of stock. Relisting creates a new listing and preserves the old bids. Delete hides a listing from buyers.</p>}
             {listingsError ? <p role="alert">{listingsError}</p> : listings.length === 0 ? <p>You have no listings yet.</p> : listings.map((item) => (
               <article key={item.id} style={{ padding: "20px", border: "1px solid #e5e7eb", borderRadius: "12px", marginBottom: "16px" }}>
                 <ListingPhoto product={item} detail />
                 <h3>{item.title}</h3>
-                <p>₱{Number(item.price).toLocaleString("en-PH")} · {item.status}</p>
+                <p>₱{Number(item.price).toLocaleString("en-PH")} · {item.deleted_at ? "Deleted" : listingAvailability(item).label}</p>
                 {item.listing_type && <p>{item.listing_type === "auction" ? "Auction / bidding · one item or lot" : `Fixed price · ${item.quantity} available${item.variations?.length ? ` · ${item.variations.length} variations` : ""}`}</p>}
                 <ShippingDetails product={item} />
                 <Link className="view" href={`/product/${item.id}`}>View listing</Link>
                 {item.deleted_at ? <p>Removed by administrator</p> : app?.isAdmin && <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}
+                <ListingManagementActions key={`${item.id}:${item.deleted_at || "active"}`} product={item}
+                  onDeleted={deleted => { setListings(current => current.map(row => String(row.id) === String(deleted.id) ? deleted : row)); setListingsMessage("Listing deleted from the marketplace. Auction and bid records were retained."); }}
+                  onRefresh={() => setRevision(value => value + 1)} />
               </article>
             ))}
           </section>

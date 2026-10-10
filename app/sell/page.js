@@ -16,13 +16,15 @@ import { syncFacebookAfterEdit } from "@/lib/facebook-edit-sync.mjs";
 import { facebookPublishingUrl } from "@/lib/facebook-posting.mjs";
 import { useApp } from "@/components/AppProvider";
 import SellingComingSoon from "@/components/SellingComingSoon";
+import { readRelistSource, relistListing } from "@/lib/listing-management.mjs";
+import { withDeadline } from "@/lib/verification-actions";
 
 export default function SellingPage(props) {
   const app = useApp();
-  return <SellPage key={`${app?.user?.id || "guest"}:${props.listingId || "new"}`} {...props} />;
+  return <SellPage key={`${app?.user?.id || "guest"}:${props.listingId || "new"}:${props.sourceListingId || ""}`} {...props} />;
 }
 
-function SellPage({ listingId = null }) {
+function SellPage({ listingId = null, sourceListingId = null }) {
   const router = useRouter();
   const app = useApp();
 
@@ -44,17 +46,30 @@ function SellPage({ listingId = null }) {
 
   const [existingListing, setExistingListing] = useState(null);
   const [auctionLocked, setAuctionLocked] = useState(false);
-  const [loadingListing, setLoadingListing] = useState(Boolean(listingId));
+  const [loadingListing, setLoadingListing] = useState(Boolean(listingId || sourceListingId));
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    if (!listingId || !app?.isAdmin) return;
+    if (!(listingId || sourceListingId) || !app?.isAdmin) return;
     let cancelled = false;
     async function loadListing() {
       setLoadingListing(true); setLoadError(""); setExistingListing(null);
       try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await withDeadline(supabase.auth.getUser());
         if (authError || !user) { router.push("/login"); return; }
+        if (sourceListingId) {
+          const data = await readRelistSource(supabase, user.id, sourceListingId);
+          if (cancelled) return;
+          setAuctionLocked(false); setExistingListing(data);
+          setForm({ title: data.title ?? "", description: data.description ?? "",
+            price: String(data.price ?? ""), category: data.category ?? "", condition: data.condition ?? "",
+            location: data.location ?? "", shipping_carrier: data.shipping_carrier ?? "",
+            shipping_fee: String(data.shipping_fee ?? ""), listing_type: data.listing_type ?? "fixed_price",
+            quantity: data.listing_type === "auction" ? "1" : String(data.quantity > 0 ? data.quantity : data.variations?.length ? 0 : 1),
+            variations: (data.variations || []).map(v => ({ name: v.name, quantity: String(v.quantity) })),
+            auction_starting_price: String(data.auction_starting_price ?? ""), auction_ends_at: "" });
+          return;
+        }
         const { data, error } = await supabase.from("products").select("*")
           .eq("id", listingId).eq("seller_id", user.id).single();
         if (error || !data || data.deleted_at) throw new Error("This listing is unavailable or does not belong to you.");
@@ -80,12 +95,13 @@ function SellPage({ listingId = null }) {
     }
     loadListing();
     return () => { cancelled = true; };
-  }, [listingId, router, app?.isAdmin, app?.user?.id]);
+  }, [listingId, sourceListingId, router, app?.isAdmin, app?.user?.id]);
 
   const [policyAccepted, setPolicyAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [saveResult, setSaveResult] = useState(null);
+  const [relistOutcomeUnknown, setRelistOutcomeUnknown] = useState(false);
   const saveLock = useRef(false);
 
   const [photoItems, setPhotoItems] = useState(null);
@@ -114,7 +130,8 @@ function SellPage({ listingId = null }) {
   async function handleSubmit(event) {
     event.preventDefault();
     if (!app?.isAdmin) return;
-    if (saveLock.current || saving || checkingPhoto || loadingListing || loadError || (listingId && !existingListing)) return;
+    if (saveLock.current || saving || checkingPhoto || loadingListing || loadError || relistOutcomeUnknown || !app.online
+      || ((listingId || sourceListingId) && !existingListing)) return;
     if (!policyAccepted) { setMessage("Read and confirm the prohibited-items policy before saving your listing."); return; }
     const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
     if (shippingError) { setMessage(shippingError); return; }
@@ -125,8 +142,9 @@ function SellPage({ listingId = null }) {
     setMessage("");
 
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await withDeadline(supabase.auth.getUser());
       if (userError || !user) { router.push("/login"); return; }
+      if (user.id !== app.user?.id) throw Error("Your account changed. Sign in again before saving.");
       const values = {
         title: form.title.trim(), description: form.description.trim(),
         price: Number(form.price), category: form.category, condition: form.condition,
@@ -139,7 +157,9 @@ function SellPage({ listingId = null }) {
         auction_ends_at: form.listing_type === "auction"
           ? (auctionLocked ? existingListing.auction_ends_at : fromManilaInput(form.auction_ends_at)) : null,
       };
-      const data = listingId
+      const data = sourceListingId
+        ? await relistListing(supabase, user.id, sourceListingId, values, photoItems ?? initialPhotoItems)
+        : listingId
         ? await updateListing(supabase, user.id, listingId, values, photoItems)
         : await createListing(supabase, user.id, { ...values, status: "active" }, photoItems);
       if(listingId && data?.id) {
@@ -150,9 +170,10 @@ function SellPage({ listingId = null }) {
         const facebook = await syncFacebookAfterEdit(supabase,String(data.id));
         if(facebook.status !== "skipped") { setSaveResult({id:data.id,facebook}); setMessage(""); return; }
       }
-      setMessage(listingId ? "Listing updated successfully!" : "Item listed successfully!");
+      setMessage(sourceListingId ? "Item relisted successfully!" : listingId ? "Listing updated successfully!" : "Item listed successfully!");
       if (data?.id) router.push(`/product/${data.id}`);
     } catch (error) {
+      if (sourceListingId && /timed out|could not confirm|response lost|fetch|network/i.test(error.message || "")) setRelistOutcomeUnknown(true);
       setMessage(error.message || "Could not confirm your listing. Check your listings before trying again.");
     } finally {
       saveLock.current = false;
@@ -169,7 +190,7 @@ function SellPage({ listingId = null }) {
   </div></main></>;
 
   if (loadingListing || loadError) return <><Header /><main className="page"><div className="container narrow">
-    <h1>{loadingListing ? "Loading your listing..." : "Cannot edit listing"}</h1>
+    <h1>{loadingListing ? "Loading your listing..." : sourceListingId ? "Cannot relist listing" : "Cannot edit listing"}</h1>
     {loadError && <p role="alert">{loadError}</p>}
     <a className="view" href="/account">Back to my account</a>
   </div></main></>;
@@ -181,10 +202,11 @@ function SellPage({ listingId = null }) {
       <main className="page">
         <div className="container narrow">
           <p className="eyebrow">SELL ON PINOYBUYSELL</p>
-          <h1>{listingId ? "Edit Listing" : "List an Item"}</h1>
+          <h1>{sourceListingId ? "Relist an Item" : listingId ? "Edit Listing" : "List an Item"}</h1>
           <p className="lead">
-            {listingId ? "Update your item details, selling options, shipping, or photo." : "Choose a fixed price or let buyers bid on your item."}
+            {sourceListingId ? "Review the copied details and photos, then publish a fresh listing. Choose a new closing time for an auction." : listingId ? "Update your item details, selling options, shipping, or photo." : "Choose a fixed price or let buyers bid on your item."}
           </p>
+          {sourceListingId && <p>The previous listing and its bids stay in your history. The new auction starts with the starting bid you choose. Confirm that the item is still available before publishing.</p>}
           {listingId && <p className="muted">Saving an edit automatically updates the text of a linked Facebook Page post. Changed photos or link previews need an edit on Facebook.</p>}
 
           {saveResult ? <section className="listing-save-result" aria-labelledby="listing-save-result-title">
@@ -204,7 +226,7 @@ function SellPage({ listingId = null }) {
               borderRadius: "12px",
             }}
           >
-            <fieldset className="listing-edit-fields" disabled={saving}>
+            <fieldset className="listing-edit-fields" disabled={saving || relistOutcomeUnknown || !app.online}>
             <ListingPhotoPicker items={photoItems ?? initialPhotoItems} onChange={setPhotoItems}
               onPreparing={setCheckingPhoto} disabled={saving} />
 
@@ -406,15 +428,17 @@ function SellPage({ listingId = null }) {
             </section>
 
             <button type="submit" disabled={saving || checkingPhoto}>
-              {checkingPhoto ? "Preparing photo…" : saving ? "Saving..." : listingId ? "Save Changes" : "Publish Listing"}
+              {checkingPhoto ? "Preparing photo…" : saving ? "Saving..." : sourceListingId ? "Publish Relisted Item" : listingId ? "Save Changes" : "Publish Listing"}
             </button>
             </fieldset>
 
             {message && (
-              <p style={{ marginTop: "15px" }}>
+              <p role="status" style={{ marginTop: "15px" }}>
                 <strong>{message}</strong>
               </p>
             )}
+            {relistOutcomeUnknown && <Link className="view" href="/account#my-listings">Check My listings before trying again</Link>}
+            {!app.online && <p>Reconnect before saving your listing.</p>}
           </form>}
         </div>
       </main>
