@@ -4,6 +4,7 @@ import MobileAppNav from "@/components/MobileAppNav";
 import { appPlatform, installedDisplay } from "@/lib/app-install.mjs";
 import { supabase } from "@/lib/supabase";
 import ListingLikesProvider from "@/components/ListingLikesProvider";
+import { readSellingAccess } from "@/lib/selling-access.mjs";
 
 const AppContext = createContext(null);
 export function useApp() { return useContext(AppContext); }
@@ -13,6 +14,10 @@ export default function AppProvider({ children }) {
   const [installed, setInstalled] = useState(false), [online, setOnline] = useState(true);
   const [platform, setPlatform] = useState("desktop"), [prompt, setPrompt] = useState(null);
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
+  const [adminAccess, setAdminAccess] = useState(null), [adminRevision, setAdminRevision] = useState(0);
+  const isAdmin = Boolean(user && adminAccess?.userId === user.id && adminAccess.allowed === true);
+  const adminReady = authReady && (!user || (adminAccess?.userId === user.id && adminAccess.ready));
+  const adminError = user && adminAccess?.userId === user.id ? adminAccess.error || "" : "";
   const dialog = useRef(null), installLock = useRef(false);
   useEffect(() => {
     let cancelled = false, revision = 0;
@@ -26,6 +31,16 @@ export default function AppProvider({ children }) {
     }).catch(() => { if (!cancelled && revision === initialRevision) setAuthReady(true); });
     return () => { cancelled = true; clearTimeout(timer); subscription.unsubscribe(); };
   }, []);
+  useEffect(() => {
+    let cancelled = false;
+    setAdminAccess(null);
+    if (user?.id) {
+      readSellingAccess(supabase)
+        .then(allowed => { if (!cancelled) setAdminAccess({ userId: user.id, allowed, ready: true }); })
+        .catch(error => { if (!cancelled) setAdminAccess({ userId: user.id, allowed: false, ready: true, error: error.message }); });
+    }
+    return () => { cancelled = true; };
+  }, [user?.id, adminRevision]);
   useEffect(() => {
     setInstalled(installedDisplay(window, navigator)); setPlatform(appPlatform(navigator)); setOnline(navigator.onLine);
     const installable = event => { event.preventDefault(); setPrompt(event); setMessage(""); };
@@ -64,9 +79,10 @@ export default function AppProvider({ children }) {
     finally { setPrompt(null); setBusy(false); installLock.current = false; }
   }
 
-  return <AppContext.Provider value={{ installed, online, user, authReady, openInstall: () => setOpen(true) }}>
+  return <AppContext.Provider value={{ installed, online, user, authReady, isAdmin, adminReady, adminError,
+    refreshAdminAccess: () => setAdminRevision(value => value + 1), openInstall: () => setOpen(true) }}>
     <ListingLikesProvider userId={user?.id || null} ready={authReady} online={online}>{children}</ListingLikesProvider>
-    <MobileAppNav online={online} />
+    <MobileAppNav online={online} isAdmin={isAdmin} />
     <dialog ref={dialog} className="app-install-dialog" aria-labelledby="app-install-title" onCancel={() => setOpen(false)}
       onClick={event => {
         if (event.target !== event.currentTarget) return;

@@ -38,7 +38,7 @@ export default function VerificationPage() {
   }
   return <><Header/><main className="page"><div className="container narrow">
     <h1>Account verification</h1>
-    <p>Upload a clear government-issued ID matching your name. An administrator must approve your account before you can sell or bid. Verification does not guarantee another user's trustworthiness.</p>
+    <p>Upload a clear government-issued ID matching your name. An administrator must approve your account before bidding. Selling and listing posts are currently available to administrators; selling for members is coming soon. Verification does not guarantee another user's trustworthiness.</p>
     {!ready?<p>Loading verification...</p>:!user?<Link href="/login">Sign in to verify your account</Link>:<>
       <p>Status: <strong>{record?.status || "ID required"}</strong></p>
       {record?.review_note && <p>Review note: {record.review_note}</p>}

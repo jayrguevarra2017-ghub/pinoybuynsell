@@ -14,9 +14,17 @@ import { shippingCarriers, validateShipping } from "@/lib/shipping";
 import { validateListingOptions, toManilaInput, fromManilaInput, maxVariations } from "@/lib/listing-options.mjs";
 import { syncFacebookAfterEdit } from "@/lib/facebook-edit-sync.mjs";
 import { facebookPublishingUrl } from "@/lib/facebook-posting.mjs";
+import { useApp } from "@/components/AppProvider";
+import SellingComingSoon from "@/components/SellingComingSoon";
 
-export default function SellPage({ listingId = null }) {
+export default function SellingPage(props) {
+  const app = useApp();
+  return <SellPage key={`${app?.user?.id || "guest"}:${props.listingId || "new"}`} {...props} />;
+}
+
+function SellPage({ listingId = null }) {
   const router = useRouter();
+  const app = useApp();
 
   const [form, setForm] = useState({
     title: "",
@@ -40,9 +48,10 @@ export default function SellPage({ listingId = null }) {
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    if (!listingId) return;
+    if (!listingId || !app?.isAdmin) return;
     let cancelled = false;
     async function loadListing() {
+      setLoadingListing(true); setLoadError(""); setExistingListing(null);
       try {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) { router.push("/login"); return; }
@@ -71,7 +80,7 @@ export default function SellPage({ listingId = null }) {
     }
     loadListing();
     return () => { cancelled = true; };
-  }, [listingId, router]);
+  }, [listingId, router, app?.isAdmin, app?.user?.id]);
 
   const [policyAccepted, setPolicyAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -104,6 +113,7 @@ export default function SellPage({ listingId = null }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (!app?.isAdmin) return;
     if (saveLock.current || saving || checkingPhoto || loadingListing || loadError || (listingId && !existingListing)) return;
     if (!policyAccepted) { setMessage("Read and confirm the prohibited-items policy before saving your listing."); return; }
     const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
@@ -117,11 +127,6 @@ export default function SellPage({ listingId = null }) {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) { router.push("/login"); return; }
-      const verification = await supabase.rpc("is_marketplace_verified");
-      if (verification.error || !verification.data) {
-        setMessage("Submit your ID and wait for administrator approval before selling or editing listings.");
-        return;
-      }
       const values = {
         title: form.title.trim(), description: form.description.trim(),
         price: Number(form.price), category: form.category, condition: form.condition,
@@ -155,6 +160,14 @@ export default function SellPage({ listingId = null }) {
     }
   }
 
+  if (!app?.adminReady || app.adminError || !app.isAdmin) return <><Header /><main className="page"><div className="container narrow">
+    <h1>{!app?.adminReady ? "Checking selling access…" : app.adminError ? "Selling access unavailable" : "Selling on PinoyBuyNSell"}</h1>
+    {!app?.adminReady ? <p>Checking your account permissions…</p> : app.adminError ? <>
+      <p role="alert">{app.adminError}</p><button type="button" onClick={app.refreshAdminAccess}>Try again</button>
+    </> : <SellingComingSoon />}
+    <Link className="view" href={app?.user ? "/account" : "/login"}>{app?.user ? "My account" : "Sign in"}</Link>
+  </div></main></>;
+
   if (loadingListing || loadError) return <><Header /><main className="page"><div className="container narrow">
     <h1>{loadingListing ? "Loading your listing..." : "Cannot edit listing"}</h1>
     {loadError && <p role="alert">{loadError}</p>}
@@ -169,7 +182,6 @@ export default function SellPage({ listingId = null }) {
         <div className="container narrow">
           <p className="eyebrow">SELL ON PINOYBUYSELL</p>
           <h1>{listingId ? "Edit Listing" : "List an Item"}</h1>
-          <a className="view" href="/verify">Verify your account to sell</a>
           <p className="lead">
             {listingId ? "Update your item details, selling options, shipping, or photo." : "Choose a fixed price or let buyers bid on your item."}
           </p>

@@ -10,9 +10,17 @@ import Header from "@/components/Header";
 import FollowedSellers from "@/components/FollowedSellers";
 import { sellerUrl } from "@/lib/seller-community.mjs";
 import { supabase } from "@/lib/supabase";
+import { useApp } from "@/components/AppProvider";
+import SellingComingSoon from "@/components/SellingComingSoon";
 
 export default function AccountPage() {
+  const app = useApp();
+  return <AccountContent key={app?.user?.id || "guest"} />;
+}
+
+function AccountContent() {
   const router = useRouter();
+  const app = useApp();
 
   const [listings, setListings] = useState([]);
   const [listingsError, setListingsError] = useState("");
@@ -134,6 +142,9 @@ export default function AccountPage() {
           <Link className="view" href="/usa-shopping">Request USA shopping assistance</Link>
 
           <AdminAccountLinks />
+          {!app?.adminReady ? <p>Checking selling access…</p> : app.adminError ? <>
+            <p role="alert">{app.adminError}</p><button type="button" onClick={app.refreshAdminAccess}>Retry selling access check</button>
+          </> : !app.isAdmin && <SellingComingSoon />}
           {sellerUrl(user?.id) && listings.some(item => !item.deleted_at && ["active", "sold"].includes(item.status)) &&
             <Link className="view" href={sellerUrl(user.id)}>My public seller profile</Link>}
           <FollowedSellers />
@@ -245,7 +256,7 @@ export default function AccountPage() {
                 {item.listing_type && <p>{item.listing_type === "auction" ? "Auction / bidding · one item or lot" : `Fixed price · ${item.quantity} available${item.variations?.length ? ` · ${item.variations.length} variations` : ""}`}</p>}
                 <ShippingDetails product={item} />
                 <Link className="view" href={`/product/${item.id}`}>View listing</Link>
-                {item.deleted_at ? <p>Removed by administrator</p> : <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}
+                {item.deleted_at ? <p>Removed by administrator</p> : app?.isAdmin && <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}
               </article>
             ))}
           </section>
@@ -258,9 +269,9 @@ export default function AccountPage() {
               flexWrap: "wrap",
             }}
           >
-            <button onClick={() => router.push("/sell")}>
+            {app?.isAdmin && <button onClick={() => router.push("/sell")}>
               Sell an Item
-            </button>
+            </button>}
 
             <button onClick={() => router.push("/")}>
               Browse Marketplace

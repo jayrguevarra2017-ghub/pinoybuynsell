@@ -12,8 +12,10 @@ import { categories } from "@/lib/data";
 import { fetchMarketplaceListings } from "@/lib/marketplace-client.mjs";
 import { sortAuctionCards } from "@/lib/listing-order.mjs";
 import useMarketplaceClock from "./useMarketplaceClock";
+import { useApp } from "./AppProvider";
 
 export default function HomePage({ initialProducts = null }) {
+  const app = useApp();
   const [products, setProducts] = useState(initialProducts || []);
   const [loadingProducts, setLoadingProducts] = useState(initialProducts === null);
   const [auctions, setAuctions] = useState([]);
@@ -68,7 +70,7 @@ export default function HomePage({ initialProducts = null }) {
                 </Link>
 
                 <Link className="secondary" href="/sell">
-                  Sell an item
+                  {app?.isAdmin ? "Sell an item" : "Selling coming soon"}
                 </Link>
               </div>
             </div>
@@ -120,7 +122,7 @@ export default function HomePage({ initialProducts = null }) {
             ) : listingError && products.length === 0 ? null : products.length === 0 ? (
               <div>
                 <p>No listings yet.</p>
-                <Link href="/sell">Be the first to list an item →</Link>
+                <Link href="/sell">{app?.isAdmin ? "Be the first to list an item →" : "Selling coming soon →"}</Link>
               </div>
             ) : (
               <OrderedProductGrid products={products} />
@@ -166,8 +168,8 @@ export default function HomePage({ initialProducts = null }) {
 
               <div>
                 <span>3</span>
-                <h3>Buy or sell</h3>
-                <p>Make deals and list your own items for sale.</p>
+                <h3>Buy and bid</h3>
+                <p>Connect with sellers about buying or bid on live auctions after approval.</p>
               </div>
             </div>
           </div>

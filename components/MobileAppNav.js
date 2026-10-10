@@ -11,14 +11,14 @@ const links = [
   { href: "/account", label: "Account", path: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M4 21v-2a8 8 0 0 1 16 0v2" },
 ];
 
-export default function MobileAppNav({ online = true }) {
+export default function MobileAppNav({ online = true, isAdmin = false }) {
   const pathname = usePathname() || "/";
   return <nav className="mobile-app-nav" aria-label="Mobile navigation">
     {links.map(link => <Link key={link.href} href={link.href} prefetch={false}
       onClick={event => { if (!online && !event.metaKey && !event.ctrlKey && !event.shiftKey) { event.preventDefault(); window.location.assign(link.href); } }}
       aria-current={mobileLinkActive(pathname, link.href) ? "page" : undefined}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={link.path} /></svg>
-      <span>{link.label}</span>
+      <span>{link.href === "/sell" && !isAdmin ? "Sell soon" : link.label}</span>
     </Link>)}
   </nav>;
 }

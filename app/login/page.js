@@ -30,7 +30,7 @@ export default function LoginPage() {
         if (error) throw error;
 
         setMessage(
-          "Pending account created. Confirm your email, sign in, then upload your ID at Account Verification. Administrator approval is required before selling or bidding."
+          "Account created. Confirm your email, sign in, then upload your ID at Account Verification to receive bidding approval. You can browse and contact sellers about buying. Selling for members is coming soon."
         );
       } else {
         const { error } = await supabase.auth.signInWithPassword({

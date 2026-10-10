@@ -14,6 +14,7 @@ function mock({ missing = false, rejected = false, unknown = false, uploadFailur
     return rejected ? { error: { message: "Rejected" } } : { data: { id: 5 } };
   };
   const client = {
+    rpc: async name => { assert.equal(name, "is_marketplace_admin"); return { data: true }; },
     storage: { from: () => ({ upload: async (path, file, options) => {
       if (uploadFailure && calls.uploads.length === 1) return { error: { message: "Failed" } };
       calls.uploads.push({ path, file, options }); return {};

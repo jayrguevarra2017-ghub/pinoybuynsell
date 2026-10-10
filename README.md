@@ -2,6 +2,14 @@
 
 Initial Next.js App Router marketplace prototype for Hostinger.
 
+## Administrator-only selling
+
+For now, only trusted marketplace administrators can create or edit their own listings and upload listing photos. Non-admin accounts, the selling page and navigation show **Selling coming soon**. Administrators retain selling and Facebook Page posting access; selling no longer requires their seller ID approval. Listing ownership, prohibited-items validation, shipping requirements and auction terms remain enforced. Ordinary accounts can browse, contact sellers about buying, follow sellers, recommend sellers and like items under their existing rules. Bidding still requires ID approval and rejects own-item bids or unavailable auctions. There is no automatic checkout/payment flow.
+
+Activate the database restriction by running `supabase/migrations/202610100015_admin_only_selling.sql` as a **new query** in Supabase SQL Editor after the installed migrations. The website checks trusted `is_marketplace_admin` membership, but this SQL step is required to block direct database and listing-photo writes. It replaces the previous seller verification guards with admin guards and preserves existing listings, photos, bids, public reads and private account data. No new keys or Hostinger environment variables are needed. The connected service-role data key cannot execute schema SQL. After activation, the public `marketplace_selling_policy` RPC returns `admin-only`.
+
+Validation: 124 automated tests, a production build, 41 local database checks and browser checks. Coverage includes verified non-admin write rejection, buyer bidding, unverified admin listing/photo writes, moderation, role revocation, role-check failures, mobile layouts and administrator Facebook posting. Browser writes were mocked. Hosted SQL activation and Hostinger deployment must be confirmed separately.
+
 ## Run locally
 
 ```bash

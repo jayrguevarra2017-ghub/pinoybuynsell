@@ -84,7 +84,7 @@ export default function Header() {
             ))}
 
           <Link className="sell" href="/sell">
-            + Sell an Item
+            {app?.isAdmin ? "+ Sell an Item" : "Selling soon"}
           </Link>
         </div>
       </div>
