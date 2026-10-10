@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
+import { useApp } from "@/components/AppProvider";
 import { supabase } from "@/lib/supabase";
 import { openIdentityDocument, reviewIdentity, withDeadline } from "@/lib/verification-actions";
 
 export default function AdminVerifications() {
+  const app = useApp();
   const [allowed, setAllowed] = useState(false), [items, setItems] = useState([]);
   const [message, setMessage] = useState("Checking administrator access...");
   const [busy, setBusy] = useState(null), [document, setDocument] = useState(null);
@@ -47,6 +49,7 @@ export default function AdminVerifications() {
     notify(item.user_id, decision === "approved" ? "Approving account..." : "Rejecting submission...");
     try {
       await reviewIdentity(supabase, item.user_id, decision, notes[item.user_id]);
+      void app?.refreshAdminAttention();
       setItems(current => current.filter(entry => entry.user_id !== item.user_id));
       setDocument(null);
       setMessage(decision === "approved" ? "Account approved successfully." : "Submission rejected. The user can submit a new ID.");

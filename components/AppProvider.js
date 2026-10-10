@@ -5,6 +5,7 @@ import { appPlatform, installedDisplay } from "@/lib/app-install.mjs";
 import { supabase } from "@/lib/supabase";
 import ListingLikesProvider from "@/components/ListingLikesProvider";
 import { readSellingAccess } from "@/lib/selling-access.mjs";
+import useAdminAttention from "@/components/useAdminAttention";
 
 const AppContext = createContext(null);
 export function useApp() { return useContext(AppContext); }
@@ -18,6 +19,10 @@ export default function AppProvider({ children }) {
   const isAdmin = Boolean(user && adminAccess?.userId === user.id && adminAccess.allowed === true);
   const adminReady = authReady && (!user || (adminAccess?.userId === user.id && adminAccess.ready));
   const adminError = user && adminAccess?.userId === user.id ? adminAccess.error || "" : "";
+  const { adminAttention, refreshAdminAttention } = useAdminAttention({ userId: user?.id, isAdmin, online });
+  useEffect(() => {
+    if (isAdmin && adminAttention.allowed === false) setAdminAccess({ userId: user.id, allowed: false, ready: true });
+  }, [isAdmin, adminAttention.allowed, user?.id]);
   const dialog = useRef(null), installLock = useRef(false);
   useEffect(() => {
     let cancelled = false, revision = 0;
@@ -80,9 +85,10 @@ export default function AppProvider({ children }) {
   }
 
   return <AppContext.Provider value={{ installed, online, user, authReady, isAdmin, adminReady, adminError,
+    adminAttention, refreshAdminAttention,
     refreshAdminAccess: () => setAdminRevision(value => value + 1), openInstall: () => setOpen(true) }}>
     <ListingLikesProvider userId={user?.id || null} ready={authReady} online={online}>{children}</ListingLikesProvider>
-    <MobileAppNav online={online} isAdmin={isAdmin} />
+    <MobileAppNav online={online} isAdmin={isAdmin} adminAttention={adminAttention} />
     <dialog ref={dialog} className="app-install-dialog" aria-labelledby="app-install-title" onCancel={() => setOpen(false)}
       onClick={event => {
         if (event.target !== event.currentTarget) return;

@@ -126,6 +126,16 @@ Validation for the October 9 gallery update: 64 automated tests, 50 local databa
 
 Validation for the October 10 sharing fix: 77 automated tests and a production build, plus browser checks for administrator ownership, selected-listing review without automatic posting, exactly one mock publish for duplicate clicks, saved-result displays, stale-processing protection, bounded status loading, invalid links and mobile/desktop layouts. Listing 5's public cover was verified as a real JPEG; its posting records were read without changing them. Live Hostinger HTML is inaccessible from this cloud network, and the hosting Page credentials are not injected here. A real Page post is therefore a user smoke test after Hostinger deploys; local browser publishing requests are intercepted and never sent to Meta.
 
+## Administrator task notices
+
+My Account → Administrator tools shows exact counts for pending ID reviews, open support conversations, and USA shopping requests in `new` or `contacted` status. Each count links to its queue. A combined attention badge appears on the desktop My Account link and the mobile Account tab; large totals display as `99+`. These are outstanding work counts: a replied-to support conversation still counts until closed, and a contacted USA request still counts until closed. The total covers these three queues, not Facebook posting errors or listing moderation.
+
+Counts refresh every 30 seconds while the website tab is visible, on focus/reconnection, through Refresh task counts, and immediately after a successful ID decision, support closure, or USA request status change. This feature needs no new SQL migration, Hostinger secret, or outbound notification service. It uses count-only HEAD requests through the signed-in Supabase client and existing RLS; no customer contact details or private ID documents are retrieved for badges. Trusted administrator membership is checked before each count refresh. Ordinary accounts do not query these queues for notices, and revoked access removes the tools and badges.
+
+Unavailable counts are identified explicitly, with a partial total when other queues load. An all-clear message appears only after all three counts load successfully as zero. Requests have an eight-second deadline; offline state, account changes and overlapping refreshes discard outdated results. Counts are foreground website notices and do not send email or push notifications.
+
+Validation: 130 automated tests and the production build passed. Mocked Chromium checks cover admin/member visibility, counts above 1,000, partial errors and recovery, badge overflow, updates after each queue action, all-clear state, offline recovery, automatic polling, role revocation, and 320/390/1280 layouts. Hosted checks were read-only and confirmed the three exact-count queries and browser access to their count headers. No real customer records were updated during testing.
+
 ## Next development stages
 
 - Database and real product listings

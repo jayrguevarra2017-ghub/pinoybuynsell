@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { mobileLinkActive } from "@/lib/app-install.mjs";
+import AdminAttentionBadge from "@/components/AdminAttentionBadge";
 
 const links = [
   { href: "/", label: "Home", path: "m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9" },
@@ -11,7 +12,7 @@ const links = [
   { href: "/account", label: "Account", path: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M4 21v-2a8 8 0 0 1 16 0v2" },
 ];
 
-export default function MobileAppNav({ online = true, isAdmin = false }) {
+export default function MobileAppNav({ online = true, isAdmin = false, adminAttention }) {
   const pathname = usePathname() || "/";
   return <nav className="mobile-app-nav" aria-label="Mobile navigation">
     {links.map(link => <Link key={link.href} href={link.href} prefetch={false}
@@ -19,6 +20,7 @@ export default function MobileAppNav({ online = true, isAdmin = false }) {
       aria-current={mobileLinkActive(pathname, link.href) ? "page" : undefined}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={link.path} /></svg>
       <span>{link.href === "/sell" && !isAdmin ? "Sell soon" : link.label}</span>
+      {link.href === "/account" && isAdmin && <AdminAttentionBadge state={adminAttention} />}
     </Link>)}
   </nav>;
 }

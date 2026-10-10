@@ -7,6 +7,7 @@ import SiteLogo from "@/components/SiteLogo";
 import VisitorCounter from "@/components/VisitorCounter";
 import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
+import AdminAttentionBadge from "@/components/AdminAttentionBadge";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -68,6 +69,7 @@ export default function Header() {
               <>
                <Link className="login" href="/account">
   My Account
+  {app?.isAdmin && <AdminAttentionBadge state={app.adminAttention} />}
 </Link>
                 <button
                   type="button"
