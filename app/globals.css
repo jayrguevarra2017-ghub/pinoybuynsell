@@ -354,7 +354,7 @@ footer { background: #242424; color: #e2e2e8; }
 .photo-picker h2 small { font-size: 13px; font-weight: 400; color: #66738a; }
 .photo-picker > label { display: grid; gap: 10px; font-weight: 750; font-size: 14px; }
 .photo-picker > p { color: #526078; font-size: 13px; line-height: 1.6; }
-.photo-picker input { max-width: 100%; }
+.photo-picker input { width: 100%; min-width: 0; max-width: 100%; }
 .photo-picker-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
 .photo-picker-item { min-width: 0; padding: 10px; border: 1px solid #dce2eb; border-radius: 12px; }
 .photo-picker-item img { width: 100%; height: 120px; object-fit: contain; background: #f3f5f8; }
@@ -404,6 +404,13 @@ footer { background: #242424; color: #e2e2e8; }
 .listing-like-message a { color: #2454d6; text-decoration: underline; }
 .seller-summary { margin: 20px 0; padding: 18px; border: 1px solid #dce4f2; border-radius: 16px; background: #f7faff; }
 .listing-edit-fields { border: 0; margin: 0; padding: 0; min-width: 0; }
+.listing-photo-suggestions { margin-bottom: 28px; padding: 18px; border: 1px solid #dce2eb; border-radius: 12px; background: #f7f9ff; }
+.listing-photo-suggestions h2 { font-size: 20px; }
+.listing-photo-suggestions p, .listing-photo-suggestions li { font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.listing-photo-suggestions .view { width: 100%; white-space: normal; }
+.listing-suggestion-preview { margin-top: 18px; border-top: 1px solid #dce2eb; }
+.listing-suggestion-preview h3 { font-size: 16px; margin-top: 18px; }
+.listing-suggestion-description { white-space: pre-wrap; }
 .listing-save-result { margin-top: 24px; padding: 22px; border: 1px solid #dce4f2; border-radius: 16px; background: #f7faff; }
 .listing-save-result h2 { font-size: 24px; margin: 0 0 16px; }
 .listing-save-result > p { line-height: 1.7; overflow-wrap: anywhere; }
