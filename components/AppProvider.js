@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import MobileAppNav from "@/components/MobileAppNav";
 import { appPlatform, installedDisplay } from "@/lib/app-install.mjs";
 import { supabase } from "@/lib/supabase";
+import ListingLikesProvider from "@/components/ListingLikesProvider";
 
 const AppContext = createContext(null);
 export function useApp() { return useContext(AppContext); }
@@ -64,7 +65,7 @@ export default function AppProvider({ children }) {
   }
 
   return <AppContext.Provider value={{ installed, online, user, authReady, openInstall: () => setOpen(true) }}>
-    {children}
+    <ListingLikesProvider userId={user?.id || null} ready={authReady} online={online}>{children}</ListingLikesProvider>
     <MobileAppNav online={online} />
     <dialog ref={dialog} className="app-install-dialog" aria-labelledby="app-install-title" onCancel={() => setOpen(false)}
       onClick={event => {

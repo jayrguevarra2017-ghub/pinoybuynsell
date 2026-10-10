@@ -10,6 +10,7 @@ import ListingAvailability from "@/components/ListingAvailability";
 import AuctionCountdown from "@/components/AuctionCountdown";
 import Header from "@/components/Header";
 import SellerSummary from "@/components/SellerSummary";
+import ListingLike from "@/components/ListingLike";
 import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
 
@@ -191,6 +192,7 @@ export default function ProductPage({ initialProduct = null }) {
           <div className="listing-purchase-panel">
             <p className="eyebrow">{isAuction ? "BID & WIN" : "FIND YOUR NEXT FAVORITE"}</p>
             <h1>{product.title}</h1>
+            <ListingLike key={`${product.id}:${app?.user?.id || "guest"}`} listingId={product.id} title={product.title} />
             <SellerSummary key={`${product.seller_id}:${app?.user?.id || "guest"}`} sellerId={product.seller_id} />
             <div className="listing-summary-tags"><span>{isAuction ? "Auction / bidding" : "Fixed price"}</span>
               {product.condition && <span>{product.condition}</span>}<span>📍 {product.location || "Philippines"}</span></div>

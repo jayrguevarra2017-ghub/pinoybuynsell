@@ -3,6 +3,7 @@ import ShippingDetails from "@/components/ShippingDetails";
 import AuctionCountdown from "@/components/AuctionCountdown";
 import Link from "next/link";
 import { peso } from "@/lib/data";
+import ListingLike from "@/components/ListingLike";
 
 export default function ProductCard({ product }) {
   if (!product) return null;
@@ -11,13 +12,14 @@ export default function ProductCard({ product }) {
 
   return (
     <article className="product">
-      <Link
+      <div className="listing-card-media"><Link
         href={`/product/${product.id}`}
         className="product-image"
       >
         <ListingPhoto product={product} />
         <b>{product.condition || "Item"}</b>
       </Link>
+      <ListingLike listingId={product.id} title={product.title} overlay /></div>
 
       <div className="product-body">
         <p className="category-label">
