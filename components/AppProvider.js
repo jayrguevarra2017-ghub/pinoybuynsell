@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase";
 import ListingLikesProvider from "@/components/ListingLikesProvider";
 import { readSellingAccess } from "@/lib/selling-access.mjs";
 import useAdminAttention from "@/components/useAdminAttention";
+import useBidNotifications from "@/components/useBidNotifications";
+import { BidNotificationToast } from "@/components/BidNotifications";
 
 const AppContext = createContext(null);
 export function useApp() { return useContext(AppContext); }
@@ -20,6 +22,7 @@ export default function AppProvider({ children }) {
   const adminReady = authReady && (!user || (adminAccess?.userId === user.id && adminAccess.ready));
   const adminError = user && adminAccess?.userId === user.id ? adminAccess.error || "" : "";
   const { adminAttention, refreshAdminAttention } = useAdminAttention({ userId: user?.id, isAdmin, online });
+  const bids = useBidNotifications({ userId: user?.id, online });
   useEffect(() => {
     if (isAdmin && adminAttention.allowed === false) setAdminAccess({ userId: user.id, allowed: false, ready: true });
   }, [isAdmin, adminAttention.allowed, user?.id]);
@@ -85,10 +88,11 @@ export default function AppProvider({ children }) {
   }
 
   return <AppContext.Provider value={{ installed, online, user, authReady, isAdmin, adminReady, adminError,
-    adminAttention, refreshAdminAttention,
+    adminAttention, refreshAdminAttention, ...bids,
     refreshAdminAccess: () => setAdminRevision(value => value + 1), openInstall: () => setOpen(true) }}>
     <ListingLikesProvider userId={user?.id || null} ready={authReady} online={online}>{children}</ListingLikesProvider>
     <MobileAppNav online={online} isAdmin={isAdmin} adminAttention={adminAttention} />
+    <BidNotificationToast state={bids.bidNotifications} onDismiss={bids.dismissBidNotification} />
     <dialog ref={dialog} className="app-install-dialog" aria-labelledby="app-install-title" onCancel={() => setOpen(false)}
       onClick={event => {
         if (event.target !== event.currentTarget) return;

@@ -8,6 +8,7 @@ import VisitorCounter from "@/components/VisitorCounter";
 import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
 import AdminAttentionBadge from "@/components/AdminAttentionBadge";
+import BidNotificationLink from "@/components/BidNotificationLink";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -95,6 +96,7 @@ export default function Header() {
           <button ref={menuButton} type="button" className="mobile-menu-toggle" aria-expanded={menuOpen} aria-controls="mobile-site-menu" onClick={() => setMenuOpen(!menuOpen)}><span aria-hidden="true">☰</span> Menu</button>
           {app && !app.installed && <button type="button" className="app-install-button" onClick={app.openInstall}>Install app</button>}
         </div>
+        <BidNotificationLink />
         <VisitorCounter />
       </div>
       {app && !app.online && <p className="app-connection-notice" role="status">You’re offline. Reconnect to refresh listings, place bids or send messages.</p>}

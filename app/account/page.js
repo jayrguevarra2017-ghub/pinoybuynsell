@@ -14,6 +14,7 @@ import { useApp } from "@/components/AppProvider";
 import SellingComingSoon from "@/components/SellingComingSoon";
 import { readAccountProfile, saveAccountProfile } from "@/lib/account-profile.mjs";
 import { withDeadline } from "@/lib/verification-actions";
+import BidNotifications from "@/components/BidNotifications";
 
 export default function AccountPage() {
   const app = useApp();
@@ -130,6 +131,7 @@ function AccountContent() {
           <Link className="view" href="/usa-shopping">Request USA shopping assistance</Link>
 
           <AdminAccountLinks />
+          <BidNotifications compact />
           {!app?.adminReady ? <p>Checking selling access…</p> : app.adminError ? <>
             <p role="alert">{app.adminError}</p><button type="button" onClick={app.refreshAdminAccess}>Retry selling access check</button>
           </> : !app.isAdmin && <SellingComingSoon />}
