@@ -62,6 +62,14 @@ Deletion requires confirmation and a reason, uses the existing `admin_delete_lis
 
 Validation covers ownership and role changes, a new listing with historical bids, photo reuse, deletion receipts and rejected operations. Browser checks use mocked writes; real listings and bids are not modified during verification.
 
+## Payment and return rules
+
+Fixed-price purchases and winning auction bids are payable by **GCash or bank deposit only; cash on delivery (COD) is not available**. Change-of-mind returns are not accepted. The rules direct customers with defective, damaged or incorrect items to the seller or support team and preserve applicable consumer rights. Customers confirm payment details and the total, including shipping, with the seller before paying. The website does not collect payments or automatically verify deposits.
+
+The notice appears on item pages before the bidding section, including closed auctions, and in the administrator listing form. `/payment-rules` explains the policy and is linked from the homepage footer, the navigation menu and marketplace rules, and included in the sitemap. The automated help guide answers GCash, bank deposit, COD, bidding and return questions consistently. Newly generated Facebook captions include the short rules and direct customers to the listing for the full policy; existing Facebook posts are not changed automatically.
+
+This is a policy-display update using shared copy in `lib/payment-rules.mjs`. It adds no checkout, refund processing, payment collection, database migration or Hostinger variables. Payment account details and settlement remain direct arrangements with the seller. Validation uses the existing automated suite, the production build and browser checks for fixed-price and auction notices, public navigation, help guidance and mobile layouts; browser data operations are mocked.
+
 ## Minimum bid increases
 
 Administrators choose a minimum increase on each auction: **₱20, ₱40, ₱60, … ₱1,000**. These are the numbers between 10 and 1,000 divisible by both 10 and 20. New auctions default to ₱20. Every bid must be at least the larger of the current bid and starting price plus this increase; higher offers are allowed. For example, a ₱100 current bid with a ₱40 increase accepts ₱140 or more. The buyer sees the next minimum, which updates after a confirmed bid. Rules lock after the first bid and relisting copies the chosen increase to the new auction. Existing auctions retain their original ₱0.01 increase unless changed before any bids; relisting a legacy auction starts with the new ₱20 default.

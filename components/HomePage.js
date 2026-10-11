@@ -202,7 +202,7 @@ export default function HomePage({ initialProducts = null }) {
             </div>
           </div>
 
-          <div><Link href="/prohibited-items">Prohibited items policy</Link><p>© 2026 PinoyBuyNSell</p></div>
+          <div><Link href="/prohibited-items">Prohibited items policy</Link><p><Link href="/payment-rules">Payment &amp; returns</Link></p><p>© 2026 PinoyBuyNSell</p></div>
         </div>
       </footer>
     </>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import ListingGallery from "@/components/ListingGallery";
 import ListingShare from "@/components/ListingShare";
 import ShippingDetails from "@/components/ShippingDetails";
+import PaymentRules from "@/components/PaymentRules";
 import ListingAvailability from "@/components/ListingAvailability";
 import AuctionCountdown from "@/components/AuctionCountdown";
 import Header from "@/components/Header";
@@ -207,6 +208,7 @@ export default function ProductPage({ initialProduct = null }) {
               <strong>{price != null ? `₱${Number(price).toLocaleString("en-PH")}` : "Checking auction price…"}</strong>
               {isAuction && <p className="muted">Seller’s reference item value: ₱{Number(product.price).toLocaleString("en-PH")}</p>}
             </div>
+            <PaymentRules />
             {isAuction && <div className="auction-countdown-panel">
               <AuctionCountdown endTime={auction?.ends_at ?? product.auction_ends_at} startsAt={auction?.starts_at}
                 status={product.status === "active" ? (auction?.status ?? "active") : "ended"} showLabel />

@@ -19,6 +19,7 @@ import SellingComingSoon from "@/components/SellingComingSoon";
 import { readRelistSource, relistListing } from "@/lib/listing-management.mjs";
 import { withDeadline } from "@/lib/verification-actions";
 import { minimumMarketplaceBid, readBidIncrementCapability, bidIncreaseChoices } from "@/lib/bid-increments.mjs";
+import { paymentMethodsSummary, returnsPolicySummary } from "@/lib/payment-rules.mjs";
 
 export default function SellingPage(props) {
   const app = useApp();
@@ -310,6 +311,7 @@ function SellPage({ listingId = null, sourceListingId = null }) {
 
             <section className="listing-options listing-form" aria-labelledby="selling-options-title">
               <h2 id="selling-options-title">Selling options</h2>
+              <p><strong>Payment rules: {paymentMethodsSummary} {returnsPolicySummary}</strong> Applies to purchases and winning bids. <Link href="/payment-rules">Read payment and return rules</Link></p>
               {auctionLocked && <p role="status">Bids have been placed. Selling format, price, quantity, variations, bid increase and auction closing time are locked.</p>}
               <label htmlFor="listing-type">Is this item for bidding?
                 <select id="listing-type" name="listing_type" value={form.listing_type}

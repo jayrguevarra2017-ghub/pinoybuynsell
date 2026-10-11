@@ -102,7 +102,7 @@ export default function Header() {
       {app && !app.online && <p className="app-connection-notice" role="status">You’re offline. Reconnect to refresh listings, place bids or send messages.</p>}
       <nav id="mobile-site-menu" className="container mobile-site-menu" aria-label="More mobile links" hidden={!menuOpen}>
         {[ ["Home", "/"], ["Browse", "/search"], ["Auctions", "/auctions"], ["Buy from USA", "/usa-shopping"],
-          ["Categories", "/#categories"], ["My account", "/account"], ["Marketplace rules", "/prohibited-items"] ].map(([label, href]) =>
+          ["Categories", "/#categories"], ["My account", "/account"], ["Payment & returns", "/payment-rules"], ["Marketplace rules", "/prohibited-items"] ].map(([label, href]) =>
           <Link key={href} href={href} prefetch={false} onClick={() => setMenuOpen(false)}>{label}</Link>)}
       </nav>
     </header>

@@ -338,6 +338,10 @@ footer { background: #242424; color: #e2e2e8; }
 .listing-shipping { padding: 20px 0; border-top: 1px solid #e6eaf0; }
 .listing-shipping h2 { font-size: 18px; margin: 0 0 10px; }
 .listing-shipping p { font-size: 13px; line-height: 1.6; }
+.listing-payment-rules { margin: 20px 0; padding: 16px 18px; background: #f4faf6; border: 1px solid #cfe3d6; border-radius: 14px; }
+.listing-payment-rules h2 { margin: 0 0 10px; font-size: 18px; }
+.listing-payment-rules p { margin: 0 0 10px; font-size: 13px; line-height: 1.6; }
+.listing-payment-rules a { font-size: 13px; font-weight: 600; text-decoration: underline; }
 .listing-details-bottom { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(0,1fr); gap: 48px; margin-top: 40px; padding-top: 32px; border-top: 1px solid #e6eaf0; }
 .listing-details-bottom h2 { font-size: 24px; margin: 0 0 18px; }
 .listing-description > p:last-child { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; font-size: 15px; color: #526078; }
