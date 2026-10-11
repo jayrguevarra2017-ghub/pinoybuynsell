@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { supabase } from "@/lib/supabase";
 import { announceSellerChange, communityError, communityRequest, validateRecommendation } from "@/lib/seller-community.mjs";
+import SellerRecommendationSamples from "@/components/SellerRecommendationSamples";
 
 export default function SellerRecommendations({ sellerId, profile, onChange }) {
   const app = useApp(), user = app?.user;
@@ -57,6 +58,7 @@ export default function SellerRecommendations({ sellerId, profile, onChange }) {
       <button type="button" disabled={loading || offset === 0} onClick={() => setOffset(v => Math.max(0,v-20))}>Previous recommendations</button>
       <button type="button" disabled={loading || !hasMore} onClick={() => setOffset(v => v+20)}>Next recommendations</button>
     </div>}
+    <SellerRecommendationSamples sellerId={sellerId} />
     {!app?.authReady ? <p>Checking sign-in…</p> : !user ? <Link className="view inline" href="/login">Sign in to recommend this seller</Link> : user.id === sellerId ?
       <p className="muted">Customers can leave recommendations here. You cannot recommend yourself.</p> : profile && <>
         {profile.can_recommend ? <form className="seller-recommendation-form" onSubmit={save}>

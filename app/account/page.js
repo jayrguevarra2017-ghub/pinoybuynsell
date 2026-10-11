@@ -8,6 +8,7 @@ import ListingViews from "@/components/ListingViews";
 import ShippingDetails from "@/components/ShippingDetails";
 import AdminAccountLinks from "@/components/AdminAccountLinks";
 import AccountFollowers from "@/components/AccountFollowers";
+import SellerRecommendationSamples from "@/components/SellerRecommendationSamples";
 import Header from "@/components/Header";
 import FollowedSellers from "@/components/FollowedSellers";
 import { sellerUrl } from "@/lib/seller-community.mjs";
@@ -139,6 +140,7 @@ function AccountContent() {
             </div>
           </div>
           {app?.isAdmin && <AccountFollowers key={user.id} sellerId={user.id} />}
+          {app?.isAdmin && <SellerRecommendationSamples sellerId={user.id} />}
           <div className="account-dashboard">
             <AdminAccountLinks />
             <BidNotifications compact />
