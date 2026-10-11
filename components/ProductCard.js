@@ -21,7 +21,7 @@ export default function ProductCard({ product }) {
         href={`/product/${product.id}`}
         className="product-image"
       >
-        <ListingPhoto product={product} />
+        <ListingPhoto product={product} fit="contain" />
         <b>{now === null && product.listing_type === "auction" && product.status !== "sold" ? "Auction" : availability.rank >= 1 ? availability.label : product.condition || "Item"}</b>
       </Link>
       <ListingLike listingId={product.id} title={product.title} overlay /></div>
