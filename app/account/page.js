@@ -124,162 +124,86 @@ function AccountContent() {
     <>
       <Header />
 
-      <main className="page">
-        <div className="container narrow auth account-page">
-          <p className="eyebrow">MY ACCOUNT</p>
-
-          <h1>Welcome to PinoyBuyNSell</h1>
-
-          <p>Manage your account and marketplace activity.</p>
-          <Link className="view" href="/verify">ID verification and approval status</Link>
-          <Link className="view" href="/usa-shopping">Request USA shopping assistance</Link>
-
-          <AdminAccountLinks />
-          <BidNotifications compact />
+      <main className="page account-main">
+        <div className="container account-page">
+          <div className="account-heading">
+            <div><p className="eyebrow">PINOYBUYSELL</p><h1>My account</h1></div>
+            <div className="account-quick-links">
+              <Link className="view inline" href="/verify">ID verification</Link>
+              <Link className="view inline" href="/usa-shopping">USA shopping</Link>
+              {sellerUrl(user?.id) && listings.some(item => !item.deleted_at && ["active", "sold"].includes(item.status)) &&
+                <Link className="view inline" href={sellerUrl(user.id)}>Seller profile</Link>}
+            </div>
+          </div>
+          <div className="account-dashboard">
+            <AdminAccountLinks />
+            <BidNotifications compact />
+          </div>
           {!app?.adminReady ? <p>Checking selling access…</p> : app.adminError ? <>
             <p role="alert">{app.adminError}</p><button type="button" onClick={app.refreshAdminAccess}>Retry selling access check</button>
           </> : !app.isAdmin && <SellingComingSoon />}
-          {sellerUrl(user?.id) && listings.some(item => !item.deleted_at && ["active", "sold"].includes(item.status)) &&
-            <Link className="view" href={sellerUrl(user.id)}>My public seller profile</Link>}
-          <FollowedSellers />
+          <div className="account-secondary-panels">
+            <details className="account-panel account-following-panel">
+              <summary><strong>Sellers you follow</strong><span>View followed sellers</span></summary>
+              <FollowedSellers />
+            </details>
 
           {profileError && <div role="alert"><p>{profileError}</p>
             <button type="button" disabled={saving} onClick={() => setRevision(value => value + 1)}>Retry profile loading</button>
           </div>}
-          <form
-            onSubmit={handleSave}
-            style={{
-              marginTop: "30px",
-              padding: "24px",
-              border: "1px solid #e5e7eb",
-              borderRadius: "12px",
-            }}
-          >
-            <h2>Profile Information</h2>
-
-            <p>
-              <strong>Email:</strong> {user?.email}
-            </p>
-
-            <div style={{ marginTop: "20px" }}>
-              <label htmlFor="profile-username">
-                <strong>Username</strong>
-              </label>
-              <input
-                type="text"
-                name="username"
-                id="profile-username"
-                disabled={!profileReady || saving}
-                value={profile.username}
-                onChange={handleChange}
-                placeholder="Username"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  marginTop: "6px",
-                  marginBottom: "16px",
-                }}
-              />
+          <details className="account-panel account-profile-panel">
+            <summary><strong>Profile information</strong><span>Edit your details</span></summary>
+            <form className="account-profile-form" onSubmit={handleSave}>
+              <p className="account-email"><strong>Email:</strong> {user?.email}</p>
+              <fieldset className="account-profile-fields" disabled={!profileReady || saving}>
+                <legend className="sr-only">Profile information</legend>
+                {[
+                  { name: "username", id: "profile-username", label: "Username", placeholder: "Username" },
+                  { name: "full_name", id: "profile-full-name", label: "Full name", placeholder: "Full name" },
+                  { name: "phone", id: "profile-phone", label: "Phone", placeholder: "Phone number", type: "tel" },
+                  { name: "location", id: "profile-location", label: "Location", placeholder: "City / Province" },
+                ].map(field => <label key={field.name} htmlFor={field.id}>{field.label}
+                  <input type={field.type || "text"} name={field.name} id={field.id} value={profile[field.name]}
+                    onChange={handleChange} placeholder={field.placeholder} />
+                </label>)}
+              </fieldset>
               <small>Your username appears on your seller profile and recommendations.</small>
+              <button type="submit" disabled={saving || !profileReady}>{saving ? "Saving..." : "Save Profile"}</button>
+              {message && <p role="status"><strong>{message}</strong></p>}
+            </form>
+          </details>
+          </div>
 
-              <label htmlFor="profile-full-name">
-                <strong>Full Name</strong>
-              </label>
-              <input
-                type="text"
-                name="full_name"
-                id="profile-full-name"
-                disabled={!profileReady || saving}
-                value={profile.full_name}
-                onChange={handleChange}
-                placeholder="Full name"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  marginTop: "6px",
-                  marginBottom: "16px",
-                }}
-              />
-
-              <label htmlFor="profile-phone">
-                <strong>Phone</strong>
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                id="profile-phone"
-                disabled={!profileReady || saving}
-                value={profile.phone}
-                onChange={handleChange}
-                placeholder="Phone number"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  marginTop: "6px",
-                  marginBottom: "16px",
-                }}
-              />
-
-              <label htmlFor="profile-location">
-                <strong>Location</strong>
-              </label>
-              <input
-                type="text"
-                name="location"
-                id="profile-location"
-                disabled={!profileReady || saving}
-                value={profile.location}
-                onChange={handleChange}
-                placeholder="City / Province"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  marginTop: "6px",
-                  marginBottom: "20px",
-                }}
-              />
+          <section className="account-listings" aria-labelledby="my-listings">
+            <div className="account-section-heading">
+              <h2 id="my-listings">My listings <span className="account-listing-count" aria-hidden="true">{listingsError ? "" : listings.length}</span></h2>
+              <button type="button" className="view inline" disabled={!app?.online || saving} onClick={() => setRevision(value => value + 1)}>Refresh my listings</button>
             </div>
-
-            <button type="submit" disabled={saving || !profileReady}>
-              {saving ? "Saving..." : "Save Profile"}
-            </button>
-
-            {message && (
-              <p role="status" style={{ marginTop: "15px" }}>
-                <strong>{message}</strong>
-              </p>
-            )}
-          </form>
-
-          <section style={{ marginTop: "30px" }} aria-labelledby="my-listings">
-            <h2 id="my-listings">My listings</h2>
-            <button type="button" className="view" disabled={!app?.online || saving} onClick={() => setRevision(value => value + 1)}>Refresh my listings</button>
             {listingsMessage && <p role="status">{listingsMessage}</p>}
-            {app?.isAdmin && <p>Relist ended auctions, sold items or items that are out of stock. Relisting creates a new listing and preserves the old bids. Delete hides a listing from buyers.</p>}
+            {app?.isAdmin && <p className="muted account-listings-help">Relist creates a fresh listing and keeps the old bids. Delete hides the listing.</p>}
             {listingsError ? <p role="alert">{listingsError}</p> : listings.length === 0 ? <p>You have no listings yet.</p> : listings.map((item) => (
-              <article key={item.id} style={{ padding: "20px", border: "1px solid #e5e7eb", borderRadius: "12px", marginBottom: "16px" }}>
-                <ListingPhoto product={item} detail />
-                <h3>{item.title}</h3>
+              <article key={item.id} className="account-listing-card">
+                <Link className="account-listing-thumbnail" href={`/product/${item.id}`} aria-label={`View ${item.title}`}>
+                  <ListingPhoto product={item} fit="contain" />
+                </Link>
+                <div className="account-listing-info">
+                <h3><Link href={`/product/${item.id}`}>{item.title}</Link></h3>
                 <p>₱{Number(item.price).toLocaleString("en-PH")} · {item.deleted_at ? "Deleted" : listingAvailability(item).label}</p>
                 {item.listing_type && <p>{item.listing_type === "auction" ? "Auction / bidding · one item or lot" : `Fixed price · ${item.quantity} available${item.variations?.length ? ` · ${item.variations.length} variations` : ""}`}</p>}
                 <ShippingDetails product={item} />
-                <Link className="view" href={`/product/${item.id}`}>View listing</Link>
-                {item.deleted_at ? <p>Removed by administrator</p> : app?.isAdmin && <Link className="view" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}
+                <div className="account-listing-links">
+                  <Link className="view inline" href={`/product/${item.id}`}>View listing</Link>
+                  {item.deleted_at ? <p className="muted">Removed by administrator</p> : app?.isAdmin && <Link className="view inline" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}
+                </div>
                 <ListingManagementActions key={`${item.id}:${item.deleted_at || "active"}`} product={item}
                   onDeleted={deleted => { setListings(current => current.map(row => String(row.id) === String(deleted.id) ? deleted : row)); setListingsMessage("Listing deleted from the marketplace. Auction and bid records were retained."); }}
                   onRefresh={() => setRevision(value => value + 1)} />
+                </div>
               </article>
             ))}
           </section>
 
-          <div
-            style={{
-              marginTop: "20px",
-              display: "flex",
-              gap: "12px",
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="account-footer-actions">
             {app?.isAdmin && <button onClick={() => router.push("/sell")}>
               Sell an Item
             </button>}

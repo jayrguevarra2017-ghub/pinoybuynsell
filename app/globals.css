@@ -480,3 +480,80 @@ button.seller-follow-button[aria-pressed=true],.followed-seller-list .seller-fol
 .listing-delete-confirm h4 { margin-top: 0; }
 .listing-delete-confirm label { display: block; }
 .listing-delete-confirm textarea { width: 100%; min-height: 90px; margin: 8px 0 16px; }
+
+/* Compact account dashboard; listing and administration pages keep their own layout. */
+.account-main { padding-top: 28px; }
+.page > .container.account-page { max-width: 1040px; padding: 24px; }
+.account-page h1 { font-size: clamp(26px, 3vw, 34px); margin: 0; letter-spacing: -.8px; }
+.account-page h2 { font-size: 19px; margin: 0; letter-spacing: -.3px; }
+.account-page p { line-height: 1.45; }
+.account-heading, .account-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.account-heading { margin-bottom: 18px; }
+.account-heading .eyebrow { margin-bottom: 5px; font-size: 10px; }
+.account-quick-links, .account-footer-actions, .account-listing-links { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.account-page .view, .account-footer-actions button { margin-top: 0; padding: 9px 12px; font-size: 13px; min-height: 44px; }
+.account-dashboard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.account-dashboard > * { min-width: 0; }
+.account-page .account-admin-tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 16px; border-radius: 12px; }
+.account-page .account-admin-tools h2, .account-page .admin-attention-summary { grid-column: 1 / -1; }
+.account-page .admin-attention-summary { display: grid; gap: 8px; margin: 0 0 4px; padding: 0; }
+.account-page .admin-attention-summary p { margin: 0; font-size: 14px; }
+.account-page .admin-attention-summary small { font-size: 11px; line-height: 1.4; }
+.admin-count-explanation summary { font-size: 12px; color: #526078; cursor: pointer; }
+.account-page .admin-count-explanation p { margin-top: 8px; font-size: 12px; }
+.account-page .admin-queue-link { gap: 6px; text-align: left; }
+.account-page .admin-queue-link span:first-child { min-width: 0; }
+.account-page .admin-queue-count { padding: 3px 7px; font-size: 12px; flex-shrink: 0; }
+.account-page .bid-notifications { margin: 0; padding: 16px; border-radius: 12px; }
+.account-page .bid-notifications p { margin: 8px 0; font-size: 13px; }
+.account-page .bid-notification-actions { gap: 8px; }
+.account-page .bid-notification-list { margin-top: 10px; }
+.account-page .bid-notification-list li { padding: 10px; margin-top: 8px; gap: 8px; }
+.account-page .bid-notification-list li > div { gap: 4px; font-size: 13px; }
+.account-page .bid-notification-list time { font-size: 11px; }
+.account-page .bid-notification-list button { padding: 8px; font-size: 12px; }
+.account-page .bid-notifications > .view { margin-top: 12px; }
+.account-secondary-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; align-items: start; }
+.account-panel { min-width: 0; padding: 12px 14px; border: 1px solid #dce2eb; border-radius: 12px; background: #fff; }
+.account-panel > summary { min-height: 44px; cursor: pointer; padding: 5px 0; font-size: 14px; }
+.account-panel > summary span { display: block; padding-left: 17px; margin-top: 4px; font-size: 12px; color: #66738a; }
+.account-panel[open] > summary { margin-bottom: 12px; }
+.account-page .followed-sellers { padding: 0; margin: 0; border: 0; }
+.account-page .followed-sellers > .eyebrow, .account-page .followed-sellers > h2 { display: none; }
+.account-page .followed-sellers p { font-size: 13px; }
+.account-page .followed-seller-list { margin-top: 0; gap: 8px; }
+.account-page .followed-seller-list article { padding: 10px; gap: 8px; }
+.account-profile-form { display: grid; gap: 12px; margin: 0; }
+.account-email { overflow-wrap: anywhere; font-size: 13px; margin: 0; }
+.account-profile-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.account-profile-fields label { display: grid; gap: 6px; font-size: 13px; font-weight: 650; min-width: 0; }
+.account-profile-fields input { width: 100%; min-width: 0; font-size: 16px; }
+.account-profile-form small { font-size: 12px; color: #66738a; }
+.account-listings { margin-top: 22px; }
+.account-listing-count { font-size: 12px; font-weight: 650; padding: 4px 8px; border-radius: 999px; background: #edf2ff; color: #2454d6; vertical-align: middle; }
+.account-listings-help { margin: 10px 0 14px; }
+.account-listing-card { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 14px; border: 1px solid #e1e5ed; border-radius: 12px; margin-top: 10px; }
+.account-listing-thumbnail { display: flex; width: 96px; height: 96px; justify-content: center; align-items: center; overflow: hidden; background: #f2f5fa; border-radius: 10px; }
+.account-listing-thumbnail > span { font-size: 32px; }
+.account-listing-info { min-width: 0; overflow-wrap: anywhere; }
+.account-listing-info h3 { font-size: 16px; line-height: 1.35; margin: 0 0 6px; }
+.account-listing-info p { font-size: 12px; margin: 5px 0; }
+.account-listing-links { margin-top: 10px; }
+.account-page .listing-management-actions { margin-top: 8px; }
+.account-page .listing-management-actions .listing-share-actions { gap: 8px; margin-top: 0; }
+.account-page .listing-delete-confirm { margin-top: 10px; padding: 12px; }
+.account-footer-actions { margin-top: 16px; }
+@media (max-width: 700px) {
+  .page > .container.account-page { padding: 16px; }
+  .account-main { padding-top: 18px; }
+  .account-dashboard, .account-secondary-panels { grid-template-columns: minmax(0, 1fr); }
+  .account-listing-card { grid-template-columns: 68px minmax(0, 1fr); gap: 10px; padding: 12px; }
+  .account-listing-thumbnail { width: 68px; height: 80px; }
+  .account-listing-info h3 { font-size: 14px; }
+  .account-listing-card .listing-delete-confirm { margin-left: -78px; }
+  .account-page .bid-notification-list li { flex-wrap: wrap; }
+}
+@media (max-width: 380px) {
+  .account-profile-fields { grid-template-columns: minmax(0, 1fr); }
+  .account-page .account-admin-tools { padding: 12px; gap: 6px; }
+}

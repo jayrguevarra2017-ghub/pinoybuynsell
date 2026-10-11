@@ -11,7 +11,9 @@ export default function AdminAccountLinks() {
     <h2>Administrator tools</h2>
     <div className="admin-attention-summary">
       <p role="status">{app.online ? adminAttentionLabel(state) : "Reconnect to check administrator tasks."}</p>
-      <p className="muted">Open support conversations count until closed, including conversations you have replied to. USA requests count until closed, including contacted customers.</p>
+      <details className="admin-count-explanation"><summary>How task counts work</summary>
+        <p className="muted">Open support conversations count until closed, including conversations you have replied to. USA requests count until closed, including contacted customers.</p>
+      </details>
       <button type="button" className="view" disabled={!app.online || state.refreshing} onClick={app.refreshAdminAttention}>
         {state.refreshing ? "Refreshing counts…" : "Refresh task counts"}
       </button>
