@@ -182,6 +182,8 @@ Validation for the October 10 sharing fix: 77 automated tests and a production b
 
 ## Administrator task notices
 
+The header's **Site visits** counter is visible only to signed-in, verified marketplace administrators. It stays hidden while administrator access is being checked, for ordinary accounts, and for guests. Visits from all visitors still count in the background using the existing daily browser deduplication; hiding the display does not stop visitor collection. This is a display change and needs no SQL or environment changes.
+
 My Account → Administrator tools shows exact counts for pending ID reviews, open support conversations, and USA shopping requests in `new` or `contacted` status. Each count links to its queue. A combined attention badge appears on the desktop My Account link and the mobile Account tab; large totals display as `99+`. These are outstanding work counts: a replied-to support conversation still counts until closed, and a contacted USA request still counts until closed. The total covers these three queues, not Facebook posting errors or listing moderation.
 
 Counts refresh every 30 seconds while the website tab is visible, on focus/reconnection, through Refresh task counts, and immediately after a successful ID decision, support closure, or USA request status change. This feature needs no new SQL migration, Hostinger secret, or outbound notification service. It uses count-only HEAD requests through the signed-in Supabase client and existing RLS; no customer contact details or private ID documents are retrieved for badges. Trusted administrator membership is checked before each count refresh. Ordinary accounts do not query these queues for notices, and revoked access removes the tools and badges.

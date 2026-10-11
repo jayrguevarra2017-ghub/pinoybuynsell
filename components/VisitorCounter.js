@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { recordVisit, visitorToken } from "@/lib/visitor-counter.mjs";
+import { useApp } from "@/components/AppProvider";
 
 export default function VisitorCounter() {
+  const app = useApp();
   const [total, setTotal] = useState(null);
   const [unavailable, setUnavailable] = useState(false);
   useEffect(() => {
@@ -35,6 +37,7 @@ export default function VisitorCounter() {
     load();
     return () => { cancelled = true; window.clearTimeout(retry); window.clearTimeout(deadline); controller?.abort(); };
   }, []);
+  if (!app?.isAdmin) return null;
   return <div className="visitor-counter" title={unavailable ? "Visitor total is temporarily unavailable. Please refresh to try again."
     : "One visit per browser per day. Counts begin when the counter is enabled."}>
     <span aria-hidden="true">◉</span> Site visits <strong>{total !== null ? BigInt(total).toLocaleString("en-PH") : unavailable ? "—" : "Loading…"}</strong>
