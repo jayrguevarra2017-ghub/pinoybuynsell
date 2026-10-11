@@ -177,6 +177,38 @@ footer { background: #242424; color: #e2e2e8; }
 @media(max-width: 850px) { .usa-showcase-grid, .usa-quote-layout { grid-template-columns: 1fr; gap: 28px; } .usa-showcase { padding: 48px 0; } .usa-route-card { max-width: 520px; width: 100%; margin: 0 auto; transform: none; } .usa-process-cards { grid-template-columns: 1fr; } .usa-quote-panel { padding: 22px; } }
 @media(max-width: 450px) { .usa-route-card { padding: 20px; } .usa-showcase h1, .usa-showcase h2 { font-size: 38px; } .usa-quote-button { font-size: 14px; padding: 15px 20px; gap: 12px; } .usa-quote-panel { padding: 18px; } }
 
+/* Compact homepage shopping shortcuts. */
+.usa-showcase.usa-showcase-compact { padding: 24px 0; }
+.usa-showcase-compact .usa-showcase-grid { grid-template-columns: minmax(0,1fr) auto; gap: 20px; }
+.usa-showcase-compact .usa-kicker { margin: 0 0 6px; font-size: 10px; letter-spacing: 1.2px; }
+.usa-showcase-compact h2 { margin: 0 0 6px; font-size: 26px; letter-spacing: -.6px; line-height: 1.2; }
+.usa-showcase-compact .usa-intro { margin: 0; font-size: 14px; line-height: 1.5; max-width: none; }
+.usa-showcase-compact .usa-small { margin: 6px 0 0; font-size: 11px; line-height: 1.5; max-width: none; }
+.usa-showcase-compact .usa-quote-button { margin: 0; min-height: 44px; padding: 12px 18px; gap: 12px; font-size: 13px; white-space: nowrap; justify-content: center; }
+.home-categories.section { padding: 28px 0; scroll-margin-top: 150px; }
+.home-categories .section-head { align-items: center; gap: 12px; margin-bottom: 14px; }
+.home-categories .section-head .eyebrow { margin-bottom: 5px; font-size: 10px; }
+.home-categories .section-head h2 { font-size: 25px; letter-spacing: -.6px; }
+.home-categories .section-head > a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; white-space: nowrap; }
+.home-categories .category-grid { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+.home-categories .category-card { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 12px; border-radius: 12px; min-width: 0; }
+.home-categories .category-card span { font-size: 24px; line-height: 1; flex-shrink: 0; }
+.home-categories .category-card strong { font-size: 13px; line-height: 1.3; overflow-wrap: anywhere; }
+@media(max-width:600px) {
+  .usa-showcase.usa-showcase-compact { padding: 20px 0; }
+  .usa-showcase-compact .usa-showcase-grid { grid-template-columns: minmax(0,1fr); gap: 14px; }
+  .usa-showcase-compact h2 { font-size: 23px; }
+  .usa-showcase-compact .usa-intro { font-size: 13px; }
+  .usa-showcase-compact .usa-quote-button { justify-self: start; }
+  .home-categories.section { padding: 22px 0; }
+  .home-categories .section-head { margin-bottom: 10px; }
+  .home-categories .section-head h2 { font-size: 22px; }
+  .home-categories .category-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .home-categories .category-card { gap: 8px; padding: 9px 10px; min-height: 48px; }
+  .home-categories .category-card span { font-size: 20px; }
+  .home-categories .category-card strong { font-size: 12px; }
+}
+
 .website-offer { padding: 48px 0; background: #f4f0ff; }
 .website-offer-panel { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 32px; padding: 36px; border: 1px solid #dacdf9; border-radius: 22px; background: radial-gradient(ellipse at top right, #e3d9ff, transparent 65%), #fff; }
 .website-offer h2 { margin: 10px 0; font-size: clamp(26px, 3vw, 36px); letter-spacing: -1px; }

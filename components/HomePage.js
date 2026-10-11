@@ -79,7 +79,7 @@ export default function HomePage({ initialProducts = null }) {
 
         <USAShoppingHero compact />
 
-        <section id="categories" className="section">
+        <section id="categories" className="section home-categories">
           <div className="container">
             <div className="section-head">
               <div>
@@ -97,7 +97,7 @@ export default function HomePage({ initialProducts = null }) {
                   href={`/search?category=${encodeURIComponent(category.name)}`}
                   className="category-card"
                 >
-                  <span>{category.icon}</span>
+                  <span aria-hidden="true">{category.icon}</span>
                   <strong>{category.name}</strong>
                 </Link>
               ))}

@@ -132,6 +132,8 @@ Validation: all 81 automated tests and the production build passed. A local Post
 
 ## Marketplace ordering
 
+Homepage **USA to Philippines** uses a short shopping-assistance banner with a quote link and the fee/charge notice. **Shop by category** uses smaller icon-and-label tiles: four columns on larger screens and two on phones, with all eight category links retained. Both sections have reduced spacing and touch targets of at least 44 pixels. The full USA shopping page retains its service details, illustration and request form. This layout update needs no SQL or environment changes.
+
 Home, Browse, Auctions and seller listings show live auctions in closing-time order, then available fixed-price stock, upcoming auctions, and finally sold, ended or out-of-stock items. Available fixed-price and closed items use newest-first ordering within their groups. Only the latest auction for an item is considered. Expiry is determined from the closing timestamp as well as the saved status; a timer reaching zero never marks an item as sold or changes bid records.
 
 Ordering happens before selecting each 24-item page. The public `/api/marketplace/listings` endpoint reads a lightweight anonymous index in 1,000-row pages, then retrieves photos/descriptions for the selected IDs only. It preserves category/search/seller filters and excludes hidden/deleted items. Index reads stop with an explicit error if 10,000 rows or inconsistent repeated IDs are encountered; move ordering into a paginated database function before the marketplace reaches that scale. Nothing is silently truncated. This feature requires no SQL migration or new secrets.
