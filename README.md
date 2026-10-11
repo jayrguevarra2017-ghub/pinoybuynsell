@@ -62,6 +62,16 @@ Deletion requires confirmation and a reason, uses the existing `admin_delete_lis
 
 Validation covers ownership and role changes, a new listing with historical bids, photo reuse, deletion receipts and rejected operations. Browser checks use mocked writes; real listings and bids are not modified during verification.
 
+## Minimum bid increases
+
+Administrators choose a minimum increase on each auction: **₱20, ₱40, ₱60, … ₱1,000**. These are the numbers between 10 and 1,000 divisible by both 10 and 20. New auctions default to ₱20. Every bid must be at least the larger of the current bid and starting price plus this increase; higher offers are allowed. For example, a ₱100 current bid with a ₱40 increase accepts ₱140 or more. The buyer sees the next minimum, which updates after a confirmed bid. Rules lock after the first bid and relisting copies the chosen increase to the new auction. Existing auctions retain their original ₱0.01 increase unless changed before any bids; relisting a legacy auction starts with the new ₱20 default.
+
+Activate by running [`supabase/migrations/202610110017_auction_bid_increments.sql`](supabase/migrations/202610110017_auction_bid_increments.sql) as a **new query** in Supabase SQL Editor after migration 011 and the installed listing migrations. It changes public marketplace tables/functions only, needs no managed Storage access and no new Hostinger variables or keys. It preserves listings, photos, historical bids and Facebook posts. The connected data key cannot apply schema migrations. After deployment and SQL activation, refresh the selling page; `marketplace_bid_increment_policy()` returns `amount-steps-v1`. Until SQL activation, custom controls stay disabled and the existing bidding rule remains available. A failed capability check blocks auction saves instead of silently ignoring a chosen rule.
+
+The bid RPC checks the minimum under the same product-then-auction locks as existing bidding and moderation. Concurrent bids are checked against the committed current price; direct browser writes to bids/auctions remain blocked. Bid amounts are sent as decimal strings to avoid rounding before the database receives them. Existing ownership, buyer approval, opening/closing times, admin-only listing permissions and policy checks still apply. Bid increases are minimums, not a cap on the total bid or a requirement for the total amount to be divisible by 20.
+
+Validation: 179 automated tests, 88 local database checks, a production build and mocked browser checks. Coverage includes every offered increase, invalid values, exact minimums, rejected underbids, stale prices, existing-bid locks, legacy rules, role checks, fixed-price saves, relisting and mobile layouts. Hosted migration activation and Hostinger deployment require separate confirmation; no real bids or listings were written during validation.
+
 ## Search engine visibility
 
 Public homepage listings, Browse results and auction cards are rendered on the server. Marketplace lists include public active/sold undeleted items, while item SEO previews and the sitemap remain active-only. Reads use the Supabase anonymous key and never bypass database access rules. Browse queries the real marketplace instead of sample products.

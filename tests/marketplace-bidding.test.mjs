@@ -36,10 +36,19 @@ test("a listing or sign-in change, or an auction closing during verification, ca
 });
 test("successful bids require the matching auction and a confirmed current price", async () => {
   const f = fixture(); const result = await f.run(); assert.equal(result.current_bid, 150);
-  assert.deepEqual(f.calls[1], { name: "place_marketplace_bid", args: { p_auction_id: "4", p_amount: 150 } });
+  assert.deepEqual(f.calls[1], { name: "place_marketplace_bid", args: { p_auction_id: "4", p_amount: "150" } });
   for (const data of [null, {}, { id: 5, current_bid: 150 }, { id: 4, current_bid: 100 }, { id: 4, current_bid: "NaN" }]) {
     const bad = fixture({ result: { data } }); await assert.rejects(bad.run(), /Could not confirm/); assert.equal(bad.calls.length, 2);
   }
+});
+test("configured minimum increments reject smaller bids before any mutation", async () => {
+  const product = { ...input.product, auction_bid_increment: 60 };
+  const rejected = fixture();
+  await assert.rejects(rejected.run({ ...input, product }), /at least ₱160/);
+  assert.equal(rejected.calls.length, 0);
+  const accepted = fixture({ result: { data: { ...input.auction, current_bid: 160 } } });
+  await accepted.run({ ...input, product, amountText: "160" });
+  assert.equal(accepted.calls.length, 2);
 });
 test("rejected or stalled bid writes finish without automatically submitting another bid", async () => {
   for (const options of [{ bidPending: true }, { result: { error: { code: "PGRST202" } } }, { result: { error: { message: "Your bid must exceed the current bid." } } }]) {

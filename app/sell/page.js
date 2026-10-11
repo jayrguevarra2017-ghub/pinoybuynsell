@@ -18,6 +18,7 @@ import { useApp } from "@/components/AppProvider";
 import SellingComingSoon from "@/components/SellingComingSoon";
 import { readRelistSource, relistListing } from "@/lib/listing-management.mjs";
 import { withDeadline } from "@/lib/verification-actions";
+import { minimumMarketplaceBid, readBidIncrementCapability, bidIncreaseChoices } from "@/lib/bid-increments.mjs";
 
 export default function SellingPage(props) {
   const app = useApp();
@@ -42,12 +43,24 @@ function SellPage({ listingId = null, sourceListingId = null }) {
     variations: [],
     auction_starting_price: "",
     auction_ends_at: "",
+    auction_bid_increment: "20",
   });
 
   const [existingListing, setExistingListing] = useState(null);
   const [auctionLocked, setAuctionLocked] = useState(false);
   const [loadingListing, setLoadingListing] = useState(Boolean(listingId || sourceListingId));
   const [loadError, setLoadError] = useState("");
+  const [incrementsReady, setIncrementsReady] = useState(null);
+  const [incrementCheckError, setIncrementCheckError] = useState("");
+  useEffect(() => {
+    if (!app?.isAdmin) return;
+    let active = true;
+    readBidIncrementCapability(supabase).then(ready => { if (active) setIncrementsReady(ready); })
+      .catch(error => { if (active) { setIncrementsReady(false); setIncrementCheckError(error.message); } });
+    return () => { active = false; };
+  }, [app?.isAdmin]);
+  let firstMinimum = "";
+  try { firstMinimum = minimumMarketplaceBid({ starting_price: form.auction_starting_price || 0 }, form); } catch { /* Validation explains invalid terms on save. */ }
 
   useEffect(() => {
     if (!(listingId || sourceListingId) || !app?.isAdmin) return;
@@ -67,7 +80,8 @@ function SellPage({ listingId = null, sourceListingId = null }) {
             shipping_fee: String(data.shipping_fee ?? ""), listing_type: data.listing_type ?? "fixed_price",
             quantity: data.listing_type === "auction" ? "1" : String(data.quantity > 0 ? data.quantity : data.variations?.length ? 0 : 1),
             variations: (data.variations || []).map(v => ({ name: v.name, quantity: String(v.quantity) })),
-            auction_starting_price: String(data.auction_starting_price ?? ""), auction_ends_at: "" });
+            auction_starting_price: String(data.auction_starting_price ?? ""), auction_ends_at: "",
+            auction_bid_increment: String(bidIncreaseChoices.includes(Number(data.auction_bid_increment)) ? data.auction_bid_increment : 20) });
           return;
         }
         const { data, error } = await supabase.from("products").select("*")
@@ -86,7 +100,8 @@ function SellPage({ listingId = null, sourceListingId = null }) {
           listing_type: data.listing_type ?? "fixed_price", quantity: String(data.quantity ?? 1),
           variations: (data.variations || []).map(v => ({ name: v.name, quantity: String(v.quantity) })),
           auction_starting_price: String(data.auction_starting_price ?? ""),
-          auction_ends_at: toManilaInput(data.auction_ends_at) });
+          auction_ends_at: toManilaInput(data.auction_ends_at),
+          auction_bid_increment: String(data.auction_bid_increment ?? "0.01") });
       } catch (error) {
         if (!cancelled) setLoadError(error.message);
       } finally {
@@ -124,7 +139,8 @@ function SellPage({ listingId = null, sourceListingId = null }) {
 
   function changeFormat(event) {
     const listing_type = event.target.value;
-    setForm(current => ({ ...current, listing_type, ...(listing_type === "auction" ? { quantity: "1", variations: [] } : {}) }));
+    setForm(current => ({ ...current, listing_type, ...(listing_type === "auction" ? { quantity: "1", variations: [],
+      auction_bid_increment: current.auction_bid_increment === "0.01" ? "20" : current.auction_bid_increment } : {}) }));
   }
 
   async function handleSubmit(event) {
@@ -133,6 +149,8 @@ function SellPage({ listingId = null, sourceListingId = null }) {
     if (saveLock.current || saving || checkingPhoto || loadingListing || loadError || relistOutcomeUnknown || !app.online
       || ((listingId || sourceListingId) && !existingListing)) return;
     if (!policyAccepted) { setMessage("Read and confirm the prohibited-items policy before saving your listing."); return; }
+    if (form.listing_type === "auction" && incrementCheckError) { setMessage(incrementCheckError); return; }
+    if (form.listing_type === "auction" && incrementsReady === null) { setMessage("Please wait while bidding settings are checked."); return; }
     const shippingError = validateShipping(form.shipping_carrier, form.shipping_fee);
     if (shippingError) { setMessage(shippingError); return; }
     const optionsError = validateListingOptions({ ...form, auction_ends_at: form.auction_ends_at ? `${form.auction_ends_at}+08:00` : "" }, Date.now(), auctionLocked);
@@ -156,6 +174,9 @@ function SellPage({ listingId = null, sourceListingId = null }) {
         auction_starting_price: form.listing_type === "auction" ? Number(form.auction_starting_price) : null,
         auction_ends_at: form.listing_type === "auction"
           ? (auctionLocked ? existingListing.auction_ends_at : fromManilaInput(form.auction_ends_at)) : null,
+        ...(incrementsReady ? {
+          auction_bid_increment: Number(form.auction_bid_increment),
+        } : {}),
       };
       const data = sourceListingId
         ? await relistListing(supabase, user.id, sourceListingId, values, photoItems ?? initialPhotoItems)
@@ -289,7 +310,7 @@ function SellPage({ listingId = null, sourceListingId = null }) {
 
             <section className="listing-options listing-form" aria-labelledby="selling-options-title">
               <h2 id="selling-options-title">Selling options</h2>
-              {auctionLocked && <p role="status">Bids have been placed. Selling format, price, quantity, variations and auction closing time are locked.</p>}
+              {auctionLocked && <p role="status">Bids have been placed. Selling format, price, quantity, variations, bid increase and auction closing time are locked.</p>}
               <label htmlFor="listing-type">Is this item for bidding?
                 <select id="listing-type" name="listing_type" value={form.listing_type}
                   onChange={changeFormat} disabled={saving || auctionLocked}>
@@ -308,6 +329,18 @@ function SellPage({ listingId = null, sourceListingId = null }) {
                   <input id="auction-starting-price" name="auction_starting_price" type="number" min="0.01" max="99999999999999.99"
                     step="0.01" required value={form.auction_starting_price} onChange={handleChange} disabled={saving || auctionLocked} />
                 </label>
+                <label htmlFor="bid-increment-value">Minimum bid increase (₱)
+                  <select id="bid-increment-value" name="auction_bid_increment" value={form.auction_bid_increment}
+                    onChange={handleChange} disabled={saving || auctionLocked || !incrementsReady}>
+                    {listingId && form.auction_bid_increment === "0.01" && <option value="0.01">₱0.01 — existing auction rule</option>}
+                    {bidIncreaseChoices.map(amount => <option value={amount} key={amount}>₱{amount.toLocaleString("en-PH")}</option>)}
+                  </select>
+                </label>
+                {incrementCheckError ? <p role="alert">{incrementCheckError}</p>
+                  : incrementsReady === null ? <p role="status">Checking bidding settings…</p>
+                  : !incrementsReady ? <p role="status">Custom bid increases are not available yet. New auctions use a ₱0.01 minimum increase.</p>
+                  : <p>Choose ₱20, ₱40, ₱60 and so on, up to ₱1,000. Each bid must increase by at least your chosen amount. Bidders may offer more.
+                    {firstMinimum && <> First allowed bid: <strong>₱{Number(firstMinimum).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>.</>}</p>}
                 <label htmlFor="auction-ends-at">Auction closes (Philippine time, UTC+8)
                   <input id="auction-ends-at" name="auction_ends_at" type="datetime-local" step="1" required
                     value={form.auction_ends_at} onChange={handleChange} disabled={saving || auctionLocked} />

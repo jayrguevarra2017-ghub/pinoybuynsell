@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
 import { submitMarketplaceBid } from "@/lib/marketplace-bidding.mjs";
 import { withDeadline } from "@/lib/verification-actions";
+import { minimumMarketplaceBid, bidIncrementSettings } from "@/lib/bid-increments.mjs";
 
 export default function ProductPage({ initialProduct = null }) {
   const params = useParams();
@@ -71,6 +72,14 @@ export default function ProductPage({ initialProduct = null }) {
     && product?.status === "active" && product?.listing_type !== "fixed_price"
     && Date.parse(auction.ends_at) > now
     && (!auction.starts_at || Date.parse(auction.starts_at) <= now);
+  let minimumBid = "", incrementLabel = "";
+  if (auction) {
+    try {
+      minimumBid = minimumMarketplaceBid(auction, product);
+      const increment = bidIncrementSettings(product);
+      incrementLabel = `₱${Number(increment.value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    } catch { /* Do not accept a bid with invalid terms or above the supported maximum. */ }
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -223,15 +232,18 @@ export default function ProductPage({ initialProduct = null }) {
                   <Link className="view" href="/login">Sign in to place a bid</Link>
                 ) : user.id === product.seller_id ? (
                   <p>You cannot bid on your own listing.</p>
+                ) : !minimumBid ? (
+                  <p>Bidding is unavailable for these auction terms. Please contact the administrator.</p>
                 ) : (
                   <form className="listing-form" onSubmit={placeBid}>
                     <label htmlFor="bid-amount">Your bid (₱)
                       <input id="bid-amount" type="number" inputMode="decimal" step="0.01"
-                        min={(Math.max(Number(auction.current_bid ?? 0), Number(auction.starting_price ?? 0)) + 0.01).toFixed(2)}
+                        min={minimumBid}
                         required value={bidAmount} onChange={(event) => setBidAmount(event.target.value)}
                         disabled={submittingBid || app?.online === false} />
                     </label>
-                    <p>Enter an amount higher than the current bid. Bids are recorded when submitted.</p>
+                    <p>Minimum increase: {incrementLabel}. Your next bid must be at least <strong>₱{Number(minimumBid).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>.{" "}
+                      You may bid more. Bids are recorded when submitted.</p>
                     <Link href="/verify">ID verification is required before bidding</Link>
                     <button className="sell" type="submit" disabled={submittingBid || app?.online === false}>
                       {submittingBid ? "Placing bid..." : "Place bid"}

@@ -75,11 +75,11 @@ test("a source changed back to live, deleted or transferred is rejected at publi
 test("relisting with historical bids creates a fresh product, preserves photos and omits old/private IDs", async () => {
   const { client, calls } = fixture();
   const result = await relistListing(client, owner, 4, { title: "Relisted card", quantity: 1, listing_type: "auction",
-    auction_starting_price: 150, auction_ends_at: "2030-10-10T00:00:00Z", id: 4, seller_id: "other",
+    auction_starting_price: 150, auction_bid_increment: 60, auction_ends_at: "2030-10-10T00:00:00Z", id: 4, seller_id: "other",
     deleted_at: "today", status: "sold", auctions: source.auctions, facebook_post_id: "old-post", bidder_id: "private" }, [{ path }]);
   assert.equal(result.id, 20); assert.equal(calls.writes.length, 1);
   assert.deepEqual(calls.writes[0], { title: "Relisted card", quantity: 1, listing_type: "auction", auction_starting_price: 150,
-    auction_ends_at: "2030-10-10T00:00:00Z", status: "active", seller_id: owner, image_path: path, image_paths: [path] });
+    auction_bid_increment: 60, auction_ends_at: "2030-10-10T00:00:00Z", status: "active", seller_id: owner, image_path: path, image_paths: [path] });
   assert.equal(calls.uploads, 0); assert.equal(calls.removes, 0);
   assert.equal(source.auctions[0].current_bid, 300);
 });
