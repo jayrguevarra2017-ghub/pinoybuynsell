@@ -12,7 +12,7 @@ export default function AdminAccountLinks() {
     <div className="admin-attention-summary">
       <p role="status">{app.online ? adminAttentionLabel(state) : "Reconnect to check administrator tasks."}</p>
       <details className="admin-count-explanation"><summary>How task counts work</summary>
-        <p className="muted">Open support conversations count until closed, including conversations you have replied to. USA requests count until closed, including contacted customers.</p>
+        <p className="muted">Payment receipts count until confirmed or rejected. Open support conversations count until closed, including conversations you have replied to. USA requests count until closed, including contacted customers.</p>
       </details>
       <button type="button" className="view" disabled={!app.online || state.refreshing} onClick={app.refreshAdminAttention}>
         {state.refreshing ? "Refreshing counts…" : "Refresh task counts"}
@@ -25,6 +25,7 @@ export default function AdminAccountLinks() {
         {Number.isSafeInteger(state.counts[queue.key]) ? state.counts[queue.key].toLocaleString("en-PH") : state.ready ? "Unavailable" : "…"}
       </span>
     </Link>)}
+    <Link className="view" href="/account/payment-settings">My GCash / bank payment details</Link>
     <Link className="view" href="/sell">Sell an item</Link>
     <Link className="view" href="/admin/listings">Administrator listing management</Link>
     <Link className="view" href="/admin/facebook">Post your listings to Facebook</Link>

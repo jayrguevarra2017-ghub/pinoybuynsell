@@ -209,6 +209,10 @@ export default function ProductPage({ initialProduct = null }) {
               {isAuction && <p className="muted">Seller’s reference item value: ₱{Number(product.price).toLocaleString("en-PH")}</p>}
             </div>
             <PaymentRules />
+            {product.status === "active" && (isAuction || Number(product.quantity) > 0) && user?.id !== product.seller_id && (!isAuction || (auction && now !== null && Date.parse(auction.ends_at) <= now)) &&
+              <p><Link className="view" href={user ? `/account/checkout?listing=${product.id}` : "/login"}>{isAuction ? "Winning bidder checkout" : "Buy this item"}</Link>{isAuction && <small> Checkout verifies the winning bidder.</small>}</p>}
+            {user && <p><Link href="/account/orders">My orders &amp; payment status</Link></p>}
+            {user?.id === product.seller_id && <p><Link href="/account/payment-settings">Set GCash / bank payment details</Link></p>}
             {isAuction && <div className="auction-countdown-panel">
               <AuctionCountdown endTime={auction?.ends_at ?? product.auction_ends_at} startsAt={auction?.starts_at}
                 status={product.status === "active" ? (auction?.status ?? "active") : "ended"} showLabel />

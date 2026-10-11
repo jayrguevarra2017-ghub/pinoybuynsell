@@ -129,6 +129,7 @@ function AccountContent() {
           <div className="account-heading">
             <div><p className="eyebrow">PINOYBUYSELL</p><h1>My account</h1></div>
             <div className="account-quick-links">
+              <Link className="view inline" href="/account/orders">Orders &amp; sales</Link>
               <Link className="view inline" href="/verify">ID verification</Link>
               <Link className="view inline" href="/usa-shopping">USA shopping</Link>
               {sellerUrl(user?.id) && listings.some(item => !item.deleted_at && ["active", "sold"].includes(item.status)) &&

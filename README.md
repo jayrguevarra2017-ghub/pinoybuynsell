@@ -4,7 +4,7 @@ Initial Next.js App Router marketplace prototype for Hostinger.
 
 ## Administrator-only selling
 
-For now, only trusted marketplace administrators can create or edit their own listings and upload listing photos through the website. Non-admin accounts, the selling page and navigation show **Selling coming soon**. Administrators retain selling and Facebook Page posting access; selling no longer requires their seller ID approval. Listing ownership, prohibited-items validation, shipping requirements and auction terms remain enforced. Ordinary accounts can browse, contact sellers about buying, follow sellers, recommend sellers and like items under their existing rules. Bidding still requires ID approval and rejects own-item bids or unavailable auctions. There is no automatic checkout/payment flow.
+For now, only trusted marketplace administrators can create or edit their own listings and upload listing photos through the website. Non-admin accounts, the selling page and navigation show **Selling coming soon**. Administrators retain selling and Facebook Page posting access; selling no longer requires their seller ID approval. Listing ownership, prohibited-items validation, shipping requirements and auction terms remain enforced. Ordinary accounts can browse, contact sellers about buying, follow sellers, recommend sellers and like items under their existing rules. Bidding still requires ID approval and rejects own-item bids or unavailable auctions. Fixed-price buyers and winning bidders can create private orders, upload GCash/bank receipts and receive manual payment confirmation after the payment migration is installed.
 
 Activate the database restriction by running `supabase/migrations/202610100015_admin_only_selling.sql` as a **new query** in Supabase SQL Editor after the installed migrations. The website checks trusted `is_marketplace_admin` membership, but this SQL step is required to block direct listing writes. It changes public marketplace objects only and does not need ownership of Supabase’s managed Storage table. It replaces the previous seller verification guards with admin guards and preserves existing listings, photos, bids, public reads and private account data. No new keys or Hostinger environment variables are needed. The connected service-role data key cannot execute schema SQL. After activation, the public `marketplace_selling_policy` RPC returns `admin-only`, confirming listing restrictions only. Additional direct photo-storage write protection is separate: `supabase/migrations/202610100016_admin_only_listing_photo_writes.sql` requires authorized Storage policy-management access. If SQL Editor reports `postgres`, owner `supabase_storage_admin` and owner-role access `false`, run only migration 015 and ask Supabase support to resolve Storage policy permissions before applying 016. Existing Storage permissions remain unchanged until 016 succeeds; website upload helpers already require admin membership. Do not change managed-table ownership or grant yourself managed roles.
 
@@ -68,7 +68,7 @@ Fixed-price purchases and winning auction bids are payable by **GCash or bank de
 
 The notice appears on item pages before the bidding section, including closed auctions, and in the administrator listing form. `/payment-rules` explains the policy and is linked from the homepage footer, the navigation menu and marketplace rules, and included in the sitemap. The automated help guide answers GCash, bank deposit, COD, bidding and return questions consistently. Newly generated Facebook captions include the short rules and direct customers to the listing for the full policy; existing Facebook posts are not changed automatically.
 
-This is a policy-display update using shared copy in `lib/payment-rules.mjs`. It adds no checkout, refund processing, payment collection, database migration or Hostinger variables. Payment account details and settlement remain direct arrangements with the seller. Validation uses the existing automated suite, the production build and browser checks for fixed-price and auction notices, public navigation, help guidance and mobile layouts; browser data operations are mocked.
+Shared policy copy lives in `lib/payment-rules.mjs`. Payments go directly to the seller’s GCash/bank account; the manual receipt workflow below records orders and confirmation but does not collect money or process refunds. Validation uses the existing automated suite, the production build and browser checks for fixed-price and auction notices, public navigation, help guidance and mobile layouts; browser data operations are mocked.
 
 ## Minimum bid increases
 
@@ -198,5 +198,28 @@ Validation: 144 automated tests and a production build passed; the dependency au
 - Image uploads
 - Search/filtering
 - Buyer/seller messaging
-- Real bidding and payments
+- Real bidding and manual GCash/bank receipt review
 - Admin dashboard
+
+## Manual GCash / bank payments
+
+Apply `supabase/migrations/202610110018_orders_and_manual_payments.sql` in the project’s SQL Editor after the existing listing/bidding migrations. It runs in one transaction, creates private order/receipt/review tables, restricts browser writes to authenticated RPCs, reserves stock under product row locks, and reloads the REST schema. Do not rerun it after successful installation. It does not alter `storage.objects` or depend on the separate listing-photo ownership repair.
+
+Then build/deploy the website and open **My account → My GCash / bank payment details** (`/account/payment-settings`) as each administrator who sells items. Save at least one receiving account before buyers can check out that administrator’s listings. No new Hostinger variables are required: the existing Supabase URL, anon key and server-only `SUPABASE_SERVICE_ROLE_KEY` are used. Never put the service key or payment receipts in public variables.
+
+- Fixed-price checkout validates stock/variation, calculates the price and one listing shipping fee on the server, snapshots payment instructions and delivery details, and reserves stock. Public listing quantities show stored inventory; checkout verifies remaining stock after reservations.
+- Only the highest bidder can check out an ended auction. **My orders** (`/account/orders`) lists up to 25 unclaimed won auctions and paginated purchases/sales. The winning bid, rather than the auction’s reference price, sets the order price.
+- Buyers transfer money outside the website, upload a JPEG/PNG/WebP receipt (HEIC is converted locally), and submit its transaction reference. Submission marks the order **Receipt awaiting review**, never paid.
+- **Administrator tools → Payment receipts awaiting review** (`/admin/payments`) shows the pending count and queue. Administrators inspect the private receipt and actual receiving account, then confirm funds or reject with a reason. Approval atomically records the review, deducts fixed-price stock or marks an auction sold, and confirms the order. Duplicate approvals do not deduct stock twice. Rejection keeps the order unpaid and reserved until corrected or cancelled.
+- Unpaid orders reserve stock until paid or cancelled; there is no unattended expiry job. Submitted/paid orders cannot be cancelled through this flow. Cancelling an auction order requires seller/support help to arrange another purchase. Delivery, disputes and refunds are handled with the seller/support, with applicable consumer rights preserved.
+
+Receipts use the **private** `payment-receipts` Storage bucket, limited to 5 MB and JPEG/PNG/WebP. The authenticated server route creates the bucket if missing and refuses a public bucket. The service role stores receipt objects; browsers have no direct upload/download policy. Reads are proxied only after order RLS authorizes the buyer, seller or trusted administrator. Images are sent with `private, no-store` and never given public URLs or cached by the service worker. Orders contain personal delivery information: keep access restricted. Failed/cancelled upload attempts can leave private orphan objects; retain/review them under your operational retention policy rather than deleting payment evidence automatically.
+
+Validation: `npm test` covers private receipt access, byte/size validation, idempotency, unavailable storage and authorization failures. A separate isolated PostgreSQL checker exercises order RLS, reservations, variation stock, auction-winner access, rejected/resubmitted receipts and atomic stock updates:
+
+```sh
+npm install --prefix /tmp/pinoy-db-check @electric-sql/pglite
+PGLITE_MODULE=/tmp/pinoy-db-check/node_modules/@electric-sql/pglite/dist/index.js node tests/database/manual-payments.mjs
+```
+
+The checker creates an in-memory database and does not access hosted customer data. Browser checks must mock Supabase and receipt uploads; never make test purchases or change actual payment status in production.

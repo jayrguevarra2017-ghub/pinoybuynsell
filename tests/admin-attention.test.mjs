@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { adminAttentionLabel, createAdminAttentionStore, emptyAdminAttention, readAdminAttention } from "../lib/admin-attention.mjs";
 
-function fixture({ access = true, accessError = false, counts = [2, 3, 4], hang = false } = {}) {
+function fixture({ access = true, accessError = false, counts = [2, 3, 4, 0], hang = false } = {}) {
   const requests = [];
   const client = {
     rpc(name) {
@@ -19,7 +19,7 @@ function fixture({ access = true, accessError = false, counts = [2, 3, 4], hang 
         in(column, values) { Object.assign(request, { filter: column, values }); return this; },
         async abortSignal(signal) {
           assert(signal instanceof AbortSignal);
-          const count = counts[["identity_verifications", "support_tickets", "usa_shopping_requests"].indexOf(table)];
+          const count = counts[["identity_verifications", "support_tickets", "usa_shopping_requests", "marketplace_orders"].indexOf(table)];
           if (count instanceof Error) throw count;
           return { count, data: null };
         },
@@ -30,14 +30,15 @@ function fixture({ access = true, accessError = false, counts = [2, 3, 4], hang 
 }
 
 test("admin counts use exact HEAD queries and only the actionable statuses, without a row limit", async () => {
-  const f = fixture({ counts: [2001, 3, 4] });
+  const f = fixture({ counts: [2001, 3, 4, 2] });
   const result = await readAdminAttention(f.client, { now: () => 123 });
-  assert.equal(result.total, 2008); assert.equal(result.updatedAt, 123);
+  assert.equal(result.total, 2010); assert.equal(result.updatedAt, 123);
   assert.deepEqual(result.unavailable, []);
   assert.deepEqual(f.requests, [
     { table: "identity_verifications", column: "user_id", options: { head: true, count: "exact" }, filter: "status", values: ["pending"] },
     { table: "support_tickets", column: "id", options: { head: true, count: "exact" }, filter: "status", values: ["open"] },
     { table: "usa_shopping_requests", column: "id", options: { head: true, count: "exact" }, filter: "status", values: ["new", "contacted"] },
+    { table: "marketplace_orders", column: "id", options: { head: true, count: "exact" }, filter: "status", values: ["payment_submitted"] },
   ]);
 });
 
@@ -55,20 +56,20 @@ test("no task tables are queried for non-admin, unverifiable, or cancelled membe
 
 test("failed and invalid counts remain unavailable, while valid counts give an explicitly partial total", async () => {
   for (const unavailable of [new Error("private-error"), null, undefined, -1, "3", 1.5, Infinity]) {
-    const result = await readAdminAttention(fixture({ counts: [2, unavailable, 0] }).client);
-    assert.deepEqual(result.counts, { verifications: 2, usa: 0 });
+    const result = await readAdminAttention(fixture({ counts: [2, unavailable, 0, 0] }).client);
+    assert.deepEqual(result.counts, { verifications: 2, usa: 0, payments: 0 });
     assert.equal(result.total, 2); assert.deepEqual(result.unavailable, ["support"]);
     assert.match(adminAttentionLabel(result), /At least 2.*unavailable/);
     assert(!JSON.stringify(result).includes("private-error"));
   }
-  const result = await readAdminAttention(fixture({ counts: [null, null, null] }).client);
+  const result = await readAdminAttention(fixture({ counts: [null, null, null, null] }).client);
   assert.equal(result.total, null); assert.match(adminAttentionLabel(result), /unavailable/);
 });
 
 test("only a complete successful zero result reports caught up; timeouts do not report zero", async () => {
-  const success = await readAdminAttention(fixture({ counts: [0, 0, 0] }).client);
+  const success = await readAdminAttention(fixture({ counts: [0, 0, 0, 0] }).client);
   assert.match(adminAttentionLabel(success), /All caught up/);
-  const partial = await readAdminAttention(fixture({ counts: [0, null, 0] }).client);
+  const partial = await readAdminAttention(fixture({ counts: [0, null, 0, 0] }).client);
   assert(!adminAttentionLabel(partial).includes("caught up"));
   const f = fixture({ hang: true });
   const result = await readAdminAttention(f.client, { timeoutMs: 5 });
