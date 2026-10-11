@@ -5,11 +5,14 @@ import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { supabase } from "@/lib/supabase";
 import { announceSellerChange, communityError, communityRequest, validateRecommendation } from "@/lib/seller-community.mjs";
-import SellerRecommendationSamples from "@/components/SellerRecommendationSamples";
+import SellerDisplayRecommendations from "@/components/SellerDisplayRecommendations";
+import { publicSellerRecommendationCount, sellerDisplayRecommendations } from "@/lib/seller-display.mjs";
 
 export default function SellerRecommendations({ sellerId, profile, onChange }) {
   const app = useApp(), user = app?.user;
+  const recommendationCount = publicSellerRecommendationCount(sellerId, profile?.recommendation_count);
   const [items, setItems] = useState([]), [offset, setOffset] = useState(0), [hasMore, setHasMore] = useState(false);
+  const hasDisplayRecommendations = offset === 0 && sellerDisplayRecommendations(sellerId).length > 0;
   const [loading, setLoading] = useState(true), [loadError, setLoadError] = useState("");
   const [draft, setDraft] = useState(profile?.own_recommendation?.body || "");
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(""), [refresh, setRefresh] = useState(0);
@@ -46,19 +49,19 @@ export default function SellerRecommendations({ sellerId, profile, onChange }) {
   return <section className="seller-recommendations" aria-labelledby="seller-recommendations-title">
     <div className="section-head"><div><p className="eyebrow">FROM THE COMMUNITY</p>
       <h2 id="seller-recommendations-title">Customer recommendations</h2></div>
-      {profile && <span className="seller-count">{Number(profile.recommendation_count || 0).toLocaleString("en-PH")} recommendations</span>}
+      {profile && <span className="seller-count">{recommendationCount.toLocaleString("en-PH")} recommendations</span>}
     </div>
-    <p className="muted">Recommendations reflect members’ experiences. Purchases are not verified by PinoyBuyNSell.</p>
+    <p className="muted">Read seller recommendations below. Purchases are not verified by PinoyBuyNSell.</p>
+    {offset === 0 && <SellerDisplayRecommendations sellerId={sellerId} embedded />}
     {loading ? <p>Loading recommendations…</p> : loadError ? <p role="alert">{loadError}</p> : items.length ?
       <div className="seller-recommendation-list">{items.map(item => <article className="seller-recommendation" key={item.id}>
         <div><strong>{item.author_name}</strong><span className="seller-recommendation-badge">Recommends this seller</span></div>
         <p>{item.body}</p><small>{new Date(item.created_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })}{item.is_own ? " · Your recommendation" : ""}</small>
-      </article>)}</div> : <p>No recommendations yet. Share your experience with this seller.</p>}
+      </article>)}</div> : !hasDisplayRecommendations && <p>No recommendations yet. Share your experience with this seller.</p>}
     {(offset > 0 || hasMore) && <div className="seller-pagination">
       <button type="button" disabled={loading || offset === 0} onClick={() => setOffset(v => Math.max(0,v-20))}>Previous recommendations</button>
       <button type="button" disabled={loading || !hasMore} onClick={() => setOffset(v => v+20)}>Next recommendations</button>
     </div>}
-    <SellerRecommendationSamples sellerId={sellerId} />
     {!app?.authReady ? <p>Checking sign-in…</p> : !user ? <Link className="view inline" href="/login">Sign in to recommend this seller</Link> : user.id === sellerId ?
       <p className="muted">Customers can leave recommendations here. You cannot recommend yourself.</p> : profile && <>
         {profile.can_recommend ? <form className="seller-recommendation-form" onSubmit={save}>

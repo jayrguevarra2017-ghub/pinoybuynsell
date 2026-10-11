@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { supabase } from "@/lib/supabase";
 import { announceSellerChange, communityError, communityRequest, sellerUrl } from "@/lib/seller-community.mjs";
+import { publicSellerRecommendationCount } from "@/lib/seller-display.mjs";
 
 export default function FollowedSellers() {
   const app = useApp();
@@ -46,7 +47,7 @@ function FollowingList() {
     {!app?.authReady ? <p>Checking sign-in…</p> : !user ? <Link href="/login">Sign in to view sellers you follow</Link> : loading ? <p>Loading followed sellers…</p> : sellers.length ?
       <div className="followed-seller-list">{sellers.map(seller => <article key={seller.id}>
         <div><Link href={sellerUrl(seller.id) || "/search"}><strong>{seller.username}</strong></Link>
-          {seller.active_listing_count != null && <p>{seller.active_listing_count} active listings · {seller.recommendation_count} recommendations</p>}</div>
+          {seller.active_listing_count != null && <p>{seller.active_listing_count} active listings · {publicSellerRecommendationCount(seller.id, seller.recommendation_count)} recommendations</p>}</div>
         <button className="seller-follow-button" type="button" disabled={busy!==null || app?.online===false} onClick={() => unfollow(seller.id)}>{busy===seller.id ? "Saving…" : "Unfollow seller"}</button>
       </article>)}</div> : !message && <p>Follow a seller from any of their listings to find them here.</p>}
     {message && <p role="status">{message}</p>}

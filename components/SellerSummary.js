@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { supabase } from "@/lib/supabase";
 import { announceSellerChange, communityError, communityRequest, sellerUrl } from "@/lib/seller-community.mjs";
-import { publicSellerFollowerCount } from "@/lib/seller-display.mjs";
+import { publicSellerFollowerCount, publicSellerRecommendationCount } from "@/lib/seller-display.mjs";
 
 export default function SellerSummary({ sellerId, profile: suppliedProfile, onChange }) {
   const app = useApp();
@@ -16,6 +16,7 @@ export default function SellerSummary({ sellerId, profile: suppliedProfile, onCh
   const profile = suppliedProfile === undefined ? loaded : suppliedProfile;
   const href = sellerUrl(sellerId);
   const followerCount = publicSellerFollowerCount(sellerId, profile?.follower_count);
+  const recommendationCount = publicSellerRecommendationCount(sellerId, profile?.recommendation_count);
 
   useEffect(() => {
     if (suppliedProfile !== undefined || !href) return;
@@ -53,7 +54,7 @@ export default function SellerSummary({ sellerId, profile: suppliedProfile, onCh
       <div className="seller-avatar" aria-hidden="true">{(profile?.username || "S").slice(0,1).toUpperCase()}</div>
       <div className="seller-summary-name"><span className="eyebrow">SELLER</span>
         <Link href={href}>{profile?.username || "View seller profile"}</Link>
-        {profile && <p>{followerCount.toLocaleString("en-PH")} {followerCount === 1 ? "follower" : "followers"} · {Number(profile.recommendation_count || 0).toLocaleString("en-PH")} {Number(profile.recommendation_count) === 1 ? "recommendation" : "recommendations"}</p>}
+        {profile && <p>{followerCount.toLocaleString("en-PH")} {followerCount === 1 ? "follower" : "followers"} · {recommendationCount.toLocaleString("en-PH")} {recommendationCount === 1 ? "recommendation" : "recommendations"}</p>}
       </div>
       {profile && app?.authReady && (user?.id === sellerId ? <span className="seller-own-label">Your profile</span> : user ?
         <button className="seller-follow-button" type="button" aria-pressed={Boolean(profile.following)} disabled={busy || app?.online === false} onClick={follow}>
