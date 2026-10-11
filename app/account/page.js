@@ -7,6 +7,7 @@ import ListingPhoto from "@/components/ListingPhoto";
 import ListingViews from "@/components/ListingViews";
 import ShippingDetails from "@/components/ShippingDetails";
 import AdminAccountLinks from "@/components/AdminAccountLinks";
+import AccountFollowers from "@/components/AccountFollowers";
 import Header from "@/components/Header";
 import FollowedSellers from "@/components/FollowedSellers";
 import { sellerUrl } from "@/lib/seller-community.mjs";
@@ -137,6 +138,7 @@ function AccountContent() {
                 <Link className="view inline" href={sellerUrl(user.id)}>Seller profile</Link>}
             </div>
           </div>
+          {app?.isAdmin && <AccountFollowers key={user.id} sellerId={user.id} />}
           <div className="account-dashboard">
             <AdminAccountLinks />
             <BidNotifications compact />

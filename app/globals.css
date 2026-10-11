@@ -589,6 +589,18 @@ button.seller-follow-button[aria-pressed=true],.followed-seller-list .seller-fol
 .payments-page a.view { text-decoration: none; }
 .payments-page summary:focus-visible, .payments-page button:focus-visible { outline: 3px solid #81a3ff; outline-offset: 3px; }
 
+/* Administrator follower total. */
+.account-followers { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 16px; margin: 16px 0; border: 1px solid #dce4f2; border-radius: 14px; background: #f7faff; }
+.account-followers-total { display: flex; align-items: center; gap: 12px; color: #2454d6; }
+.account-followers-total > div { display: grid; gap: 4px; }
+.account-followers-total span { font-size: 13px; font-weight: 650; color: #526078; }
+.account-followers-total strong { font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.account-followers-actions { flex: 1 1 260px; min-width: 0; }
+.account-followers-actions p { margin: 0 0 6px; font-size: 12px; color: #526078; line-height: 1.5; }
+.account-followers-actions small { display: block; font-size: 11px; color: #526078; }
+.account-followers-actions > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.account-followers-actions .view { min-height: 44px; font: inherit; font-size: 12px; padding: 9px 12px; margin-top: 4px; }
+.account-followers-actions button:disabled { cursor: default; opacity: .65; }
 /* Item views and compact mobile marketplace cards. */
 .listing-views { display: inline-flex; align-items: center; gap: 5px; color: #58657b; font-size: 12px; line-height: 1.5; flex-wrap: wrap; }
 .listing-views svg { flex-shrink: 0; }
