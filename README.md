@@ -1,5 +1,19 @@
 # PinoyBuyNSell
 
+## Item view counters and compact mobile listings
+
+Item pages, browsing cards, auction cards, seller profiles and My listings display public item view totals. Opening a visible item page records one view per browser per listing per Philippine calendar day. Browsing cards only read totals; refreshes and duplicate instances do not keep adding views. Counts start when this feature is activated and cannot recover historical traffic. These are browser-based views, not a count of distinct people. Private browsing or clearing browser storage can create a new browser identifier.
+
+Activate once by running [`supabase/migrations/202610110019_listing_view_counts.sql`](supabase/migrations/202610110019_listing_view_counts.sql) as a **new query** in Supabase SQL Editor, then deploy the latest website in Hostinger. No additional environment variables are required. This migration changes public marketplace tables/functions only; it does not touch managed Storage, existing listings, bids or payments. Until activation, unavailable totals show a dash rather than a made-up zero.
+
+Public counter calls use only the anonymous key and expose aggregate totals for active/sold, undeleted listings. Raw tokens, account IDs and IP addresses are not stored; per-item/day deduplication hashes are private, and hashes older than 30 days are removed when that item records a new view. Lifetime totals remain. Cards batch reads in groups of up to 100 and share confirmed results; interrupted recording requests are not automatically repeated.
+
+Phone layouts use two compact columns for products and auctions, smaller images, two-line card titles and reduced spacing. Full titles and item details remain on the listing page, and heart buttons and View item links retain at least 44px touch targets. Desktop card layouts remain full size.
+
+Database verification: `PGLITE_MODULE=/path/to/@electric-sql/pglite/dist/index.js node tests/database/listing-views.mjs`. It runs in an isolated local database, with no hosted views or customer writes.
+
+Validation for this update: 193 automated tests, 49 isolated SQL checks, 76 mocked browser assertions and a production build passed. Browser checks cover Home, Browse, Auctions and My listings at 320/390/600/1280px, counting only on item detail pages, refresh deduplication, guest access, unavailable counters and uncertain-write handling. Hosted database activation and Hostinger deployment must be confirmed separately.
+
 Initial Next.js App Router marketplace prototype for Hostinger.
 
 ## Administrator-only selling

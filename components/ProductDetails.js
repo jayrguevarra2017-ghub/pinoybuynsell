@@ -12,6 +12,7 @@ import AuctionCountdown from "@/components/AuctionCountdown";
 import Header from "@/components/Header";
 import SellerSummary from "@/components/SellerSummary";
 import ListingLike from "@/components/ListingLike";
+import ListingViews from "@/components/ListingViews";
 import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
 import { submitMarketplaceBid } from "@/lib/marketplace-bidding.mjs";
@@ -199,7 +200,8 @@ export default function ProductPage({ initialProduct = null }) {
           <div className="listing-purchase-panel">
             <p className="eyebrow">{isAuction ? "BID & WIN" : "FIND YOUR NEXT FAVORITE"}</p>
             <h1>{product.title}</h1>
-            <ListingLike key={`${product.id}:${app?.user?.id || "guest"}`} listingId={product.id} title={product.title} />
+            <div className="listing-engagement"><ListingLike key={`${product.id}:${app?.user?.id || "guest"}`} listingId={product.id} title={product.title} />
+              <ListingViews key={product.id} listingId={product.id} record /></div>
             <SellerSummary key={`${product.seller_id}:${app?.user?.id || "guest"}`} sellerId={product.seller_id} />
             <div className="listing-summary-tags"><span>{isAuction ? "Auction / bidding" : "Fixed price"}</span>
               {product.condition && <span>{product.condition}</span>}<span>📍 {product.location || "Philippines"}</span></div>

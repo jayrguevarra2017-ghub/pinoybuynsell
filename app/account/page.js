@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ListingPhoto from "@/components/ListingPhoto";
+import ListingViews from "@/components/ListingViews";
 import ShippingDetails from "@/components/ShippingDetails";
 import AdminAccountLinks from "@/components/AdminAccountLinks";
 import Header from "@/components/Header";
@@ -192,6 +193,7 @@ function AccountContent() {
                 <p>₱{Number(item.price).toLocaleString("en-PH")} · {item.deleted_at ? "Deleted" : listingAvailability(item).label}</p>
                 {item.listing_type && <p>{item.listing_type === "auction" ? "Auction / bidding · one item or lot" : `Fixed price · ${item.quantity} available${item.variations?.length ? ` · ${item.variations.length} variations` : ""}`}</p>}
                 <ShippingDetails product={item} />
+                {!item.deleted_at && <ListingViews listingId={item.id} />}
                 <div className="account-listing-links">
                   <Link className="view inline" href={`/product/${item.id}`}>View listing</Link>
                   {item.deleted_at ? <p className="muted">Removed by administrator</p> : app?.isAdmin && <Link className="view inline" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}

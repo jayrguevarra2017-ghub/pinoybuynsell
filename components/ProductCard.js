@@ -5,6 +5,7 @@ import AuctionCountdown from "@/components/AuctionCountdown";
 import Link from "next/link";
 import { peso } from "@/lib/data";
 import ListingLike from "@/components/ListingLike";
+import ListingViews from "@/components/ListingViews";
 import useMarketplaceClock from "./useMarketplaceClock";
 import { latestListingAuction, listingAvailability } from "@/lib/listing-order.mjs";
 
@@ -48,10 +49,12 @@ export default function ProductCard({ product }) {
         </p>
 
         <ShippingDetails product={product} />
+        <ListingViews listingId={product.id} />
 
         <Link
           className="view"
           href={`/product/${product.id}`}
+          aria-label={`View ${product.title || "item"}`}
         >
           View item
         </Link>

@@ -4,6 +4,7 @@ import MobileAppNav from "@/components/MobileAppNav";
 import { appPlatform, installedDisplay } from "@/lib/app-install.mjs";
 import { supabase } from "@/lib/supabase";
 import ListingLikesProvider from "@/components/ListingLikesProvider";
+import ListingViewsProvider from "@/components/ListingViewsProvider";
 import { readSellingAccess } from "@/lib/selling-access.mjs";
 import useAdminAttention from "@/components/useAdminAttention";
 import useBidNotifications from "@/components/useBidNotifications";
@@ -90,7 +91,7 @@ export default function AppProvider({ children }) {
   return <AppContext.Provider value={{ installed, online, user, authReady, isAdmin, adminReady, adminError,
     adminAttention, refreshAdminAttention, ...bids,
     refreshAdminAccess: () => setAdminRevision(value => value + 1), openInstall: () => setOpen(true) }}>
-    <ListingLikesProvider userId={user?.id || null} ready={authReady} online={online}>{children}</ListingLikesProvider>
+    <ListingViewsProvider online={online}><ListingLikesProvider userId={user?.id || null} ready={authReady} online={online}>{children}</ListingLikesProvider></ListingViewsProvider>
     <MobileAppNav online={online} isAdmin={isAdmin} adminAttention={adminAttention} />
     <BidNotificationToast state={bids.bidNotifications} onDismiss={bids.dismissBidNotification} />
     <dialog ref={dialog} className="app-install-dialog" aria-labelledby="app-install-title" onCancel={() => setOpen(false)}
