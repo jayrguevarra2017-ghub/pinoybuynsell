@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
+import { usaSignInReturn } from "@/lib/usa-items.mjs";
 
 export default function LoginPage() {
   const [mode, setMode] = useState("login");
@@ -40,7 +41,7 @@ export default function LoginPage() {
 
         if (error) throw error;
 
-        window.location.href = "/verify";
+        window.location.href = usaSignInReturn(new URLSearchParams(window.location.search).get("next")) || "/verify";
       }
     } catch (error) {
       setMessage(error.message || "Something went wrong.");

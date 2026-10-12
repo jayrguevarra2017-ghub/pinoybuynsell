@@ -1,15 +1,24 @@
 "use client";
-import {useEffect,useState,useRef} from "react";
+import {useCallback,useEffect,useState,useRef} from "react";
 import Link from "next/link";
 import USAShoppingHero from "@/components/USAShoppingHero";
 import Header from "@/components/Header";
 import {supabase} from "@/lib/supabase";
 import {validateUSARequest} from "@/lib/usa-shopping";
+import USAItemCatalog from "@/components/USAItemCatalog";
+import {usaQuoteSelection, usaItemId} from "@/lib/usa-items.mjs";
 
 const initial={contact_name:'',contact_email:'',contact_phone:'',destination:'',item_name:'',item_url:'',quantity:'1',item_details:''};
 export default function USAShopping(){
  const [form,setForm]=useState(initial),[user,setUser]=useState(null),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[reference,setReference]=useState(null);
  const lock=useRef(false);
+ const [selectedItem,setSelectedItem]=useState(null);
+ const chooseItem=useCallback(item=>{
+  const values=usaQuoteSelection(item);if(!values || lock.current)return;
+  setForm(current=>({...current,...values}));setSelectedItem(item.id);setReference(null);setMessage('');
+  const url=new URL(window.location.href);url.searchParams.set('item',item.id);url.hash='usa-quote';window.history.replaceState(window.history.state,'',url);
+  document.getElementById('usa-quote')?.scrollIntoView({behavior:'smooth',block:'start'});
+ },[]);
  useEffect(()=>{let active=true;supabase.auth.getUser().then(({data})=>{if(!active)return;setUser(data.user);if(data.user)setForm(current=>({...current,contact_email:data.user.email || ''}));setReady(true);}).catch(()=>{if(active){setReady(true);setMessage('Could not check sign-in. Refresh and try again.');}});return()=>{active=false};},[]);
  function change(e){setForm({...form,[e.target.name]:e.target.value});}
  async function submit(e){
@@ -24,6 +33,7 @@ export default function USAShopping(){
  }
  return <><Header/><main className="usa-shopping-page">
  <USAShoppingHero />
+ <USAItemCatalog onChoose={chooseItem}/>
  <section className="container usa-how-section">
  <p className="eyebrow">FROM WISHLIST TO NEXT STEPS</p><h2>A little link. A world of possibilities.</h2>
  <div className="usa-process-cards">
@@ -36,7 +46,7 @@ export default function USAShopping(){
  <ul><li>A full item link from a US store</li><li>Your exact size, color, or model</li><li>Quantity and delivery city/province</li></ul>
  <div className="usa-before-order"><strong>You’re requesting a quote.</strong><p>No payment is collected here. Availability and delivery times are confirmed individually. ID approval is required before proceeding with a purchase.</p></div>
  </aside><div className="usa-quote-panel">
- {!ready?<p>Checking sign-in...</p>:!user?<><p>Sign in to send a request securely.</p><Link className="view" href="/login">Sign in or create an account</Link></>:reference?<section><h2>Request received</h2><p>Reference: <strong>{reference}</strong></p><Link className="view" href="/account">My account</Link></section>:<form className="listing-form" onSubmit={submit}>
+ {!ready?<p>Checking sign-in...</p>:!user?<><p>Sign in to send a request securely.</p><Link className="view" href={`/login?next=${encodeURIComponent(`/usa-shopping${usaItemId(selectedItem)?`?item=${selectedItem}`:''}#usa-quote`)}`}>Sign in or create an account</Link></>:reference?<section><h2>Request received</h2><p>Reference: <strong>{reference}</strong></p><Link className="view" href="/account">My account</Link></section>:<form className="listing-form" onSubmit={submit}>
  <h2>Your next find starts here</h2>
  <p>Tell us about the item and the best way to reach you.</p>
  <label>Contact name<input name="contact_name" required maxLength={150} value={form.contact_name} onChange={change} autoComplete="name"/></label>

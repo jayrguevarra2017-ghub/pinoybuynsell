@@ -26,6 +26,7 @@ export default function AdminAccountLinks() {
       </span>
     </Link>)}
     <Link className="view" href="/account/payment-settings">My GCash / bank payment details</Link>
+    <Link className="view" href="/admin/usa-items">Manage Amazon, eBay &amp; USA items</Link>
     <Link className="view" href="/sell">Sell an item</Link>
     <Link className="view" href="/admin/listings">Administrator listing management</Link>
     <Link className="view" href="/admin/facebook">Post your listings to Facebook</Link>

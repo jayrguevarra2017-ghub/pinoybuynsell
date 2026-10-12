@@ -9,7 +9,7 @@ export default function USAShoppingHero({ compact = false }) {
         <p className="usa-intro">Share a US store link for shopping and delivery assistance.</p>
         <p className="usa-small">Item cost, service fees, shipping and import charges discussed before you confirm.</p>
       </div>
-      <Link className="usa-quote-button" href="/usa-shopping#usa-quote">Get a USA quote <span aria-hidden="true">↗</span></Link>
+      <div className="usa-home-actions"><Link className="usa-find-button" href="/usa-shopping#usa-finds">Explore USA items</Link><Link className="usa-quote-button" href="/usa-shopping#usa-quote">Get a USA quote <span aria-hidden="true">↗</span></Link></div>
     </div>
   </section>;
 
