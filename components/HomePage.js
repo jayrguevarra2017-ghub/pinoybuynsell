@@ -52,7 +52,7 @@ export default function HomePage({ initialProducts = null }) {
 
       <main>
         <section className="hero">
-          <div className="container hero-inner">
+          <div className="container hero-inner home-hero-with-video">
             <div>
               <p className="eyebrow">🇵🇭 MADE FOR THE PHILIPPINES</p>
 
@@ -74,6 +74,25 @@ export default function HomePage({ initialProducts = null }) {
                 </Link>
               </div>
             </div>
+
+            <figure className="home-promo-video">
+              <video
+                controls
+                playsInline
+                preload="none"
+                poster="/marketing/pinoybuynsell-website-poster.jpg"
+                aria-label="Watch the PinoyBuyNSell collectibles promo"
+                aria-describedby="home-promo-caption"
+              >
+                <source src="/marketing/pinoybuynsell-website.mp4" type="video/mp4" />
+                <track kind="captions" src="/marketing/pinoybuynsell-promo.vtt" srcLang="en" label="English captions" />
+                Your browser cannot play this video. <a href="/marketing/pinoybuynsell-website.mp4">Open the promo video</a>.
+              </video>
+              <figcaption id="home-promo-caption">
+                <strong>For the collectors</strong>
+                <span>NBA cards, Pokémon and more · 20 seconds</span>
+              </figcaption>
+            </figure>
           </div>
         </section>
 

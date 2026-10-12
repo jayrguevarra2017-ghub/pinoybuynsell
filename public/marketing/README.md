@@ -9,3 +9,5 @@ Created October 12, 2026. The 20-second videos use the site's existing brand mar
 - The five scenes are the opening, Kobe, Jordan, Mewtwo and the website/follow call to action. Scenes have gentle motion and short crossfades; captions remain readable without audio.
 
 After website deployment, `/marketing/index.html` provides previews, same-origin MP4 download buttons and a suggested caption. The preview page uses `preload="none"`, has no autoplay, has no external scripts and is marked noindex. This is a standalone asset page. It sends no Facebook post and needs no new environment variable or database migration.
+
+The homepage hero also shows the widescreen video alongside the introduction on desktop and below the browse/selling buttons on mobile. It uses the poster, native playback controls, inline mobile playback and no preloading or autoplay. English caption cues are in `pinoybuynsell-promo.vtt`.
