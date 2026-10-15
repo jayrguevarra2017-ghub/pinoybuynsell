@@ -65,3 +65,16 @@ test("long formatted descriptions become a short readable preview", () => {
   assert.equal(result.description.length, 240); assert.ok(!result.description.includes("<b>"));
   assert.ok(!result.description.includes("\n"));
 });
+
+test("sold listing details remain public without indexing them or exposing private records", async () => {
+  const sold = { ...product, status: "sold" };
+  const result = await getPublicPreviewProduct("4", { env, includeSold: true, failOnError: true, fetchImpl: async url => {
+    const params = new URL(url).searchParams;
+    assert.equal(params.get("status"), "in.(active,sold)"); assert.equal(params.get("deleted_at"), "is.null");
+    return Response.json([sold]);
+  } });
+  assert.deepEqual(result, sold); assert.equal(productPreviewMetadata("4", result, env.NEXT_PUBLIC_SUPABASE_URL).robots.index, false);
+  for (const record of [{ ...sold, status: "draft" }, { ...sold, deleted_at: "2026-10-15" }]) {
+    assert.equal(await getPublicPreviewProduct("4", { env, includeSold: true, fetchImpl: async () => Response.json([record]) }), null);
+  }
+});

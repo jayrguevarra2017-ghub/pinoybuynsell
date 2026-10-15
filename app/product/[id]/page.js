@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { breadcrumbs, productStructuredData, serializeJsonLd } from "@/lib/seo.mjs";
 
 export const dynamic = "force-dynamic";
-const readProduct = cache(id => getPublicPreviewProduct(id, { env: process.env, failOnError: true }));
+const readProduct = cache(id => getPublicPreviewProduct(id, { env: process.env, failOnError: true, includeSold: true }));
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
