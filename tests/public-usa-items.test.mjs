@@ -23,6 +23,11 @@ test("USA initial HTML cannot expose drafts, hidden items or unsafe source/photo
     { ...item, store: "eBay" }, null]) });
   assert.deepEqual(rows, [item]);
 });
+test("B&H published cards are included in initial HTML with the correct store identity", async () => {
+  const bh = { ...item, item_url: "https://www.bhphotovideo.com/c/product/123/REG/camera.html", store: "B&H Photo" };
+  const rows = await readPublicUSAItems({ env, fetchImpl: async () => Response.json([bh, { ...bh, store: "Amazon" }, { ...bh, item_url: "https://bhphotovideo.com.evil.com/camera" }]) });
+  assert.deepEqual(rows, [bh]);
+});
 test("USA reads fail explicitly for missing setup, malformed bodies and missing configuration", async () => {
   await assert.rejects(readPublicUSAItems({ env: {}, fetchImpl: () => { throw Error("Must not fetch"); } }), /unavailable/);
   for (const response of [Response.json({}, { status: 404 }), Response.json(null), Response.json({ items: [item] })]) {

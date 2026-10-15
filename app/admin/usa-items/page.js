@@ -4,7 +4,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import { useApp } from "@/components/AppProvider";
 import { supabase } from "@/lib/supabase";
-import { usaItemFields, usaItemValues, usaStoreLink } from "@/lib/usa-items.mjs";
+import { usaItemFields, usaItemValues, usaStores, usaStoreLink } from "@/lib/usa-items.mjs";
 import { prepareListingPhoto, photoTypes } from "@/lib/listing-photo-format.mjs";
 import { requireSellingAccess } from "@/lib/selling-access.mjs";
 import { withDeadline } from "@/lib/verification-actions";
@@ -80,7 +80,7 @@ export default function USAItemsAdmin() {
         <h2>{editing ? "Edit USA item" : "Add a USA find"}</h2>
         <label>Item title<input required minLength={3} maxLength={200} value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></label>
         <label>Store item link<input required type="url" maxLength={2000} placeholder="https://www.amazon.com/dp/... or https://www.ebay.com/itm/..." value={form.item_url} onChange={e => setForm({ ...form, item_url: e.target.value })} /></label>
-        <p className="muted">Supported stores: Amazon, eBay, Walmart, Target, Best Buy and Nike. The source store is detected from the link.</p>
+        <p className="muted">Supported stores: {usaStores.map(store => store.name).join(", ")}. The source store is detected from the link.</p>
         <label>Item photo<input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" onChange={e => setPhoto(e.target.files?.[0] || null)} /></label>
         {editing?.image_path && <p className="muted">The existing photo is kept unless you choose a replacement.</p>}
         <label>Description<textarea required minLength={10} maxLength={1500} rows={4} placeholder="Item details, size, color or model, and anything customers should know." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>

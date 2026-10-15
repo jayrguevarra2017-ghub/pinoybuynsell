@@ -22,6 +22,16 @@ test("item validation allows drafts without photos and optional/zero prices", ()
   assert.equal(usaItemValues({ ...form, status: "draft" }, null).image_path, null);
   assert.equal(usaItemValues({ ...form, title: "  Selected collectible  " }, path).title, "Selected collectible");
 });
+test("B&H product links work in item validation and quote selection without accepting lookalikes", () => {
+  const item_url = "https://www.bhphotovideo.com/c/product/123/REG/camera.html?fromDisList=y&sts=pi";
+  const item = { ...usaItemValues({ ...form, item_url }, path), id };
+  assert.deepEqual(usaStoreLink(item_url), { name: "B&H Photo", href: item_url });
+  assert.equal(usaQuoteSelection(item).item_url, item_url);
+  for (const link of ["https://bhphotovideo.com.evil.com/item", "https://fakebhphotovideo.com/item", "https://bhphotovideo.com@evil.com/item", "https://user@bhphotovideo.com/item", "http://bhphotovideo.com/item"]) {
+    assert.equal(usaStoreLink(link), null);
+    assert.throws(() => usaItemValues({ ...form, item_url: link }, path), /supported store/);
+  }
+});
 test("invalid catalog values fail before photo uploads or data mutations", () => {
   for (const price of ["-1", "NaN", "1e3", "1.234", "1000000000", "1,200"]) assert.throws(() => usaItemValues({ ...form, usd_price: price }, path));
   for (const change of [{title:"x"},{title:"x".repeat(201)},{description:"short"},{description:"x".repeat(1501)},{status:"active"},{item_url:"https://evil.com/item"}]) assert.throws(() => usaItemValues({ ...form, ...change }, path));
