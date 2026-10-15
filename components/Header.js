@@ -9,14 +9,17 @@ import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
 import AdminAttentionBadge from "@/components/AdminAttentionBadge";
 import BidNotificationLink from "@/components/BidNotificationLink";
+import { runAuthAction } from "@/lib/auth-actions.mjs";
 
 export default function Header() {
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false), [authMessage, setAuthMessage] = useState("");
+  const logoutLock = useRef(false), active = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const menuButton = useRef(null), header = useRef(null);
   const app = useApp();
+  const user = app?.user, loadingUser = !app?.authReady;
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
 
   useEffect(() => { setMenuOpen(false); }, [pathname]);
   useEffect(() => {
@@ -29,26 +32,14 @@ export default function Header() {
     return () => { window.removeEventListener("keydown", dismiss); window.removeEventListener("pointerdown", dismiss); };
   }, [menuOpen]);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-      setLoadingUser(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoadingUser(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   async function handleLogout() {
-    await supabase.auth.signOut();
-    setUser(null);
-    window.location.href = "/";
+    if (logoutLock.current) return;
+    logoutLock.current = true; setLoggingOut(true); setAuthMessage("");
+    try {
+      await runAuthAction(supabase, "logout");
+      if (active.current) window.location.href = "/";
+    } catch (error) { if (active.current) setAuthMessage(error.message); }
+    finally { logoutLock.current = false; if (active.current) setLoggingOut(false); }
   }
 
   return (
@@ -76,8 +67,9 @@ export default function Header() {
                   type="button"
                   className="login"
                   onClick={handleLogout}
+                  disabled={loggingOut}
                 >
-                  Log out
+                  {loggingOut ? "Signing out…" : "Log out"}
                 </button>
               </>
             ) : (
@@ -100,6 +92,7 @@ export default function Header() {
         <VisitorCounter />
       </div>
       {app && !app.online && <p className="app-connection-notice" role="status">You’re offline. Reconnect to refresh listings, place bids or send messages.</p>}
+      {authMessage && <p className="app-connection-notice" role="status">{authMessage}</p>}
       <nav id="mobile-site-menu" className="container mobile-site-menu" aria-label="More mobile links" hidden={!menuOpen}>
         {[ ["My orders", "/account/orders"], ["Home", "/"], ["Browse", "/search"], ["Auctions", "/auctions"], ["Buy from USA", "/usa-shopping"],
           ["Categories", "/#categories"], ["My account", "/account"], ["Payment & returns", "/payment-rules"], ["Marketplace rules", "/prohibited-items"] ].map(([label, href]) =>

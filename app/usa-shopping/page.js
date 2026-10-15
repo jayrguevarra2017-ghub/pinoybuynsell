@@ -4,14 +4,21 @@ import Link from "next/link";
 import USAShoppingHero from "@/components/USAShoppingHero";
 import Header from "@/components/Header";
 import {supabase} from "@/lib/supabase";
-import {validateUSARequest} from "@/lib/usa-shopping";
+import {submitUSARequest,validateUSARequest} from "@/lib/usa-shopping";
+import {useApp} from "@/components/AppProvider";
 import USAItemCatalog from "@/components/USAItemCatalog";
 import {usaQuoteSelection, usaItemId} from "@/lib/usa-items.mjs";
 
 const initial={contact_name:'',contact_email:'',contact_phone:'',destination:'',item_name:'',item_url:'',quantity:'1',item_details:''};
 export default function USAShopping(){
- const [form,setForm]=useState(initial),[user,setUser]=useState(null),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[reference,setReference]=useState(null);
+ const app=useApp();
+ return <USAShoppingSession key={app?.user?.id || 'guest'} user={app?.user} ready={app?.authReady}/>;
+}
+function USAShoppingSession({user,ready}){
+ const [form,setForm]=useState(()=>({...initial,contact_email:user?.email || ''})),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[reference,setReference]=useState(null);
  const lock=useRef(false);
+ const life=useRef(null);
+ useEffect(()=>{const controller=new AbortController();life.current=controller;return()=>controller.abort();},[]);
  const [selectedItem,setSelectedItem]=useState(null);
  const chooseItem=useCallback(item=>{
   const values=usaQuoteSelection(item);if(!values || lock.current)return;
@@ -19,17 +26,17 @@ export default function USAShopping(){
   const url=new URL(window.location.href);url.searchParams.set('item',item.id);url.hash='usa-quote';window.history.replaceState(window.history.state,'',url);
   document.getElementById('usa-quote')?.scrollIntoView({behavior:'smooth',block:'start'});
  },[]);
- useEffect(()=>{let active=true;supabase.auth.getUser().then(({data})=>{if(!active)return;setUser(data.user);if(data.user)setForm(current=>({...current,contact_email:data.user.email || ''}));setReady(true);}).catch(()=>{if(active){setReady(true);setMessage('Could not check sign-in. Refresh and try again.');}});return()=>{active=false};},[]);
  function change(e){setForm({...form,[e.target.name]:e.target.value});}
  async function submit(e){
-  e.preventDefault();if(lock.current)return;
+  e.preventDefault();if(lock.current || !ready || !user || life.current?.signal.aborted)return;
   const error=validateUSARequest(form);if(error){setMessage(error);return;}
   lock.current=true;setBusy(true);setMessage('');
   try{
-   const result=await supabase.rpc('submit_usa_shopping_request',{p_contact_name:form.contact_name.trim(),p_contact_email:form.contact_email.trim(),p_contact_phone:form.contact_phone.trim(),p_destination:form.destination.trim(),p_item_name:form.item_name.trim(),p_item_url:form.item_url.trim(),p_quantity:Number(form.quantity),p_item_details:form.item_details.trim()});
-   if(result.error)throw result.error;setReference(result.data);setMessage('Your request has been saved. Our team will contact you using the details you provided to discuss availability and a quote.');
-  }catch(error){setMessage(error.code==='PGRST202'?'The request service is not available yet. Please try again later.':error.message || 'Could not confirm your request. Check with the team before submitting again.');}
-  finally{lock.current=false;setBusy(false);}
+   const saved=await submitUSARequest(supabase,form,{signal:life.current.signal});
+   if(life.current.signal.aborted)return;
+   setReference(saved);setMessage('Your request has been saved. Our team will contact you using the details you provided to discuss availability and a quote.');
+  }catch(error){if(!life.current.signal.aborted)setMessage(error.message || 'Could not confirm your request. Check with the team before submitting again.');}
+  finally{lock.current=false;if(!life.current.signal.aborted)setBusy(false);}
  }
  return <><Header/><main className="usa-shopping-page">
  <USAShoppingHero />
@@ -49,6 +56,7 @@ export default function USAShopping(){
  {!ready?<p>Checking sign-in...</p>:!user?<><p>Sign in to send a request securely.</p><Link className="view" href={`/login?next=${encodeURIComponent(`/usa-shopping${usaItemId(selectedItem)?`?item=${selectedItem}`:''}#usa-quote`)}`}>Sign in or create an account</Link></>:reference?<section><h2>Request received</h2><p>Reference: <strong>{reference}</strong></p><Link className="view" href="/account">My account</Link></section>:<form className="listing-form" onSubmit={submit}>
  <h2>Your next find starts here</h2>
  <p>Tell us about the item and the best way to reach you.</p>
+ <fieldset disabled={busy} className="usa-quote-fields" aria-label="Item and contact details">
  <label>Contact name<input name="contact_name" required maxLength={150} value={form.contact_name} onChange={change} autoComplete="name"/></label>
  <label>Contact email<input name="contact_email" type="email" required maxLength={254} value={form.contact_email} onChange={change} autoComplete="email"/></label>
  <label>Phone number<input name="contact_phone" type="tel" required maxLength={40} value={form.contact_phone} onChange={change} autoComplete="tel"/></label>
@@ -60,6 +68,7 @@ export default function USAShopping(){
  <p>Please check our <Link href="/prohibited-items">prohibited-items policy</Link> before requesting an item.</p>
  <label><input type="checkbox" required/> I agree that the team may contact me about this request.</label>
  <button className="sell" disabled={busy}>{busy?'Sending request...':'Send my wishlist'}</button>
+ </fieldset>
  </form>}
  {message && <p role="status" aria-live="polite">{message}</p>}
  </div></section>

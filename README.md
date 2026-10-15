@@ -1,5 +1,15 @@
 # PinoyBuyNSell
 
+## October 15 account and request reliability fixes
+
+Login, sign-up, password-reset emails and sign-out stop waiting after 15 seconds and display a recovery message. Synchronous locks prevent overlapping actions, and account-mode switches and fields stay disabled while a request is pending. Late results cannot redirect an abandoned login screen. The header now uses the shared session state instead of a competing user read. The restricted USA quote return path is retained when signing up or signing in.
+
+USA quote forms follow sign-in changes immediately. Contact details, consent and request confirmations reset when the account changes; selected public items can be restored from the existing item URL. Quote writes have a deadline, reject malformed references and never retry automatically. An uncertain response tells the customer to check with the team before submitting again.
+
+Account verification requires a confirmed, account-scoped status read before showing the ID form, with a refresh action for failed or stalled reads. Submissions recheck pending/approved status before uploading, use the existing private ID bucket and have bounded upload/submit waits. Uncertain submissions require a fresh status check. Changing accounts clears ID details, selected files and review notes, and prevents an unfinished upload from triggering a later submission for another account. A timed-out upload may still finish storing its private file; it is not automatically submitted or deleted.
+
+Validation: clean `npm ci`, 215 automated tests, 68 mocked Chromium assertions and a production build passed; npm reported zero vulnerabilities. Browser checks include successful and stalled login/recovery, duplicate submission prevention, sign-out and account changes, successful and uncertain quotes and ID submissions, and 320/390/768/1280px layouts. Local production routes for Home, Browse, Auctions, products 4 and 8, a seller profile, sitemap and robots returned HTTP 200 using read-only hosted data. The public USA catalog table was available. Browser writes were mocked; no real account, quote, ID or Facebook post was created. No new SQL or Hostinger variables are required. GitHub updates and live Hostinger deployment must be confirmed separately.
+
 ## Item view counters and compact mobile listings
 
 Item pages, browsing cards, auction cards, seller profiles and My listings display public item view totals. Opening a visible item page records one view per browser per listing per Philippine calendar day. Browsing cards only read totals; refreshes and duplicate instances do not keep adding views. Counts start when this feature is activated and cannot recover historical traffic. These are browser-based views, not a count of distinct people. Private browsing or clearing browser storage can create a new browser identifier.

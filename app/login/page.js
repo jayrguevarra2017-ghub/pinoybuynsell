@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 import { usaSignInReturn } from "@/lib/usa-items.mjs";
+import { runAuthAction } from "@/lib/auth-actions.mjs";
 
 export default function LoginPage() {
   const [mode, setMode] = useState("login");
@@ -11,68 +12,64 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const lock = useRef(false), active = useRef(false);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
-
+    if (lock.current) return;
+    lock.current = true;
     setLoading(true);
     setMessage("");
 
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/login`,
-          },
-        });
-
-        if (error) throw error;
+        const next = usaSignInReturn(new URLSearchParams(window.location.search).get("next"));
+        await runAuthAction(supabase, "signup", { email, password,
+          redirectTo: `${window.location.origin}/login${next ? `?next=${encodeURIComponent(next)}` : ""}` });
+        if (!active.current) return;
 
         setMessage(
           "Account created. Confirm your email, sign in, then upload your ID at Account Verification to receive bidding approval. You can browse and contact sellers about buying. Selling for members is coming soon."
         );
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
+        await runAuthAction(supabase, "login", { email, password });
+        if (!active.current) return;
 
         window.location.href = usaSignInReturn(new URLSearchParams(window.location.search).get("next")) || "/verify";
       }
     } catch (error) {
-      setMessage(error.message || "Something went wrong.");
+      if (active.current) setMessage(error.message || "Something went wrong.");
     } finally {
-      setLoading(false);
+      lock.current = false;
+      if (active.current) setLoading(false);
     }
   }
 async function handleForgotPassword() {
+  if (lock.current) return;
   setMessage("");
 
-  if (!email) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
     setMessage("Please enter your email address first.");
     return;
   }
 
-  setLoading(true);
+  lock.current = true; setLoading(true);
 
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    await runAuthAction(supabase, "recovery", { email,
       redirectTo: `${window.location.origin}/reset-password`,
     });
-
-    if (error) throw error;
+    if (!active.current) return;
 
     setMessage(
       "Password reset email sent! Please check your inbox and spam folder."
     );
   } catch (error) {
-    setMessage(error.message || "Unable to send password reset email.");
+    if (active.current) setMessage(error.message || "Unable to send password reset email.");
   } finally {
-    setLoading(false);
+    lock.current = false;
+    if (active.current) setLoading(false);
   }
 }
   return (
@@ -102,6 +99,8 @@ async function handleForgotPassword() {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
+                disabled={loading}
+                autoComplete="email"
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
@@ -113,6 +112,8 @@ async function handleForgotPassword() {
                 type="password"
                 placeholder="Enter your password"
                 value={password}
+                disabled={loading}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
                 onChange={(e) => setPassword(e.target.value)}
                 minLength={6}
                 required
@@ -137,7 +138,7 @@ async function handleForgotPassword() {
   </button>
 )}
 
-          {message && <p>{message}</p>}
+          {message && <p role="status" aria-live="polite">{message}</p>}
 
           <p>
             {mode === "login"
@@ -146,7 +147,9 @@ async function handleForgotPassword() {
 
             <button
               type="button"
+              disabled={loading}
               onClick={() => {
+                if (lock.current) return;
                 setMode(mode === "login" ? "signup" : "login");
                 setMessage("");
               }}
