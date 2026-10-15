@@ -1,12 +1,9 @@
 import HomePage from "@/components/HomePage";
 import { getFeaturedListings } from "@/lib/public-listings.mjs";
-import { publicPageMetadata, serializeJsonLd, siteStructuredData } from "@/lib/seo.mjs";
+import { homeSEO, publicPageMetadata, serializeJsonLd, siteStructuredData } from "@/lib/seo.mjs";
 
 export const dynamic = "force-dynamic";
-export const metadata = publicPageMetadata({
-  title: "PinoyBuyNSell | Buy, Sell & Bid in the Philippines",
-  description: "Browse new and pre-owned items, sell your goods, and bid in online auctions across the Philippines. Request USA shopping and delivery assistance with PinoyBuyNSell.",
-});
+export const metadata = publicPageMetadata(homeSEO);
 
 export default async function Page() {
   let products = null;

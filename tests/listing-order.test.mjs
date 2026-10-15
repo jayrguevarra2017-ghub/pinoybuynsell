@@ -103,8 +103,8 @@ test("public index and detail reads reject private, deleted, unrelated rows and 
 test("seller/category filters constrain the public index; query wildcards and delimiters are escaped",async()=>{
   await getBrowseListings({sellerId:"00000000-0000-0000-0000-000000000001",category:'A\\B"C',query:'*card%,status.eq.draft'}, {env,fetchImpl:async url=>{
     const p=new URL(url).searchParams;
-    assert.equal(p.get("seller_id"),'eq."00000000-0000-0000-0000-000000000001"');
-    assert.equal(p.get("category"),'eq."A\\\\B\\"C"');
+    assert.equal(p.get("seller_id"),'eq.00000000-0000-0000-0000-000000000001');
+    assert.equal(p.get("category"),'eq.A\\B"C');
     assert.equal(p.get("or"),'(title.ilike."*card,status.eq.draft*",description.ilike."*card,status.eq.draft*")');
     return Response.json([]);
   }});

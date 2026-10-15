@@ -6,7 +6,7 @@ export default function USAShoppingHero({ compact = false }) {
       <div className="usa-showcase-copy">
         <p className="usa-kicker">🇺🇸 → 🇵🇭 USA SHOPPING</p>
         <h2>USA to Philippines</h2>
-        <p className="usa-intro">Share a US store link for shopping and delivery assistance.</p>
+        <p className="usa-intro">Share a US store link for shopping and shipping assistance.</p>
         <p className="usa-small">Item cost, service fees, shipping and import charges discussed before you confirm.</p>
       </div>
       <div className="usa-home-actions"><Link className="usa-find-button" href="/usa-shopping#usa-finds">Explore USA items</Link><Link className="usa-quote-button" href="/usa-shopping#usa-quote">Get a USA quote <span aria-hidden="true">↗</span></Link></div>
@@ -16,9 +16,9 @@ export default function USAShoppingHero({ compact = false }) {
   return <section className="usa-showcase">
     <div className="container usa-showcase-grid">
       <div className="usa-showcase-copy">
-        <p className="usa-kicker">YOUR USA WISHLIST, CLOSER TO HOME</p>
-        <h1>You find it.<br />We help bring it <em>home.</em></h1>
-        <p className="usa-intro">That pair of sneakers. A gift you can’t find here. Your next favorite gadget. Share a US store link and let’s work out how to bring it to the Philippines.</p>
+        <p className="usa-kicker">SHOPPING &amp; SHIPPING ASSISTANCE</p>
+        <h1>USA to Philippines.<br /><em>Your next find, closer to home.</em></h1>
+        <p className="usa-intro">Need help buying an item and shipping from USA to Philippines? Share an Amazon, eBay or other US store link. We’ll discuss availability, purchase costs and delivery arrangements before you decide.</p>
         <Link className="usa-quote-button" href="#usa-quote">Get my USA shopping quote <span aria-hidden="true">↗</span></Link>
         <p className="usa-small">Item cost, service fee, shipping, and import charges discussed before you confirm.</p>
         <div className="usa-category-tags"><span>👟 Fashion finds</span><span>🎧 Gadgets</span><span>🎁 Gifts & collectibles</span></div>

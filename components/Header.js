@@ -50,6 +50,7 @@ export default function Header() {
         <nav className="mainnav">
           <Link href="/">Home</Link>
           <Link href="/search">Browse</Link>
+          <Link href="/collectibles">Trading cards</Link>
           <Link href="/auctions">Auctions</Link>
           <Link href="/#categories">Categories</Link>
           <Link href="/usa-shopping">Buy from USA</Link>
@@ -94,7 +95,7 @@ export default function Header() {
       {app && !app.online && <p className="app-connection-notice" role="status">You’re offline. Reconnect to refresh listings, place bids or send messages.</p>}
       {authMessage && <p className="app-connection-notice" role="status">{authMessage}</p>}
       <nav id="mobile-site-menu" className="container mobile-site-menu" aria-label="More mobile links" hidden={!menuOpen}>
-        {[ ["My orders", "/account/orders"], ["Home", "/"], ["Browse", "/search"], ["Auctions", "/auctions"], ["Buy from USA", "/usa-shopping"],
+        {[ ["My orders", "/account/orders"], ["Home", "/"], ["Browse", "/search"], ["Trading cards & TCG", "/collectibles"], ["Auctions", "/auctions"], ["Buy from USA", "/usa-shopping"],
           ["Categories", "/#categories"], ["My account", "/account"], ["Payment & returns", "/payment-rules"], ["Marketplace rules", "/prohibited-items"] ].map(([label, href]) =>
           <Link key={href} href={href} prefetch={false} onClick={() => setMenuOpen(false)}>{label}</Link>)}
       </nav>

@@ -195,6 +195,9 @@ export default function ProductPage({ initialProduct = null }) {
     <main className="page listing-detail-page">
       <div className="container">
         <Link href="/search" className="back">← Back to marketplace</Link>
+        {product.category === "Collectibles" && <nav className="seo-breadcrumbs" aria-label="Breadcrumb">
+          <Link href="/">Home</Link><span aria-hidden="true">/</span><Link href="/collectibles">Trading cards &amp; collectibles</Link><span aria-hidden="true">/</span><span aria-current="page">{product.title}</span>
+        </nav>}
         <div className="listing-detail-layout">
           <ListingGallery product={product} />
           <div className="listing-purchase-panel">

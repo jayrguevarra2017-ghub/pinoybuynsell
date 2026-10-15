@@ -21,7 +21,7 @@ test("sitemap pagination includes listings beyond Supabase's first page", async 
   const offsets = [];
   const result = await getSitemapListings({ env, fetchImpl: async url => {
     const query = new URL(url).searchParams;
-    assert.equal(query.get("select"), "id,status,deleted_at");
+    assert.equal(query.get("select"), "id,category,status,deleted_at");
     const offset = Number(query.get("offset")); offsets.push(offset);
     return Response.json(offset === 0 ? [item, { ...item, id: "2" }] : [{ ...item, id: "3" }]);
   } }, 2, 10);
@@ -38,7 +38,7 @@ test("browse filters quote delimiters and paginate real public listings", async 
   await getBrowseListings({ query: 'card",status.eq.draft', category: 'Home & Living', page: 2 }, { env, fetchImpl: async url => {
     const query = new URL(url).searchParams;
     assert.equal(query.get("offset"), "0"); assert.equal(query.get("limit"), "1000");
-    assert.equal(query.get("category"), 'eq."Home & Living"');
+    assert.equal(query.get("category"), 'eq.Home & Living');
     assert.equal(query.get("or"), '(title.ilike."*card\\",status.eq.draft*",description.ilike."*card\\",status.eq.draft*")');
     assert.ok(!query.get("select").includes("seller_id"));
     return Response.json([]);

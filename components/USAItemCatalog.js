@@ -5,9 +5,10 @@ import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
 import { usaItemFields, usaStores, usaStoreLink } from "@/lib/usa-items.mjs";
 
-export default function USAItemCatalog({ onChoose }) {
+export default function USAItemCatalog({ onChoose, initialItems = null }) {
   const app = useApp(), chooseRef = useRef(onChoose), selected = useRef(false);
-  const [items, setItems] = useState([]), [loading, setLoading] = useState(true), [error, setError] = useState("");
+  const hasSeed = Array.isArray(initialItems);
+  const [items, setItems] = useState(initialItems || []), [loading, setLoading] = useState(!hasSeed), [error, setError] = useState("");
   const [store, setStore] = useState("All stores"), [limit, setLimit] = useState(12);
   const abort = useRef(null);
   useEffect(() => { chooseRef.current = onChoose; }, [onChoose]);
@@ -15,7 +16,7 @@ export default function USAItemCatalog({ onChoose }) {
     abort.current?.abort();
     const controller = new AbortController(); abort.current = controller;
     const deadline = setTimeout(() => controller.abort(), 12000);
-    setLoading(true); setError("");
+    setLoading(!hasSeed); setError("");
     try {
       const result = await supabase.from("usa_shopping_items").select(usaItemFields).eq("status", "published").order("created_at", { ascending: false }).limit(100).abortSignal(controller.signal);
       if (controller.signal.aborted || result.error) throw Error("Catalog unavailable");
@@ -28,7 +29,7 @@ export default function USAItemCatalog({ onChoose }) {
       }
     } catch { if (abort.current === controller) setError("USA finds are unavailable right now. You can still paste your store link in the quote form below."); }
     finally { clearTimeout(deadline); if (abort.current === controller) setLoading(false); }
-  }, []);
+  }, [hasSeed]);
   useEffect(() => { load(); return () => { abort.current?.abort(); abort.current = null; }; }, [load]);
   const matches = items.filter(item => store === "All stores" || item.store === store);
   return <section className="container usa-catalog" id="usa-finds" aria-labelledby="usa-finds-title">

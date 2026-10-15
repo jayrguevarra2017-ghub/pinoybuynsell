@@ -50,6 +50,16 @@ test("photo-less listings have a text preview; unsafe/private paths are not used
     assert.deepEqual(result.openGraph.images, []); assert.equal(result.twitter.card, "summary");
   }
 });
+
+test("product routes distinguish confirmed absence from database failures", async () => {
+  assert.equal(await getPublicPreviewProduct("4", { env, failOnError: true, fetchImpl: async () => Response.json([]) }), null);
+  for (const id of ["0", "-1", "collectible", "9223372036854775808", "1,2", "4&select=*"]) {
+    assert.equal(await getPublicPreviewProduct(id, { env, failOnError: true, fetchImpl: () => { throw Error("Must not query invalid IDs"); } }), null);
+  }
+  await assert.rejects(getPublicPreviewProduct("4", { env, failOnError: true, fetchImpl: async () => Response.json({ secret: "private-key" }, { status: 503 }) }), error => error.message === "Listing details are temporarily unavailable.");
+  await assert.rejects(getPublicPreviewProduct("4", { env: {}, failOnError: true }), /temporarily unavailable/);
+  assert.deepEqual(await getPublicPreviewProduct("4", { env, failOnError: true, fetchImpl: async () => Response.json([product]) }), product);
+});
 test("long formatted descriptions become a short readable preview", () => {
   const result = productPreviewMetadata("4", { ...product, description: "<b>New</b>\n\n card " + "details ".repeat(500) }, env.NEXT_PUBLIC_SUPABASE_URL);
   assert.equal(result.description.length, 240); assert.ok(!result.description.includes("<b>"));

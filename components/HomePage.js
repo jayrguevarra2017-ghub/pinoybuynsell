@@ -54,14 +54,16 @@ export default function HomePage({ initialProducts = null }) {
         <section className="hero">
           <div className="container hero-inner home-hero-with-video">
             <div>
-              <p className="eyebrow">🇵🇭 MADE FOR THE PHILIPPINES</p>
+              <p className="eyebrow">🇵🇭 PINOYBUYNSELL · PHILIPPINES</p>
 
               <h1>
                 Buy. Sell. <span>Connect.</span>
               </h1>
 
               <p className="lead">
-                Discover great deals from sellers across the Philippines.
+                PinoyBuyNSell is a Philippine buy and sell marketplace for trading cards,
+                TCG, collectibles and more. Browse NBA and Pokémon cards, join auctions,
+                or request USA to Philippines shopping and shipping assistance.
               </p>
 
               <div className="hero-actions">
@@ -113,7 +115,7 @@ export default function HomePage({ initialProducts = null }) {
               {categories.map((category) => (
                 <Link
                   key={category.name}
-                  href={`/search?category=${encodeURIComponent(category.name)}`}
+                  href={category.name === "Collectibles" ? "/collectibles" : `/search?category=${encodeURIComponent(category.name)}`}
                   className="category-card"
                 >
                   <span aria-hidden="true">{category.icon}</span>

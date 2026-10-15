@@ -1,6 +1,7 @@
 import "./globals.css";
 import SupportChat from "@/components/SupportChat";
 import AppProvider from "@/components/AppProvider";
+import { homeSEO } from "@/lib/seo.mjs";
 
 export const viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#2454d6" };
 
@@ -10,8 +11,8 @@ export const metadata = {
   applicationName: "PinoyBuyNSell",
   facebook: { appId: "2368945230513347" },
   appleWebApp: { capable: true, title: "PinoyBuyNSell", statusBarStyle: "default" },
-  title: "PinoyBuyNSell | Buy, Sell & Bid in the Philippines",
-  description: "Buy and sell new and pre-owned items, join online auctions, and request USA shopping assistance on PinoyBuyNSell, your Philippine marketplace.",
+  title: homeSEO.title,
+  description: homeSEO.description,
   icons: {
     icon: [{ url: "/branding/pinoybuynsell-mark.png", type: "image/png" }],
     apple: "/branding/pinoybuynsell-app-icon.png",
