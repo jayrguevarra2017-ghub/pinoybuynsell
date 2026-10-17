@@ -117,7 +117,7 @@ function FacebookListings() {
         <ShippingDetails product={item} /><Link className="view" href={`/product/${item.id}`}>View listing</Link>
         <div className="facebook-hashtag-preview"><strong>Automatic hashtags</strong>
           <p className="listing-share-hashtags">{listingHashtags(item).join(" ")}</p>
-          <p className="listing-share-help">Included when you post or update this listing’s Facebook details.</p>
+          <p className="listing-share-help">Item tags from the listing title plus the website tags. Included when you post or update this listing’s Facebook details.</p>
         </div>
         {post && <p>Facebook status: <strong>{post.status}</strong>{post.message && ` — ${post.message}`}</p>}
         {facebookPostingBlocked(post) && <aside className="facebook-blocked-help" aria-label="Facebook publishing checks">

@@ -62,7 +62,7 @@ export default function ListingShare({ id, product, user }) {
       <button className="facebook-share" type="button" onClick={copyPost}>Copy post with hashtags</button>
     </div>
     <p className="listing-share-help">{pagePublisher
-      ? "Page posts include these hashtags automatically. Review the listing and confirm posting on the next screen."
+      ? "Page posts include item tags from your title alongside the website tags. Review them and confirm posting on the next screen."
       : "Use Copy post with hashtags, then paste into Facebook. Facebook’s share window may not include the caption automatically."}</p>
     <p className="listing-share-hashtags" aria-label="Automatic hashtags">{hashtags}</p>
     {message && <p role="status" className="listing-share-help">{message}</p>}

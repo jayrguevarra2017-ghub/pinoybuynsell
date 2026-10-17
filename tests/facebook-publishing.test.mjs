@@ -62,8 +62,17 @@ test("a listing photo is posted with a caption and returned feed post ID", async
   assert.ok(url.endsWith("/photos")); const body = new URLSearchParams(request.body);
   assert.ok(body.get("url").startsWith("https://example.supabase.co/storage/v1/object/public/listing-photos/"));
   assert.ok(body.get("caption").includes("https://pinoybuynsell.com/product/1"));
-  assert.match(body.get("caption"), /#TradingCardsPH #BasketballCards #MichaelJordan$/);
+  assert.match(body.get("caption"), /#TradingCardsPH #BasketballCards #MichaelJordan/);
+  assert(body.get("caption").includes("#UpperDeck")); assert(body.get("caption").includes("#NBA"));
   assert.equal(f.finished[0].p_post_id, "1286818197857823_456");
+});
+test("text-only Page posts carry item-specific tags alongside the original website tags",async()=>{
+  const f=fixture({product:{title:'2026 Topps Now Tennis Alexandra Eala First WTA Title',category:'Collectibles',listing_type:'auction',auction_starting_price:100}});
+  assert.equal((await f.run()).status,200);
+  const [url,request]=f.calls.find(([name])=>name.startsWith('https://graph.facebook.com'));
+  assert(url.endsWith('/feed'));
+  const caption=new URLSearchParams(request.body).get('message');
+  for(const tag of ['#PinoyBuyNSell','#BuyAndSellPH','#TradingCardsPH','#TennisCards','#AlexEala','#Topps','#ToppsNow','#WTA','#OnlineAuctionPH']) assert(caption.includes(tag),tag);
 });
 test("published, processing and uncertain jobs never send another Meta request", async () => {
   for (const status of ["published", "processing", "uncertain", "failed"]) {

@@ -110,6 +110,8 @@ test("caption updates replace inferred hashtags when the saved item changes cate
   assert.equal((await f.run()).status,200);assert.equal(f.graph.length,2);
   const first=new URLSearchParams(f.graph[0].request.body).get("message"),last=new URLSearchParams(f.graph[1].request.body).get("message");
   assert(first.includes("#BasketballCards"));assert(last.includes("#PhonesPH"));assert(!last.includes("#TradingCardsPH"));
+  assert(first.includes("#UpperDeck"));assert(last.includes("#iPhone15"));assert(!last.includes("#UpperDeck"));assert(!last.includes("#MichaelJordan"));
+  for(const caption of [first,last]){assert(caption.includes("#PinoyBuyNSell"));assert(caption.includes("#BuyAndSellPH"));}
   assert(f.graph.every(call=>call.url.endsWith('/'+postId)));assert.equal(f.job().post_id,postId);
 });
 test("continuous edits leave an explicit retry message instead of claiming stale success",async()=>{
