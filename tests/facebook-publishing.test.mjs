@@ -52,15 +52,17 @@ test("an admin post uses the configured Page and includes price, shipping and li
   const body = new URLSearchParams(request.body);
   assert.equal(body.get("link"), "https://pinoybuynsell.com/product/1");
   assert.match(body.get("message"), /LBC.*₱50\.00/);
+  assert.match(body.get("message"), /#PinoyBuyNSell #BuyAndSellPH$/);
   assert.equal(f.finished[0].p_status, "published"); assert.equal(f.finished[0].p_post_id, "1286818197857823_123");
 });
 test("a listing photo is posted with a caption and returned feed post ID", async () => {
-  const f = fixture({ product: { image_path: "admin/photo.jpg" }, graph: { id: "456", post_id: "1286818197857823_456" } });
+  const f = fixture({ product: { image_path: "admin/photo.jpg", title: "Upper Deck Michael Jordan card", category: "Collectibles" }, graph: { id: "456", post_id: "1286818197857823_456" } });
   assert.equal((await f.run()).status, 200);
   const [url, request] = f.calls.find(([name]) => name.startsWith("https://graph.facebook.com"));
   assert.ok(url.endsWith("/photos")); const body = new URLSearchParams(request.body);
   assert.ok(body.get("url").startsWith("https://example.supabase.co/storage/v1/object/public/listing-photos/"));
   assert.ok(body.get("caption").includes("https://pinoybuynsell.com/product/1"));
+  assert.match(body.get("caption"), /#TradingCardsPH #BasketballCards #MichaelJordan$/);
   assert.equal(f.finished[0].p_post_id, "1286818197857823_456");
 });
 test("published, processing and uncertain jobs never send another Meta request", async () => {

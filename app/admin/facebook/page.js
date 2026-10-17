@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { facebookDebuggerUrl, facebookPostingBlocked, facebookPostingState, publishFacebookListing, validFacebookListingId, withFacebookDeadline } from "@/lib/facebook-posting.mjs";
 import { updateFacebookDetails } from "@/lib/facebook-edit-sync.mjs";
 import { facebookSyncBusy } from "@/lib/facebook-sync-state.mjs";
+import { listingHashtags } from "@/lib/listing-hashtags.mjs";
 
 export default function FacebookPage() {
   return <Suspense fallback={<><Header /><main className="page"><div className="container"><p role="status">Loading Page publishing...</p></div></main></>}>
@@ -95,7 +96,7 @@ function FacebookListings() {
 
   return <><Header /><main className="page"><div className="container narrow">
     <p className="eyebrow">ADMINISTRATOR FACEBOOK POSTING</p><h1 className="facebook-publishing-title">Post to PinoyBuyNSell Page</h1>
-    <p>Review your own active listing, then click Post to Facebook. The website publishes directly to the PinoyBuyNSell Page with the item details, shipping fee, website link, and cover photo.</p>
+    <p>Review your own active listing, then click Post to Facebook. The website publishes directly to the PinoyBuyNSell Page with the item details, shipping fee, website link, cover photo and relevant hashtags.</p>
     <p>Saving a website listing edit automatically updates the text of its linked Page post. Use Update Facebook details to retry an update. Change a published photo or link preview directly on Facebook.</p>
     <p>Check your Facebook Page before posting here. Posts made through Facebook’s share window do not appear in this posting status.</p>
     <div className="listing-share-actions" style={{ marginBottom: 16 }}>
@@ -114,6 +115,10 @@ function FacebookListings() {
       return <article className="listing-form" key={item.id} style={{ padding: 24, marginTop: 24, background: "white", border: "1px solid #ddd", borderRadius: 16 }}>
         <ListingPhoto product={item} detail /><h2>{item.title}</h2><p>₱{Number(item.price).toLocaleString("en-PH")}</p>
         <ShippingDetails product={item} /><Link className="view" href={`/product/${item.id}`}>View listing</Link>
+        <div className="facebook-hashtag-preview"><strong>Automatic hashtags</strong>
+          <p className="listing-share-hashtags">{listingHashtags(item).join(" ")}</p>
+          <p className="listing-share-help">Included when you post or update this listing’s Facebook details.</p>
+        </div>
         {post && <p>Facebook status: <strong>{post.status}</strong>{post.message && ` — ${post.message}`}</p>}
         {facebookPostingBlocked(post) && <aside className="facebook-blocked-help" aria-label="Facebook publishing checks">
           <p>Check this listing’s URL for Facebook warnings, then review any instructions Meta provides. These links open diagnostic screens and do not publish a post.</p>

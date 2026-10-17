@@ -314,7 +314,10 @@ footer { background: #242424; color: #e2e2e8; }
 .listing-share-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .listing-share-help { margin: 8px 0; color: #526078; font-size: 13px; line-height: 1.5; }
 .listing-share-link { display: block; font-size: 13px; }
-.listing-share-link input { display: block; width: 100%; min-width: 0; margin-top: 6px; padding: 10px; }
+.listing-share-link input, .listing-share-link textarea { display: block; width: 100%; min-width: 0; margin-top: 6px; padding: 10px; }
+.listing-share-link textarea { resize: vertical; font: inherit; line-height: 1.5; }
+.listing-share-hashtags { margin: 8px 0; color: #2454d6; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.facebook-hashtag-preview { padding: 12px 0; }
 .facebook-share:hover, .messenger-contact:hover { background: #edf2ff; }
 .facebook-page-publish { background: #2454d6; color: white; border-color: #2454d6; }
 .facebook-page-publish:hover { background: #193fab; }

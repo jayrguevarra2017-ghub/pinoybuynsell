@@ -103,6 +103,15 @@ test("overlapping edits are reread and coalesced into the same Facebook post",as
   assert.equal(f.graph.length,2);assert.equal(f.graph[0].url,f.graph[1].url);
   assert.equal(new URLSearchParams(f.graph[1].request.body).get("message"),facebookCaption(changed));
 });
+test("caption updates replace inferred hashtags when the saved item changes category",async()=>{
+  const original={...product,title:"Upper Deck Michael Jordan card",category:"Collectibles"};
+  const changed={...product,title:"iPhone 15",category:"Phones"};
+  const f=fixture({products:[original,original,changed,changed,changed]});
+  assert.equal((await f.run()).status,200);assert.equal(f.graph.length,2);
+  const first=new URLSearchParams(f.graph[0].request.body).get("message"),last=new URLSearchParams(f.graph[1].request.body).get("message");
+  assert(first.includes("#BasketballCards"));assert(last.includes("#PhonesPH"));assert(!last.includes("#TradingCardsPH"));
+  assert(f.graph.every(call=>call.url.endsWith('/'+postId)));assert.equal(f.job().post_id,postId);
+});
 test("continuous edits leave an explicit retry message instead of claiming stale success",async()=>{
   const f=fixture({products:Array.from({length:7},(_,i)=>({...product,title:`Save ${i}`}))});
   const result=await (await f.run()).json();assert.equal(result.status,"pending");assert.equal(f.graph.length,3);assert.match(result.message,/latest version/);
