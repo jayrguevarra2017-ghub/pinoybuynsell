@@ -56,7 +56,7 @@ test("sync requires an authenticated administrator and a valid listing ID",async
   }
 });
 test("only an administrator's own active undeleted listing can sync",async()=>{
-  for(const item of [null,{seller_id:"other"},{status:"sold"},{deleted_at:"2026-10-10"}]){
+  for(const item of [null,{seller_id:"other"},{status:"sold"},{deleted_at:"2026-10-10"},{relisted_to_id:20}]){
     const f=fixture({product:item});assert.equal((await f.run()).status,403);assert.equal(f.graph.length,0);
   }
 });

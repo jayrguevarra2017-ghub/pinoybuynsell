@@ -11,6 +11,7 @@ test("only an administrator's own active listing offers direct Page posting", ()
     [product, null, true], [product, { id: "other-admin" }, true], [product, { id: "admin" }, false],
     [product, { id: "admin" }, "true"], [{ ...product, deleted_at: "2026-10-10" }, { id: "admin" }, true],
     [{ ...product, status: "sold" }, { id: "admin" }, true],
+    [{ ...product, relisted_to_id: 20 }, { id: "admin" }, true],
   ]) assert.equal(canPublishListingToPage(item, user, admin), false);
 });
 

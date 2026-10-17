@@ -55,7 +55,8 @@ export default function ProductPage({ initialProduct = null }) {
     try {
       const isCurrent = () => bidContext.current?.id === snapshot.id && bidContext.current?.userId === snapshot.userId
         && bidContext.current?.auction?.id === snapshot.auction?.id && bidContext.current?.online
-        && bidContext.current?.product?.status === "active" && !bidContext.current?.product?.deleted_at;
+        && bidContext.current?.product?.status === "active" && !bidContext.current?.product?.deleted_at
+        && bidContext.current?.product?.relisted_to_id == null;
       const data = await submitMarketplaceBid(supabase, { auction, product, user, amountText: bidAmount }, { isCurrent });
       if (!isCurrent()) return;
       setAuction(data);
@@ -71,7 +72,7 @@ export default function ProductPage({ initialProduct = null }) {
   }
 
   const auctionOpen = now !== null && auction?.status === "active"
-    && product?.status === "active" && product?.listing_type !== "fixed_price"
+    && product?.status === "active" && product?.listing_type !== "fixed_price" && product?.relisted_to_id == null
     && Date.parse(auction.ends_at) > now
     && (!auction.starts_at || Date.parse(auction.starts_at) <= now);
   let minimumBid = "", incrementLabel = "";
@@ -203,6 +204,10 @@ export default function ProductPage({ initialProduct = null }) {
           <div className="listing-purchase-panel">
             <p className="eyebrow">{isAuction ? "BID & WIN" : "FIND YOUR NEXT FAVORITE"}</p>
             <h1>{product.title}</h1>
+            {product.relisted_to_id != null && <aside className="listing-relist-notice">
+              <p>This item has been relisted. <Link href={`/product/${product.relisted_to_id}`}>View the current listing →</Link></p>
+              <p className="muted">Original bids and payment details remain available here.</p>
+            </aside>}
             <div className="listing-engagement"><ListingLike key={`${product.id}:${app?.user?.id || "guest"}`} listingId={product.id} title={product.title} />
               <ListingViews key={product.id} listingId={product.id} record /></div>
             <SellerSummary key={`${product.seller_id}:${app?.user?.id || "guest"}`} sellerId={product.seller_id} />

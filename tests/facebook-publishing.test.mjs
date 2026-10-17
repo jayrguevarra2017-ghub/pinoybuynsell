@@ -35,7 +35,7 @@ test("anonymous, invalid sessions and regular sellers cannot post", async () => 
   }
 });
 test("only active listings owned by the signed-in administrator are queried and posted", async () => {
-  for (const item of [null, { seller_id: "another-seller" }, { deleted_at: "2026-10-08" }, { status: "sold" }]) {
+  for (const item of [null, { seller_id: "another-seller" }, { deleted_at: "2026-10-08" }, { status: "sold" }, { relisted_to_id: 20 }]) {
     const f = fixture({ product: item }); assert.equal((await f.run()).status, 403); assert.equal(f.requests(), 0);
     assert.ok(f.calls.some(([field, value]) => field === "seller_id" && value === "admin"));
   }

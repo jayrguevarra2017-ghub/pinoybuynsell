@@ -19,7 +19,7 @@ import { readAccountProfile, saveAccountProfile } from "@/lib/account-profile.mj
 import { withDeadline } from "@/lib/verification-actions";
 import BidNotifications from "@/components/BidNotifications";
 import ListingManagementActions from "@/components/ListingManagementActions";
-import { managementListingFields } from "@/lib/listing-management.mjs";
+import { readManagedListings } from "@/lib/listing-management.mjs";
 import { listingAvailability } from "@/lib/listing-order.mjs";
 
 export default function AccountPage() {
@@ -32,8 +32,10 @@ function AccountContent() {
   const app = useApp();
 
   const [listings, setListings] = useState([]);
+  const [listingsLoading, setListingsLoading] = useState(true);
   const [listingsError, setListingsError] = useState("");
   const [listingsMessage, setListingsMessage] = useState("");
+  const [showRelisted, setShowRelisted] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -60,16 +62,9 @@ function AccountContent() {
         const account = auth.data?.user;
         if (!account) { router.replace("/login"); return; }
         setUser(account);
-        await Promise.all([
-          readAccountProfile(supabase, account.id).then(data => {
-            if (active) { setProfile(data); setProfileReady(true); }
-          }).catch(() => { if (active) setProfileError("Your profile could not be loaded. Retry before editing."); }),
-          withDeadline(supabase.from("products").select(managementListingFields).eq("seller_id", account.id).order("created_at", { ascending: false }))
-            .then(result => {
-              if (result.error) throw result.error;
-              if (active) { setListings(result.data || []); setListingsError(""); }
-            }).catch(() => { if (active) setListingsError("Could not load your listings. Please refresh to try again."); }),
-        ]);
+        await readAccountProfile(supabase, account.id).then(data => {
+          if (active) { setProfile(data); setProfileReady(true); }
+        }).catch(() => { if (active) setProfileError("Your profile could not be loaded. Retry before editing."); });
       } catch {
         if (active) setAccountError("Your account could not be loaded. Please try again.");
       } finally { if (active) setLoading(false); }
@@ -78,6 +73,17 @@ function AccountContent() {
     loadAccount();
     return () => { active = false; };
   }, [router, revision]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let active = true;
+    setListingsLoading(true); setListingsError(""); setListings([]);
+    readManagedListings(supabase, { sellerId: user.id, includeRelisted: showRelisted })
+      .then(rows => { if (active) setListings(rows); })
+      .catch(() => { if (active) setListingsError("Could not load your listings. Please refresh to try again."); })
+      .finally(() => { if (active) setListingsLoading(false); });
+    return () => { active = false; };
+  }, [user?.id, revision, showRelisted]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -186,8 +192,9 @@ function AccountContent() {
               <button type="button" className="view inline" disabled={!app?.online || saving} onClick={() => setRevision(value => value + 1)}>Refresh my listings</button>
             </div>
             {listingsMessage && <p role="status">{listingsMessage}</p>}
-            {app?.isAdmin && <p className="muted account-listings-help">Relist creates a fresh listing and keeps the old bids. Delete hides the listing.</p>}
-            {listingsError ? <p role="alert">{listingsError}</p> : listings.length === 0 ? <p>You have no listings yet.</p> : listings.map((item) => (
+            {app?.isAdmin && <p className="muted account-listings-help">Relist creates a fresh listing and moves the original to history, keeping its bids and payments. Delete hides the listing.</p>}
+            <label className="listing-history-toggle"><input type="checkbox" checked={showRelisted} onChange={event => setShowRelisted(event.target.checked)} /> Show relisted history</label>
+            {listingsLoading ? <p>Loading your listings…</p> : listingsError ? <p role="alert">{listingsError}</p> : listings.length === 0 ? <p>You have no listings yet.</p> : listings.map((item) => (
               <article key={item.id} className="account-listing-card">
                 <Link className="account-listing-thumbnail" href={`/product/${item.id}`} aria-label={`View ${item.title}`}>
                   <ListingPhoto product={item} fit="contain" />
@@ -195,12 +202,13 @@ function AccountContent() {
                 <div className="account-listing-info">
                 <h3><Link href={`/product/${item.id}`}>{item.title}</Link></h3>
                 <p>₱{Number(item.price).toLocaleString("en-PH")} · {item.deleted_at ? "Deleted" : listingAvailability(item).label}</p>
+                {item.relisted_to_id != null && <Link href={`/product/${item.relisted_to_id}`}>View replacement listing →</Link>}
                 {item.listing_type && <p>{item.listing_type === "auction" ? "Auction / bidding · one item or lot" : `Fixed price · ${item.quantity} available${item.variations?.length ? ` · ${item.variations.length} variations` : ""}`}</p>}
                 <ShippingDetails product={item} />
                 {!item.deleted_at && <ListingViews listingId={item.id} />}
                 <div className="account-listing-links">
                   <Link className="view inline" href={`/product/${item.id}`}>View listing</Link>
-                  {item.deleted_at ? <p className="muted">Removed by administrator</p> : app?.isAdmin && <Link className="view inline" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}
+                  {item.deleted_at ? <p className="muted">Removed by administrator</p> : item.relisted_to_id == null && app?.isAdmin && <Link className="view inline" href={`/account/listings/${item.id}/edit`}>Edit listing</Link>}
                 </div>
                 <ListingManagementActions key={`${item.id}:${item.deleted_at || "active"}`} product={item}
                   onDeleted={deleted => { setListings(current => current.map(row => String(row.id) === String(deleted.id) ? deleted : row)); setListingsMessage("Listing deleted from the marketplace. Auction and bid records were retained."); }}

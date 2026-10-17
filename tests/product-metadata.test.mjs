@@ -78,3 +78,14 @@ test("sold listing details remain public without indexing them or exposing priva
     assert.equal(await getPublicPreviewProduct("4", { env, includeSold: true, fetchImpl: async () => Response.json([record]) }), null);
   }
 });
+
+test("relisted originals retain direct details for old bidders but leave discovery and indexing",async()=>{
+  const original={...product,relisted_to_id:28};
+  assert.equal(await getPublicPreviewProduct("4",{env,fetchImpl:async()=>Response.json([original])}),null);
+  const result=await getPublicPreviewProduct("4",{env,includeSold:true,fetchImpl:async url=>{
+    assert.equal(new URL(url).searchParams.get("relisted_to_id"),null);
+    return Response.json([original]);
+  }});
+  assert.deepEqual(result,original);
+  assert.equal(productPreviewMetadata("4",result,env.NEXT_PUBLIC_SUPABASE_URL).robots.index,false);
+});

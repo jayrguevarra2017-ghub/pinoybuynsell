@@ -88,6 +88,7 @@ function SellPage({ listingId = null, sourceListingId = null }) {
         const { data, error } = await supabase.from("products").select("*")
           .eq("id", listingId).eq("seller_id", user.id).single();
         if (error || !data || data.deleted_at) throw new Error("This listing is unavailable or does not belong to you.");
+        if (data.relisted_to_id != null) throw new Error("This item has already been relisted. Open its replacement from My listings.");
         const auctions = await supabase.from("auctions").select("starting_price,current_bid")
           .eq("product_id", listingId);
         if (auctions.error) throw new Error("Could not check bidding settings. Please refresh before editing.");

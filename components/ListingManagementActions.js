@@ -10,7 +10,7 @@ export default function ListingManagementActions({ product, onDeleted, onRefresh
   const [confirming, setConfirming] = useState(false), [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(""), [needsRefresh, setNeedsRefresh] = useState(false);
   const lock = useRef(false);
-  if (!app?.isAdmin || product.deleted_at) return null;
+  if (!app?.isAdmin || product.deleted_at || product.relisted_to_id != null) return null;
   const disabled = busy || !app.online || needsRefresh;
   async function remove(event) {
     event.preventDefault();

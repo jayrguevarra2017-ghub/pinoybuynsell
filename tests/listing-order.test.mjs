@@ -17,6 +17,7 @@ function restFixture(rows, calls=[]) {
     assert.equal(p.get("status"),"in.(active,sold)"); assert.equal(p.get("deleted_at"),"is.null");
     assert(!p.get("select").includes("seller_id"));
     let result=rows.filter(r=>["active","sold"].includes(r.status)&&!r.deleted_at);
+    if (p.get("relisted_to_id") === "is.null") result=result.filter(r=>r.relisted_to_id == null);
     if (p.has("id")) {const ids=p.get("id").slice(4,-1).split(","); result=result.filter(r=>ids.includes(String(r.id)));}
     else result=result.slice(Number(p.get("offset")),Number(p.get("offset"))+Number(p.get("limit")));
     return Response.json(result);
@@ -77,6 +78,15 @@ test("ordering occurs before browse pagination so newer closed rows cannot hide 
   assert(second.slice(6).every(x=>x.status==="sold"));
   const featured=await getFeaturedListings({env,fetchImpl});
   assert.equal(featured.length,12); assert(featured.every(x=>x.status==="active"));
+});
+
+test("replaced originals leave discovery before pagination and receive a historical label",async()=>{
+  const rows=Array.from({length:40},(_,i)=>fixed(i+1,{relisted_to_id:i<15?100:null}));
+  const calls=[];
+  const first=await getBrowseListings({}, {env,fetchImpl:restFixture(rows,calls)});
+  assert.equal(first.length,25); assert(first.every(item=>item.id>15));
+  assert(calls.every(params=>params.get("relisted_to_id")==="is.null"));
+  assert.equal(listingAvailability(rows[0],now).label,"Relisted");
 });
 
 test("index pagination reaches old available items beyond Supabase's first 1000 rows",async()=>{

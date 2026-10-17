@@ -318,6 +318,8 @@ footer { background: #242424; color: #e2e2e8; }
 .listing-share-link textarea { resize: vertical; font: inherit; line-height: 1.5; }
 .listing-share-hashtags { margin: 8px 0; color: #2454d6; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
 .facebook-hashtag-preview { padding: 12px 0; }
+.listing-history-toggle { display: flex; align-items: center; gap: 8px; margin: 12px 0; font-size: 13px; }
+.listing-history-toggle input { width: auto; flex: 0 0 auto; }
 .facebook-share:hover, .messenger-contact:hover { background: #edf2ff; }
 .facebook-page-publish { background: #2454d6; color: white; border-color: #2454d6; }
 .facebook-page-publish:hover { background: #193fab; }

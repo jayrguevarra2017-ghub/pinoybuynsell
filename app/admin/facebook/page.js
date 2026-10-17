@@ -49,7 +49,7 @@ function FacebookListings() {
       const [result, records] = await Promise.all([withFacebookDeadline(query), withFacebookDeadline(recordQuery)]);
       if (version !== loadVersion.current) return;
       if (result.error) throw result.error;
-      setItems(result.data || []);
+      setItems((result.data || []).filter(item => item.relisted_to_id == null));
       if (records.error) { setMessage("Posting status is unavailable. Check that the Facebook publishing SQL setup is installed, then refresh."); return; }
       setPosts(Object.fromEntries((records.data || []).map(post => [post.listing_id, post])));
       setReady(true); setMessage("");
