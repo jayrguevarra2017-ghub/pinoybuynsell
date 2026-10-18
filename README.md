@@ -40,6 +40,14 @@ Validation for this update: 193 automated tests, 49 isolated SQL checks, 76 mock
 
 Initial Next.js App Router marketplace prototype for Hostinger.
 
+## Homepage shipping slideshow
+
+The homepage opens with a compact, cream-and-orange shipping slideshow above the marketplace hero. Three slides introduce USA-to-Philippines shopping/shipping assistance, selected US-store finds and quote requests. Each slide keeps links to `/usa-shopping#usa-quote` and `/usa-shopping#usa-finds`. Content uses the existing service details; no rate, delivery-time or warehouse benefit is added.
+
+Slides rotate every seven seconds while the banner is sufficiently in view and the browser tab is visible. Visitors can select a slide, use previous/next, pause/resume or swipe horizontally on touch devices. Hover temporarily pauses rotation; keyboard focus or manual navigation stops it until Play is selected. Reduced-motion preferences disable automatic playback, and changing to that preference stops an already-running slideshow. Inactive slides are hidden from assistive technology and made inert; all slides reserve the same layout space. Controls and links retain 44px touch targets, and mobile links fit side by side. The USA landing page, quote form and store catalog keep their existing flow. No SQL migration, new credentials or new packages are required.
+
+Validation: production build, 247 existing automated tests and 147 browser assertions passed. Browser checks cover 320/390/768/1280px layouts, compactness, stable height, accessible controls, native touch swipe, rotation/pause, keyboard focus, hover, reduced motion, tab visibility, offscreen pausing and the quote-page handoff. Browser API calls were mocked; no live quote, order, payment or Facebook post was created.
+
 ## Selected USA store items
 
 The USA shopping page uses the supplied visual reference for a centered headline, cream background with peach shapes, orange actions and four rounded white service cards. The copy describes PinoyBuyNSell's existing shopping/quote assistance: choosing a US item, reviewing costs and confirming before purchase. Cards use four columns on desktop and two on smaller screens. The homepage shortcut shares the palette while keeping its compact layout. Catalog and quote links account for the sticky header, including mobile safe-area spacing. Existing branding, retailer links, catalog selection, sign-in return and quote submission are retained; the design adds no rates, warehouse services or tracking functionality.

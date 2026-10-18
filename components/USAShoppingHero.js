@@ -1,18 +1,6 @@
 import Link from "next/link";
 
-export default function USAShoppingHero({ compact = false }) {
-  if (compact) return <section className="usa-showcase usa-showcase-compact" aria-label="USA shopping and delivery">
-    <div className="container usa-showcase-grid">
-      <div className="usa-showcase-copy">
-        <p className="usa-kicker">🇺🇸 → 🇵🇭 USA SHOPPING</p>
-        <h2>USA to Philippines</h2>
-        <p className="usa-intro">Share a US store link for shopping and shipping assistance.</p>
-        <p className="usa-small">Item cost, service fees, shipping and import charges discussed before you confirm.</p>
-      </div>
-      <div className="usa-home-actions"><Link className="usa-find-button" href="/usa-shopping#usa-finds">Explore USA items</Link><Link className="usa-quote-button" href="/usa-shopping#usa-quote">Get a USA quote</Link></div>
-    </div>
-  </section>;
-
+export default function USAShoppingHero() {
   return <section className="usa-shipping-hero" aria-labelledby="usa-shipping-title">
     <div className="container usa-shipping-content">
       <div className="usa-shipping-copy">

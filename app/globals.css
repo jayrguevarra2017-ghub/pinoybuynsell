@@ -212,6 +212,18 @@ footer { background: #242424; color: #e2e2e8; }
 .usa-showcase-compact .usa-quote-button:hover { background: var(--usa-accent-hover); }
 .usa-showcase-compact .usa-find-button { border-color: #dec3b1; border-radius: 12px; color: #913b08; }
 .usa-showcase-compact .usa-find-button:hover { background: #ffecdd; }
+.shipping-services-slideshow { display: flex; flex-direction: column; touch-action: pan-y pinch-zoom; }
+.shipping-slides-stage { display: grid; order: 1; }
+.shipping-service-slide { grid-area: 1 / 1; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s ease; }
+.shipping-service-slide.is-active { opacity: 1; visibility: visible; pointer-events: auto; }
+.shipping-slide-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; order: 2; margin-top: 10px; }
+.shipping-slide-navigation { display: flex; align-items: center; }
+.shipping-slide-control, .shipping-slide-dot { display: inline-flex; justify-content: center; align-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #913b08; }
+.shipping-slide-control:hover, .shipping-slide-dot:hover { background: #ffecdd; }
+.shipping-slide-dot span { width: 8px; height: 8px; border-radius: 50%; background: #9d7c68; }
+.shipping-slide-dot[aria-current="true"] span { width: 22px; border-radius: 10px; background: var(--usa-accent); }
+@media (max-width: 600px) { .shipping-service-slide .usa-home-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .shipping-service-slide .usa-home-actions a { padding: 10px 8px; font-size: 12px; text-align: center; white-space: normal; } }
+@media (prefers-reduced-motion: reduce) { .shipping-service-slide { transition: none; } }
 .home-categories.section { padding: 28px 0; scroll-margin-top: 150px; }
 .home-categories .section-head { align-items: center; gap: 12px; margin-bottom: 14px; }
 .home-categories .section-head .eyebrow { margin-bottom: 5px; font-size: 10px; }

@@ -4,7 +4,7 @@ import SiteLogo from "@/components/SiteLogo";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { facebookPageUrl, messengerUrl } from "@/lib/facebook";
-import USAShoppingHero from "@/components/USAShoppingHero";
+import ShippingServicesSlideshow from "@/components/ShippingServicesSlideshow";
 import Header from "@/components/Header";
 import OrderedProductGrid from "@/components/OrderedProductGrid";
 import AuctionCard from "@/components/AuctionCard";
@@ -51,6 +51,7 @@ export default function HomePage({ initialProducts = null }) {
       <Header />
 
       <main>
+        <ShippingServicesSlideshow />
         <section className="hero">
           <div className="container hero-inner home-hero-with-video">
             <div>
@@ -97,8 +98,6 @@ export default function HomePage({ initialProducts = null }) {
             </figure>
           </div>
         </section>
-
-        <USAShoppingHero compact />
 
         <section id="categories" className="section home-categories">
           <div className="container">
