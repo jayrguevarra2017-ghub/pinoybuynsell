@@ -42,7 +42,7 @@ function USAShoppingSession({user,ready,initialItems}){
  <USAShoppingHero />
  <USAItemCatalog onChoose={chooseItem} initialItems={initialItems}/>
  <section className="container usa-how-section">
- <p className="eyebrow">FROM WISHLIST TO NEXT STEPS</p><h2>A little link. A world of possibilities.</h2>
+ <p className="eyebrow">HOW IT WORKS</p><h2>Three steps to your next US find.</h2>
  <div className="usa-process-cards">
  <article><span>01</span><h3>Show us your find</h3><p>Paste the store link and tell us your preferred size, color, model, and quantity.</p></article>
  <article><span>02</span><h3>Let’s work out the details</h3><p>We discuss availability, item cost, service fee, shipping, and applicable import charges.</p></article>

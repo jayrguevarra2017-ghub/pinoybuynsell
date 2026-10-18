@@ -9,38 +9,28 @@ export default function USAShoppingHero({ compact = false }) {
         <p className="usa-intro">Share a US store link for shopping and shipping assistance.</p>
         <p className="usa-small">Item cost, service fees, shipping and import charges discussed before you confirm.</p>
       </div>
-      <div className="usa-home-actions"><Link className="usa-find-button" href="/usa-shopping#usa-finds">Explore USA items</Link><Link className="usa-quote-button" href="/usa-shopping#usa-quote">Get a USA quote <span aria-hidden="true">↗</span></Link></div>
+      <div className="usa-home-actions"><Link className="usa-find-button" href="/usa-shopping#usa-finds">Explore USA items</Link><Link className="usa-quote-button" href="/usa-shopping#usa-quote">Get a USA quote</Link></div>
     </div>
   </section>;
 
-  return <section className="usa-showcase">
-    <div className="container usa-showcase-grid">
-      <div className="usa-showcase-copy">
-        <p className="usa-kicker">SHOPPING &amp; SHIPPING ASSISTANCE</p>
-        <h1>USA to Philippines.<br /><em>Your next find, closer to home.</em></h1>
-        <p className="usa-intro">Need help buying an item and shipping from USA to Philippines? Share an Amazon, eBay or other US store link. We’ll discuss availability, purchase costs and delivery arrangements before you decide.</p>
-        <Link className="usa-quote-button" href="#usa-quote">Get my USA shopping quote <span aria-hidden="true">↗</span></Link>
-        <p className="usa-small">Item cost, service fee, shipping, and import charges discussed before you confirm.</p>
-        <div className="usa-category-tags"><span>👟 Fashion finds</span><span>🎧 Gadgets</span><span>🎁 Gifts & collectibles</span></div>
+  return <section className="usa-shipping-hero" aria-labelledby="usa-shipping-title">
+    <div className="container usa-shipping-content">
+      <div className="usa-shipping-copy">
+        <p className="usa-shipping-kicker">USA SHOPPING &amp; SHIPPING ASSISTANCE</p>
+        <h1 id="usa-shipping-title">Shop in the USA.<br /><span>Ship to the Philippines.</span></h1>
+        <p className="usa-shipping-intro">Found something on Amazon, eBay or another US store? Share the link and your delivery destination. We’ll discuss availability, item costs, service fees, shipping and import charges before you decide.</p>
+        <div className="usa-shipping-actions">
+          <Link className="usa-shipping-primary" href="#usa-quote">Get a USA quote</Link>
+          <Link className="usa-shipping-secondary" href="#usa-finds">Explore USA finds</Link>
+        </div>
+        <p className="usa-shipping-note">Requesting a quote does not place an order or collect a payment.</p>
       </div>
-      <div className="usa-route-card" aria-label="USA shopping assistance and delivery to the Philippines">
-        <div className="usa-route-heading"><span>THE JOURNEY</span><span className="usa-route-label">USA → PHILIPPINES</span></div>
-        <div className="usa-route-stops"><div><span aria-hidden="true">🇺🇸</span><strong>Your US find</strong><small>The item you choose</small></div><div className="usa-route-flight" aria-hidden="true">✈</div><div><span aria-hidden="true">🇵🇭</span><strong>Closer to home</strong><small>Delivery arranged for you</small></div></div>
-        <svg className="usa-parcel-art" viewBox="0 0 440 210" aria-hidden="true">
-          <ellipse cx="220" cy="180" rx="165" ry="15" fill="#dbe7f2"/>
-          <path d="M34 110 Q70 20 160 52 T365 60" fill="none" stroke="#7aadd4" strokeWidth="3" strokeDasharray="7 9"/>
-          <circle cx="35" cy="110" r="6" fill="#2454d6"/><circle cx="365" cy="60" r="6" fill="#2454d6"/>
-          <path d="M128 84 L219 51 L311 84 L219 119 Z" fill="#f8d77a"/>
-          <path d="M128 84 L219 119 L219 181 L128 144 Z" fill="#e6a442"/>
-          <path d="M219 119 L311 84 L311 146 L219 181 Z" fill="#f4bf56"/>
-          <path d="M168 69 L259 101 L259 141 L240 149 L240 108 L151 77 Z" fill="#fff2c3"/>
-          <rect x="151" y="111" width="42" height="23" rx="3" transform="skewY(21) translate(0 -55)" fill="#fff"/>
-          <path d="M285 31 l42 6 -21 9 3 17 -9 -15 -22 -1 8 -5 -12 -7 Z" fill="#2454d6"/>
-          <circle cx="84" cy="151" r="24" fill="#e0ece1"/><path d="m73 151 8 8 15 -18" fill="none" stroke="#447d2b" strokeWidth="4" strokeLinecap="round"/>
-          <path d="m345 129 5 10 11 2 -8 8 2 11 -10 -5 -10 5 2 -11 -8 -8 11 -2 Z" fill="#f5cc45"/>
-        </svg>
-        <div className="usa-route-note"><span aria-hidden="true">✦</span><div><strong>Your wishlist starts with a link.</strong><p>Send the exact size, color, or model. We’ll discuss availability and the next steps.</p></div></div>
-      </div>
+      <ul className="usa-shipping-highlights" aria-label="USA shopping service highlights">
+        <li><strong>USA → PH</strong><p>Shopping &amp; shipping assistance</p></li>
+        <li><strong>Your find</strong><p>Choose an item from a US store</p></li>
+        <li><strong>Full quote</strong><p>Review costs before any purchase</p></li>
+        <li><strong>You decide</strong><p>Confirm before we proceed</p></li>
+      </ul>
     </div>
   </section>;
 }
