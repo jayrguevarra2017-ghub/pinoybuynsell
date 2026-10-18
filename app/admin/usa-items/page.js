@@ -8,6 +8,7 @@ import { usaItemFields, usaItemValues, usaStores, usaStoreLink } from "@/lib/usa
 import { prepareListingPhoto, photoTypes } from "@/lib/listing-photo-format.mjs";
 import { requireSellingAccess } from "@/lib/selling-access.mjs";
 import { withDeadline } from "@/lib/verification-actions";
+import USAItemShare from "@/components/USAItemShare";
 
 const empty = { title: "", item_url: "", description: "", usd_price: "", status: "published" };
 export default function USAItemsAdmin() {
@@ -96,6 +97,7 @@ export default function USAItemsAdmin() {
         <div className="usa-item-copy"><p className="eyebrow">{item.store} · {item.status}</p><h3>{item.title}</h3><p>{item.description}</p>
           {usaStoreLink(item.item_url) && <a className="view" href={usaStoreLink(item.item_url).href} target="_blank" rel="noopener noreferrer">Open store item ↗</a>}
           <div className="usa-admin-actions"><button type="button" className="view" disabled={busy} onClick={() => edit(item)}>Edit</button>{item.status === "published" && <button type="button" className="view" disabled={busy} onClick={() => changeItem(item, "hide")}>Hide</button>}<button type="button" className="view" disabled={busy} onClick={() => setDeleting(item.id)}>Delete</button></div>
+          <USAItemShare item={item} />
           {deleting === item.id && <div className="usa-delete-confirm" role="group" aria-label={`Delete ${item.title}`}><p>Delete this USA item? Existing customer quote requests are kept.</p><button type="button" disabled={busy} onClick={() => changeItem(item, "delete")}>Confirm delete</button><button type="button" disabled={busy} onClick={() => setDeleting(null)}>Keep item</button></div>}
         </div>
       </article>)}</div>}

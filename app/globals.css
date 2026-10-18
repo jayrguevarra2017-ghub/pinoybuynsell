@@ -254,6 +254,30 @@ footer { background: #242424; color: #e2e2e8; }
 .usa-item-description { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
 .usa-item-copy .view, .usa-item-quote { min-height: 44px; font-size: 13px; }
 .usa-item-quote { display: block; width: 100%; margin-top: 10px; padding: 10px 12px; border: 0; border-radius: 999px; background: var(--market-blue); color: #fff; font-weight: 750; }
+.usa-item-copy h3 a { color: inherit; }
+.usa-item-sharing { margin-top: 12px; }
+.usa-item-sharing > .facebook-share { display: block; text-align: center; margin-bottom: 8px; }
+.usa-item-sharing summary { min-height: 44px; padding: 12px 4px; font-size: 13px; font-weight: 750; color: #2454d6; cursor: pointer; }
+.usa-item-sharing .listing-share-actions { display: grid; grid-template-columns: minmax(0,1fr); }
+.usa-item-sharing .facebook-share { text-align: center; overflow-wrap: anywhere; }
+.usa-item-detail { max-width: 1000px; }
+.usa-item-detail > .usa-item-card { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); margin-top: 20px; }
+.usa-item-detail .usa-item-photo { height: auto; min-height: 300px; }
+.usa-item-detail .usa-item-photo img { max-height: 600px; }
+.usa-item-detail .usa-item-copy { padding: 24px; }
+.usa-item-detail h1 { font-size: clamp(24px,3vw,36px); line-height: 1.25; margin-top: 0; overflow-wrap: anywhere; }
+.usa-item-full-description { white-space: pre-line; }
+.usa-item-detail .usa-item-quote { text-align: center; }
+.usa-facebook-review { max-width: 800px; margin: 24px 0; padding: 20px; background: white; border: 1px solid #dfe4ef; border-radius: 16px; overflow-wrap: anywhere; }
+.usa-facebook-photo { display: block; width: 100%; max-height: 380px; object-fit: contain; background: #f5f7fc; }
+.usa-facebook-review .listing-share-link { margin: 16px 0; }
+.usa-facebook-review .sell { margin-top: 12px; }
+@media (max-width: 650px) {
+  .usa-item-detail > .usa-item-card { grid-template-columns: minmax(0,1fr); }
+  .usa-item-detail .usa-item-photo { height: 300px; min-height: 0; }
+  .usa-item-detail .usa-item-copy { padding: 16px; }
+  .usa-item-sharing .facebook-share { padding: 10px 8px; font-size: 12px; }
+}
 .usa-admin-page .usa-item-editor { max-width: 740px; margin-bottom: 32px; scroll-margin-top: 160px; }
 .usa-admin-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .usa-admin-actions .view { width: auto; min-height: 44px; margin: 0; }

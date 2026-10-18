@@ -3,7 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useApp } from "@/components/AppProvider";
-import { usaItemFields, usaStores, usaStoreLink } from "@/lib/usa-items.mjs";
+import { usaItemFields, usaItemId, usaStores, usaStoreLink } from "@/lib/usa-items.mjs";
+import USAItemShare from "@/components/USAItemShare";
+import { usaItemPath } from "@/lib/usa-item-sharing.mjs";
 
 export default function USAItemCatalog({ onChoose, initialItems = null }) {
   const app = useApp(), chooseRef = useRef(onChoose), selected = useRef(false);
@@ -24,7 +26,13 @@ export default function USAItemCatalog({ onChoose, initialItems = null }) {
       setItems(rows);
       if (!selected.current) {
         const wanted = new URLSearchParams(window.location.search).get("item");
-        const item = rows.find(row => row.id === wanted);
+        let item = rows.find(row => row.id === wanted);
+        // A shared item may be older than the 100-card catalog window.
+        if (!item && usaItemId(wanted)) {
+          const requested = await supabase.from("usa_shopping_items").select(usaItemFields).eq("id", wanted).eq("status", "published").limit(1).abortSignal(controller.signal).maybeSingle();
+          if (controller.signal.aborted || requested.error) throw Error("Selected item unavailable");
+          if (requested.data?.id === wanted && requested.data.status === "published" && usaStoreLink(requested.data.item_url)) item = requested.data;
+        }
         if (item) { selected.current = true; chooseRef.current?.(item); }
       }
     } catch { if (abort.current === controller) setError("USA finds are unavailable right now. You can still paste your store link in the quote form below."); }
@@ -42,11 +50,12 @@ export default function USAItemCatalog({ onChoose, initialItems = null }) {
       {!matches.length && <p>{items.length ? "No selected items from this store yet." : "New USA finds are coming soon. You can already request a quote using your own store link below."}</p>}
       <div className="usa-item-grid">{matches.slice(0, limit).map(item => <article key={item.id} className="usa-item-card">
         <div className="usa-item-photo">{item.image_path ? <img src={supabase.storage.from("listing-photos").getPublicUrl(item.image_path).data.publicUrl} alt={item.title} loading="lazy" /> : <span aria-hidden="true">{item.store}</span>}</div>
-        <div className="usa-item-copy"><p className="eyebrow">{item.store}</p><h3>{item.title}</h3>
+        <div className="usa-item-copy"><p className="eyebrow">{item.store}</p><h3><Link href={usaItemPath(item.id)}>{item.title}</Link></h3>
           {item.usd_price != null && <p className="usa-item-price">Reference store price: {Number(item.usd_price).toLocaleString("en-US", { style: "currency", currency: "USD" })}</p>}
           <p className="usa-item-description">{item.description}</p>
           <a className="view" href={usaStoreLink(item.item_url).href} target="_blank" rel="noopener noreferrer">View on {item.store} ↗</a>
           <button type="button" className="usa-item-quote" onClick={() => { selected.current = true; chooseRef.current?.(item); }}>Request a quote</button>
+          <USAItemShare item={item} />
         </div>
       </article>)}</div>
       {matches.length > limit && <button type="button" className="view" onClick={() => setLimit(value => value + 12)}>Show more USA finds</button>}
