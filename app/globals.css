@@ -28,15 +28,25 @@ body { color: var(--market-ink); background: #f6f7fa; }
 .hero-actions a { padding: 14px 26px; border-radius: 999px; font-weight: 750; }
 .hero-actions .primary { color: #fff; background: var(--market-blue); }
 .hero-actions .secondary { color: #262626; border: 1px solid #6d5d35; background: #ffffffa8; }
-.hero-inner.home-hero-with-video { grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 40px; }
-.home-promo-video { margin: 0; min-width: 0; overflow: hidden; border: 1px solid #d8c789; border-radius: 18px; background: #fffdf5; box-shadow: 0 10px 28px #554c3712; }
-.home-promo-video video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain; background: #f8f6f0; }
-.home-promo-video video:focus-visible { outline: 3px solid var(--market-blue); outline-offset: -3px; }
-.home-promo-video figcaption { display: grid; gap: 4px; padding: 12px 16px; }
-.home-promo-video figcaption strong { font-size: 14px; }
-.home-promo-video figcaption span { color: #5e594c; font-size: 12px; line-height: 1.5; }
-@media (max-width: 800px) {
-  .hero-inner.home-hero-with-video { grid-template-columns: minmax(0,1fr); gap: 24px; }
+.hero.home-hero-compact { padding: 28px 0; }
+.home-hero-compact .hero-inner { grid-template-columns: minmax(0,1fr) auto; gap: 28px; }
+.home-hero-compact .eyebrow { margin-bottom: 8px; font-size: 11px; letter-spacing: 1.1px; }
+.hero.home-hero-compact h1 { margin: 0 0 10px; font-size: 40px; line-height: 1.1; letter-spacing: -1.6px; }
+.home-hero-compact .lead { max-width: 900px; margin: 0; font-size: 15px; line-height: 1.6; }
+.home-hero-compact .hero-actions { margin: 0; gap: 8px; flex-wrap: nowrap; }
+.home-hero-compact .hero-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 11px 18px; font-size: 14px; text-align: center; white-space: nowrap; }
+@media (max-width: 850px) {
+  .hero.home-hero-compact { padding: 24px 0; }
+  .home-hero-compact .hero-inner { grid-template-columns: minmax(0,1fr); gap: 16px; }
+  .hero.home-hero-compact h1 { font-size: 36px; }
+}
+@media (max-width: 550px) {
+  .hero.home-hero-compact { padding: 20px 0; }
+  .hero.home-hero-compact h1 { font-size: clamp(28px,8vw,34px); letter-spacing: -1px; }
+  .home-hero-compact .eyebrow { font-size: 10px; }
+  .home-hero-compact .lead { font-size: 14px; line-height: 1.55; }
+  .home-hero-compact .hero-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: 100%; max-width: 400px; }
+  .home-hero-compact .hero-actions a { padding: 10px 8px; font-size: 12.5px; white-space: normal; }
 }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }

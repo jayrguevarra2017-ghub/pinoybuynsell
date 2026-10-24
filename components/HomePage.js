@@ -52,50 +52,31 @@ export default function HomePage({ initialProducts = null }) {
 
       <main>
         <ShippingServicesSlideshow />
-        <section className="hero">
-          <div className="container hero-inner home-hero-with-video">
+        <section className="hero home-hero-compact" aria-labelledby="home-marketplace-title">
+          <div className="container hero-inner">
             <div>
               <p className="eyebrow">🇵🇭 PINOYBUYNSELL · PHILIPPINES</p>
 
-              <h1>
+              <h1 id="home-marketplace-title">
                 Buy. Sell. <span>Connect.</span>
               </h1>
 
               <p className="lead">
-                PinoyBuyNSell is a Philippine buy and sell marketplace for trading cards,
-                TCG, collectibles and more. Browse NBA and Pokémon cards, join auctions,
-                or request USA to Philippines shopping and shipping assistance.
+                Buy and sell trading cards, TCG and collectibles in the Philippines.
+                Explore NBA and Pokémon cards, auctions, and USA to Philippines
+                shopping and shipping assistance.
               </p>
-
-              <div className="hero-actions">
-                <Link className="primary" href="#browse">
-                  Browse items
-                </Link>
-
-                <Link className="secondary" href="/sell">
-                  {app?.isAdmin ? "Sell an item" : "Selling coming soon"}
-                </Link>
-              </div>
             </div>
 
-            <figure className="home-promo-video">
-              <video
-                controls
-                playsInline
-                preload="none"
-                poster="/marketing/pinoybuynsell-website-poster.jpg"
-                aria-label="Watch the PinoyBuyNSell collectibles promo"
-                aria-describedby="home-promo-caption"
-              >
-                <source src="/marketing/pinoybuynsell-website.mp4" type="video/mp4" />
-                <track kind="captions" src="/marketing/pinoybuynsell-promo.vtt" srcLang="en" label="English captions" />
-                Your browser cannot play this video. <a href="/marketing/pinoybuynsell-website.mp4">Open the promo video</a>.
-              </video>
-              <figcaption id="home-promo-caption">
-                <strong>For the collectors</strong>
-                <span>NBA cards, Pokémon and more · 20 seconds</span>
-              </figcaption>
-            </figure>
+            <div className="hero-actions">
+              <Link className="primary" href="#browse">
+                Browse items
+              </Link>
+
+              <Link className="secondary" href="/sell">
+                {app?.isAdmin ? "Sell an item" : "Selling coming soon"}
+              </Link>
+            </div>
           </div>
         </section>
 

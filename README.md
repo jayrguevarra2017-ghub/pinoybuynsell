@@ -40,6 +40,14 @@ Validation for this update: 193 automated tests, 49 isolated SQL checks, 76 mock
 
 Initial Next.js App Router marketplace prototype for Hostinger.
 
+## Compact homepage introduction
+
+The yellow marketplace introduction is a compact text-and-action banner. The promotional video player and its caption have been removed. Reduced padding, a smaller heading and shorter visible copy bring categories and listings closer to the top. Desktop actions sit beside the introduction; tablet and phone actions sit beneath it, with both mobile buttons on one row and at least 44px touch targets. The homepage retains its marketplace/shipping topics, main heading, browse/sell destinations and administrator-specific selling label.
+
+Validation: 268 existing automated tests, 220 mocked browser checks and the production build passed. The banner measures 182px at 1024/1440px widths, 230px at 768px and 254–272px at 320/390px. Guest/admin checks cover removed media requests, responsive fit, keyboard access, buttons, category links and the separate shipping slideshow. No customer or Facebook writes were sent.
+
+An existing dependency issue surfaced during validation: `npm audit` reports critical Next.js 16.4.0 security advisories, including [GHSA-2464-fhr4-w9xw](https://github.com/advisories/GHSA-2464-fhr4-w9xw). The initial build stopped with Next.js's one-time advisory; its documented retry completed. A separate framework security upgrade is recommended. This layout change keeps the existing dependency versions.
+
 ## Homepage shipping slideshow
 
 The homepage opens with a compact, cream-and-orange shipping slideshow above the marketplace hero. Three slides introduce USA-to-Philippines shopping/shipping assistance, selected US-store finds and quote requests. Each slide keeps links to `/usa-shopping#usa-quote` and `/usa-shopping#usa-finds`. Content uses the existing service details; no rate, delivery-time or warehouse benefit is added.
