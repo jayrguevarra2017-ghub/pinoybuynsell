@@ -2,26 +2,30 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import ShippingRouteIllustration from "@/components/ShippingRouteIllustration";
 
 const slides = [
   {
     kicker: "USA → PHILIPPINES",
-    title: "USA to Philippines",
-    description: "Share a US store link. We’ll help with shopping and shipping arrangements.",
-    note: "Item costs, fees, shipping and import charges are discussed before you confirm.",
+    title: "Shop the USA.",
+    accent: "Bring it home.",
+    description: "Found something you love? Send the link for shopping and shipping assistance to the Philippines.",
+    note: "Review item costs, fees, shipping and import charges before you decide.",
     quoteFirst: true,
   },
   {
     kicker: "YOUR NEXT US FIND",
-    title: "Shop your favorite US stores",
+    title: "US stores.",
+    accent: "Great finds.",
     description: "Explore selected finds from Amazon, eBay, B&H Photo and more.",
     note: "See something you like? Request a quote for delivery to the Philippines.",
     quoteFirst: false,
   },
   {
     kicker: "KNOW THE COSTS FIRST",
-    title: "Your item. Your quote. Your choice.",
-    description: "Tell us the item, size or model, quantity, and delivery city or province.",
+    title: "Your wishlist.",
+    accent: "Your way.",
+    description: "Share the store link, item details and delivery destination. We’ll help you plan the next step.",
     note: "Requesting a quote does not place an order or collect a payment.",
     quoteFirst: true,
   },
@@ -76,7 +80,39 @@ export default function ShippingServicesSlideshow() {
       const dx = event.clientX - start.x, dy = event.clientY - start.y;
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) showSlide(index + (dx < 0 ? 1 : -1));
     }}>
-    <div className="container shipping-slide-controls" role="group" aria-label="Shipping slideshow controls">
+    <div className="container shipping-campaign-panel">
+    <div className="shipping-campaign-layout">
+    <div className="shipping-slides-stage" aria-live={playing ? "off" : "polite"} aria-atomic="true">
+      {slides.map((slide, slideIndex) => <div key={slide.title}
+        className={`shipping-service-slide${index === slideIndex ? " is-active" : ""}`}
+        role="group" aria-roledescription="slide" aria-label={`${slideIndex + 1} of ${slides.length}`}
+        aria-hidden={index !== slideIndex} inert={index !== slideIndex}>
+        <div className="usa-showcase-copy">
+          <p className="usa-kicker"><span aria-hidden="true">🇺🇸</span> {slide.kicker} <span aria-hidden="true">🇵🇭</span></p>
+          <h2>{slide.title} <span>{slide.accent}</span></h2>
+          <p className="usa-intro">{slide.description}</p>
+        </div>
+        <div className="usa-home-actions">
+          {slide.quoteFirst ? <>
+            <Link className="usa-quote-button" href="/usa-shopping#usa-quote">Get a USA quote <span aria-hidden="true">→</span></Link>
+            <Link className="usa-find-button" href="/usa-shopping#usa-finds">Explore USA items</Link>
+          </> : <>
+            <Link className="usa-quote-button" href="/usa-shopping#usa-finds">Explore USA items <span aria-hidden="true">→</span></Link>
+            <Link className="usa-find-button" href="/usa-shopping#usa-quote">Get a USA quote</Link>
+          </>}
+        </div>
+        <p className="usa-small">{slide.note}</p>
+      </div>)}
+    </div>
+    <ShippingRouteIllustration />
+    </div>
+    <div className="shipping-campaign-footer">
+    <ul className="shipping-service-perks" aria-label="Shopping assistance highlights">
+      <li><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> US store finds</li>
+      <li><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg> Clear quotes</li>
+      <li><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.4 5.6a5.4 5.4 0 0 0-7.6 0l-.8.8-.8-.8a5.4 5.4 0 0 0-7.6 7.6L12 21l8.4-7.8a5.4 5.4 0 0 0 0-7.6Z"/></svg> Your choice</li>
+    </ul>
+    <div className="shipping-slide-controls" role="group" aria-label="Shipping slideshow controls">
       <button type="button" className="shipping-slide-control" data-shipping-rotation
         aria-label={playing ? "Pause shipping slideshow" : "Play shipping slideshow"}
         title={playing ? "Pause slideshow" : "Play slideshow"} onClick={() => setPlaying(current => !current)}>
@@ -89,34 +125,14 @@ export default function ShippingServicesSlideshow() {
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
         </button>
         {slides.map((slide, slideIndex) => <button key={slide.title} type="button" className="shipping-slide-dot"
-          aria-label={`Show shipping slide ${slideIndex + 1}: ${slide.title}`} aria-current={index === slideIndex ? "true" : undefined}
+          aria-label={`Show shipping slide ${slideIndex + 1}: ${slide.title} ${slide.accent}`} aria-current={index === slideIndex ? "true" : undefined}
           onClick={() => showSlide(slideIndex)}><span aria-hidden="true" /></button>)}
         <button type="button" className="shipping-slide-control" aria-label="Next shipping slide" onClick={() => showSlide(index + 1)}>
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
         </button>
       </div>
     </div>
-    <div className="shipping-slides-stage" aria-live={playing ? "off" : "polite"} aria-atomic="true">
-      {slides.map((slide, slideIndex) => <div key={slide.title}
-        className={`container usa-showcase-grid shipping-service-slide${index === slideIndex ? " is-active" : ""}`}
-        role="group" aria-roledescription="slide" aria-label={`${slideIndex + 1} of ${slides.length}`}
-        aria-hidden={index !== slideIndex} inert={index !== slideIndex}>
-        <div className="usa-showcase-copy">
-          <p className="usa-kicker">{slide.kicker}</p>
-          <h2>{slide.title}</h2>
-          <p className="usa-intro">{slide.description}</p>
-          <p className="usa-small">{slide.note}</p>
-        </div>
-        <div className="usa-home-actions">
-          {slide.quoteFirst ? <>
-            <Link className="usa-quote-button" href="/usa-shopping#usa-quote">Get a USA quote</Link>
-            <Link className="usa-find-button" href="/usa-shopping#usa-finds">Explore USA items</Link>
-          </> : <>
-            <Link className="usa-quote-button" href="/usa-shopping#usa-finds">Explore USA items</Link>
-            <Link className="usa-find-button" href="/usa-shopping#usa-quote">Get a USA quote</Link>
-          </>}
-        </div>
-      </div>)}
+    </div>
     </div>
   </section>;
 }

@@ -1,5 +1,7 @@
 # PinoyBuyNSell logo
 
+`usa-ph-shopping-route.svg` is original decorative vector artwork for the homepage shipping banner and USA shopping page. It shows a parcel, shopping bag, camera and USA-to-Philippines route, with fixed dimensions and no external resources. `ShippingRouteIllustration` pairs it with US-store name chips and adapts its visibility to the available screen space.
+
 The brand mark combines a shopping bag, a letter P, a gold sun and an upward exchange arrow. Colors match the marketplace's blue, red, green and gold palette. The website pairs the mark with an accessible HTML wordmark for crisp, readable lettering.
 
 - `pinoybuynsell-mark.png`: transparent logo for the website header, footer and browser icon.

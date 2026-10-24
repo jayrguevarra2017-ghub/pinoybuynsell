@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="360" viewBox="0 0 540 360" fill="none">
+  <defs>
+    <linearGradient id="box-front" x1="194" y1="183" x2="325" y2="324" gradientUnits="userSpaceOnUse"><stop stop-color="#FFC47A"/><stop offset="1" stop-color="#EC8D3C"/></linearGradient>
+    <linearGradient id="box-side" x1="330" y1="178" x2="407" y2="295" gradientUnits="userSpaceOnUse"><stop stop-color="#F4A34D"/><stop offset="1" stop-color="#C96627"/></linearGradient>
+    <linearGradient id="bag" x1="95" y1="213" x2="161" y2="303" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF9ED"/><stop offset="1" stop-color="#D9E3E8"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-40%" width="170%" height="190%"><feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#061C32" flood-opacity=".18"/></filter>
+  </defs>
+  <ellipse cx="282" cy="326" rx="192" ry="17" fill="#061C32" opacity=".13"/>
+  <circle cx="291" cy="168" r="131" fill="#FFB76B" opacity=".08"/>
+  <circle cx="291" cy="168" r="161" stroke="#9BB8C8" stroke-opacity=".22" stroke-dasharray="3 10"/>
+  <path d="M106 109C137 18 317 18 418 118" stroke="#FFBC73" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 9"/>
+  <g transform="translate(282 45) rotate(18)">
+    <path d="M-29 8-5-2 0-24 10-27 9-4 35 6 35 12 8 9 8 25 0 28-4 9-27 14Z" fill="#FFF9F0" stroke="#183D59" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="28" y="88" width="151" height="62" rx="18" fill="#FFFCF6"/>
+    <rect x="43" y="104" width="43" height="29" rx="4" fill="#FFF"/>
+    <path d="M43 109H86M43 118H86M43 127H86" stroke="#C93632" stroke-width="4"/>
+    <path d="M43 108A4 4 0 0 1 47 104H64V121H43Z" fill="#2454D6"/>
+    <path d="M48 109H50M56 109H58M48 115H50M56 115H58" stroke="#FFF" stroke-width="2" stroke-linecap="round"/>
+    <text x="98" y="126" fill="#17324C" font-family="Arial,sans-serif" font-size="22" font-weight="700">USA</text>
+    <circle cx="104" cy="159" r="5" fill="#FFB15A"/>
+    <rect x="362" y="121" width="155" height="62" rx="18" fill="#FFFCF6"/>
+    <rect x="376" y="138" width="40" height="27" rx="3" fill="#2454D6"/>
+    <path d="M376 151.5H416V162A3 3 0 0 1 413 165H379A3 3 0 0 1 376 162Z" fill="#C93632"/>
+    <path d="M376 138 395 151.5 376 165Z" fill="#FFF9ED"/>
+    <circle cx="383" cy="151.5" r="3" fill="#E8AE32"/>
+    <text x="428" y="159" fill="#17324C" font-family="Arial,sans-serif" font-size="20" font-weight="700">PH</text>
+    <path d="m471 148 5 5 10-11" stroke="#447D2B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M176 177 261 137 399 180 315 223Z" fill="#FFD69A"/>
+    <path d="M176 177 315 223V327L176 278Z" fill="url(#box-front)"/>
+    <path d="M315 223 399 180V282L315 327Z" fill="url(#box-side)"/>
+    <path d="m225 154 139 44-24 12-139-44Z" fill="#FFF0CF"/>
+    <path d="m225 193 25 8v105l-25-9Z" fill="#FFF0CF"/>
+    <path d="m176 177 139 46 84-43M315 223V327" stroke="#C27735" stroke-opacity=".5" stroke-width="2"/>
+    <path d="m267 228 32 11v43l-32-11Z" fill="#FFFCF6"/>
+    <path d="m274 239 17 6m-17 2 17 6m-17 1 11 4" stroke="#17324C" stroke-width="2" stroke-linecap="round"/>
+    <path d="m327 263 13-6m-13 12 27-13m-27 19 22-11" stroke="#6C371F" stroke-width="3" stroke-linecap="round"/>
+    <text transform="matrix(.94 .33 0 1 185 251)" fill="#683716" font-family="Arial,sans-serif" font-size="10" font-weight="700">PINOYBUYNSELL</text>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="m91 231 50-14 29 10-10 80-73-17Z" fill="url(#bag)"/>
+    <path d="m141 217 29 10-10 80-22-8Z" fill="#BDC9D3"/>
+    <path d="M108 236V215C108 197 133 195 133 213V231" stroke="#17324C" stroke-width="5" stroke-linecap="round"/>
+    <path d="m107 264 11 12 17-22" stroke="#D9772F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="386" y="228" width="76" height="84" rx="14" transform="rotate(9 386 228)" fill="#FFFCF6"/>
+    <rect x="398" y="244" width="48" height="38" rx="6" transform="rotate(9 398 244)" fill="#D9E7ED"/>
+    <circle cx="420" cy="267" r="10" fill="#17324C"/>
+    <circle cx="420" cy="267" r="5" fill="#9CB9CA"/>
+    <path d="m407 245 3-6 16 2 2 7" fill="#17324C"/>
+    <path d="m395 292 31 5" stroke="#DBAE7C" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <path d="m60 185 3 7 8 1-6 5 1 8-6-4-7 4 1-8-5-5 8-1Z" fill="#FFB15A"/>
+  <path d="m462 62 2 6 7 1-5 4 1 7-5-4-6 4 2-7-5-4 6-1Z" fill="#FFB15A"/>
+  <circle cx="462" cy="211" r="4" fill="#FFB15A"/>
+  <circle cx="194" cy="57" r="4" fill="#9BB8C8"/>
+</svg>
