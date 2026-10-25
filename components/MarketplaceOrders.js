@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { paymentRPC, paymentMoney, orderStatuses, paymentMethodNames, receiptRequest } from "@/lib/marketplace-payments.mjs";
 import { prepareListingPhoto } from "@/lib/listing-photo-format.mjs";
 import { withDeadline } from "@/lib/verification-actions.js";
+import { MetaPurchaseEvent } from "@/components/MetaPixelProvider";
 export default function MarketplaceOrders({ admin = false }) {
  const app = useApp();
  return <PaymentAccountGate admin={admin}>{app?.user && (!admin || app.isAdmin) && <Orders key={`${app.user.id}:${admin}`} userId={app.user.id} admin={admin} />}</PaymentAccountGate>;
@@ -37,6 +38,7 @@ function Orders({ userId, admin }) {
  {!admin && tab === "purchases" && won.length>0 && <section className="payment-wins"><h2>Won auctions ready for payment</h2>{won.map(w => <p key={w.id}><Link href={`/account/checkout?listing=${w.id}`}>{w.title}</Link> · Winning bid {paymentMoney(w.amount)} + shipping</p>)}</section>}
  {error && <p role="alert">{error}</p>}{!rows && !error && <p>Loading orders…</p>}{rows?.length===0 && <p>No orders in this view.</p>}
  {rows?.map(order => <OrderCard key={`${order.id}:${order.updated_at}`} order={order} userId={userId} canReview={app.isAdmin} selected={selected===order.id} onChanged={refresh} />)}
+ {!admin && tab === "purchases" && rows?.map(order => <MetaPurchaseEvent key={order.id} order={order} />)}
  {rows && <div className="payment-toolbar"><button disabled={!page} onClick={() => setPage(v => v-1)}>Previous</button><span>Page {page+1}</span><button disabled={!hasMore} onClick={() => setPage(v => v+1)}>Next</button></div>}
  <p>Receipts are reviewed manually. “Receipt awaiting review” does not mean payment has been received. For delivery, disputes or refunds, contact the seller or support team.</p></>;
 }

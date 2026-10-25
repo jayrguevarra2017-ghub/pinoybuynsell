@@ -18,6 +18,7 @@ import { useApp } from "@/components/AppProvider";
 import { submitMarketplaceBid } from "@/lib/marketplace-bidding.mjs";
 import { withDeadline } from "@/lib/verification-actions";
 import { minimumMarketplaceBid, bidIncrementSettings } from "@/lib/bid-increments.mjs";
+import { MetaItemEvent } from "@/components/MetaPixelProvider";
 
 export default function ProductPage({ initialProduct = null }) {
   const params = useParams();
@@ -193,6 +194,7 @@ export default function ProductPage({ initialProduct = null }) {
   const price = isAuction ? (auction?.current_bid ?? auction?.starting_price ?? product.auction_starting_price) : product.price;
   return <>
     <Header />
+    <MetaItemEvent product={product} />
     <main className="page listing-detail-page">
       <div className="container">
         <Link href="/search" className="back">← Back to marketplace</Link>

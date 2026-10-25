@@ -2,6 +2,8 @@ import "./globals.css";
 import SupportChat from "@/components/SupportChat";
 import AppProvider from "@/components/AppProvider";
 import { homeSEO } from "@/lib/seo.mjs";
+import MetaPixelProvider from "@/components/MetaPixelProvider";
+import { metaPixelConfiguration } from "@/lib/meta-pixel-config.mjs";
 
 export const viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#2454d6" };
 
@@ -29,9 +31,10 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const pixel = metaPixelConfiguration(process.env);
   return (
     <html lang="en">
-      <body><AppProvider>{children}<SupportChat /></AppProvider></body>
+      <body><AppProvider><MetaPixelProvider {...pixel}>{children}<SupportChat /></MetaPixelProvider></AppProvider></body>
     </html>
   );
 }

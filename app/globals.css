@@ -10,6 +10,21 @@
   --market-border: #dedfe5;
 }
 body { color: var(--market-ink); background: #f6f7fa; }
+.ad-privacy-footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px; padding: 12px 16px 88px; border-top: 1px solid #dedfe5; color: #50505b; background: #f6f7fa; font-size: 12px; }
+.ad-privacy-footer button { min-height: 44px; padding: 8px 12px; border: 1px solid #c5cbd6; border-radius: 10px; background: white; color: #243653; }
+.ad-consent { position: fixed; z-index: 110; bottom: 16px; left: 50%; transform: translateX(-50%); width: min(960px,calc(100% - 32px)); display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 16px; padding: 18px; border: 1px solid #cdd6e8; border-radius: 16px; color: #243653; background: #fff; box-shadow: 0 12px 48px #12233f33; }
+.ad-consent strong { font-size: 15px; }
+.ad-consent p { margin: 7px 0 0; font-size: 13px; line-height: 1.6; }
+.ad-consent a { color: #2454d6; text-decoration: underline; }
+.ad-consent-actions { display: flex; gap: 8px; }
+.ad-consent-actions button { min-height: 44px; padding: 10px 14px; border: 1px solid #a9b6d0; border-radius: 10px; font-size: 12px; font-weight: 750; background: #f4f7fc; color: #243653; }
+.ad-consent-actions .ad-consent-allow { border-color: #2454d6; background: #2454d6; color: white; }
+.privacy-copy p { line-height: 1.75; }
+@media (max-width: 700px) {
+  .ad-consent { bottom: calc(92px + env(safe-area-inset-bottom,0px)); grid-template-columns: minmax(0,1fr); gap: 12px; padding: 15px; }
+  .ad-consent-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .ad-consent p { font-size: 12px; }
+}
 .topbar { background: #fff; border-bottom: 4px solid transparent; border-image: linear-gradient(90deg, var(--market-red) 25%, var(--market-blue) 25% 50%, var(--market-yellow) 50% 75%, var(--market-green) 75%) 1; box-shadow: 0 3px 16px #24242408; }
 .logo { color: var(--market-red); letter-spacing: -1px; white-space: nowrap; }
 .logo span { color: var(--market-blue); }

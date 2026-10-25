@@ -6,6 +6,7 @@ import USAItemShare from "@/components/USAItemShare";
 import { readPublicUSAItems } from "@/lib/public-usa-items.mjs";
 import { usaItemMetadata, usaQuotePath, usaReferencePrice } from "@/lib/usa-item-sharing.mjs";
 import { usaStoreLink } from "@/lib/usa-items.mjs";
+import { MetaItemEvent } from "@/components/MetaPixelProvider";
 
 export const dynamic = "force-dynamic";
 const readItem = cache(async id => (await readPublicUSAItems({ env: process.env, itemId: id }))[0] || null);
@@ -23,7 +24,7 @@ export default async function USAItemPage({ params }) {
   if (!item) notFound();
   const metadata = usaItemMetadata(item, process.env.NEXT_PUBLIC_SUPABASE_URL);
   const price = usaReferencePrice(item);
-  return <><Header /><main className="page usa-shopping-page"><div className="container usa-item-detail">
+  return <><Header /><MetaItemEvent product={item} usa /><main className="page usa-shopping-page"><div className="container usa-item-detail">
     <Link className="back" href="/usa-shopping#usa-finds">← All USA finds</Link>
     <article className="usa-item-card">
       <div className="usa-item-photo">{metadata.openGraph.images[0] && <img src={metadata.openGraph.images[0].url} alt={item.title} />}</div>
